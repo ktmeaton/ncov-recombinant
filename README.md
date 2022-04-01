@@ -3,7 +3,7 @@
 SARS-CoV-2 recombinant sequence detection.
 
 1. Align sequences and perform clade/lineage assignments with [Nextclade](https://github.com/nextstrain/nextclade).
-1. Identify parental clades and plot breakpoints with [sc2rf](https://github.com/lenaschimmel/sc2rf).
+1. Identify parental clades and plot recombination breakpoints with [sc2rf](https://github.com/lenaschimmel/sc2rf).
 1. Phylogenetically place recombinant sequences with [UShER](https://github.com/yatisht/usher).
 
 ## Output

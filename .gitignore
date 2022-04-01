@@ -6,3 +6,7 @@ slurm-*
 
 # Ignore custom system profiles
 profiles/custom
+
+# Ignore datasets
+data/public-latest
+data/sars-cov-2-nextclade-defaults
