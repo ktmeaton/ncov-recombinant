@@ -71,10 +71,21 @@ SARS-CoV-2 recombinant sequence detection.
     snakemake --profile profiles/laptop
     ```
 
-1. Inspect the output:
-    - Line list: `results/controls/summary.tsv`
+1. Inspect the output
+
+    - Sample line list:
+
+        ```bash
+        csvtk pretty -t results/controls/summary.tsv
+        ```
+
     - Breakpoints: `results/controls/sc2rf.txt`
-    - Trees: `results/controls/subtrees_collapse`
+
+        ```bash
+        less -S results/controls/sc2rf.txt
+        ```
+
+    - Trees: PNG and Auspice JSON in  `results/controls/subtrees_collapse`
 
 ## SLURM
 
