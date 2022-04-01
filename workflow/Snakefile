@@ -1,0 +1,604 @@
+"""
+@author: Katherine Eaton
+SARS-CoV-2 Recombinant Detection Pipeline.
+"""
+
+# -----------------------------------------------------------------------------#
+#                             Modules and Packages                             #
+# -----------------------------------------------------------------------------#
+import os
+import copy
+import textwrap
+import datetime
+import subprocess
+import pandas as pd
+import json
+
+# Enforce minimum version
+from snakemake.utils import min_version
+min_version("7.2.1")
+
+# -----------------------------------------------------------------------------#
+# Setup
+# -----------------------------------------------------------------------------#
+
+today = datetime.date.today()
+
+# Begin Code: https://github.com/nextstrain/ncov/blob/master/Snakefile
+
+# Store the user's configuration prior to loading defaults. We need to make a deep
+# copy because Snakemake will deep merge the dictionary later, modifying the values
+# of a reference or shallow copy. Note that this loading of
+# the user's config prior to the defaults below depends on the order Snakemake
+# loads its configfiles. Specifically, the order of config loading is:
+#
+# 1. First, configfile arguments are loaded and config is built from these [1].
+# 2. Then, config arguments are loaded and override existing config keys [2].
+# 3. Then, the Snakefile is parsed and configfile directive inside the Snakefile is processed [3].
+#    When configfile is loaded from the directive in the Snakefile, the config
+#    dictionary is deep merged with the files [4] from the externally provided
+#    config files. This is the only place the deep merge happens using the
+#    update_config function [5].
+
+# Load the default parameters
+configfile: "defaults/parameters.yaml"
+
+# Convert config into an OrderedDict with keys of "name" for use by the pipeline.
+if isinstance(config.get("inputs"), list):
+    config["inputs"] = OrderedDict((v["name"], v) for v in config["inputs"])
+if isinstance(config.get("builds"), list):
+    config["builds"] = OrderedDict((v["name"], v) for v in config["builds"])
+if isinstance(config.get("rule_params"), list):
+    config["rule_params"] = OrderedDict((v["name"], v) for v in config["rule_params"])
+
+# Check for missing inputs.
+if "inputs" not in config:
+    logger.error("ERROR: Your workflow does not define any input files to start with.")
+    logger.error("Update your configuration file (e.g., 'builds.yaml') to define at least one input dataset as follows and try running the workflow again:")
+    logger.error(textwrap.indent(
+        f"\ninputs:\n  name: local-data\n  metadata: data/example_metadata.tsv\n  sequences: data/example_sequences.fasta.gz\n",
+        "  "
+    ))
+    sys.exit(1)
+
+# Check for missing builds
+if "builds" not in config:
+    logger.error("ERROR: Your workflow does not define any builds to start with.")
+    logger.error("Update your configuration file (e.g., 'builds.yaml') to define at least one build as follows and try running the workflow again:")
+    logger.error(textwrap.indent(
+        f"\nbuilds:\n  name: example-build\n",
+        "  "
+    ))
+    sys.exit(1)
+
+# End Code: https://github.com/nextstrain/ncov/blob/master/Snakefile
+
+# Set default rule parameters for each build
+for build in config["builds"]:
+  for rule in config["rule_params"]:
+    # Case 1. There are no params for this rule in the build
+    if rule not in config["builds"][build]:
+      config["builds"][build][rule] = config["rule_params"][rule]
+    # Case 2. There are some params for this rule in the build
+    else:
+      for param in config["rule_params"][rule]:
+        # Case 3. This param has not been specified
+        if param not in config["builds"][build][rule]:
+          config["builds"][build][rule][param] = config["rule_params"][rule][param]
+
+
+BUILDS = list(config["builds"].keys())
+USHER_INPUTS = [input for input in config["inputs"] if "usher" in config["inputs"][input]["type"]]
+LOCAL_INPUTS = [input for input in config["inputs"] if "local" in config["inputs"][input]["type"]]
+
+
+# Delete generic params (they've all been added to each build at this point)
+config.pop("rule_params", None)
+
+# -----------------------------------------------------------------------------#
+#  Default Target
+# -----------------------------------------------------------------------------#
+
+rule all:
+  """
+  Default workflow targets.
+  """
+    input:
+        # Stage 1: Nextclade
+        expand("results/{build_name}/nextclade.recombinants.txt",
+          build_name=BUILDS,
+          ),
+        # Stage 2: sc2rf
+        expand("results/{build_name}/sc2rf.recombinants.txt",
+          build_name=BUILDS,
+          ),
+        # Stage 3: UShER
+        expand("results/{build_name}/subtrees_plot",
+          build_name=BUILDS,
+          ),
+        # Stage 4: Summary
+        expand("results/{build_name}/summary.tsv",
+          build_name=BUILDS,
+          ),
+# -----------------------------------------------------------------------------#
+#  Accessory Rules
+# -----------------------------------------------------------------------------#
+
+rule print_config:
+  """
+  Print full config.
+  """
+  message: "Printing full config."
+  run:
+    config_json = json.dumps(config, indent = 4)
+    print(config_json)
+
+# -----------------------------------------------------------------------------#
+rule help:
+  """
+  Print list of all rules and targets with help.
+  """
+  run:
+    for rule in workflow.rules:
+      print("-" * 160)
+      print("rule: ", rule.name )
+      if rule.docstring:
+          print(rule.docstring)
+      if rule._input:
+          print("\tinput:")
+          for in_file in rule.input:
+              print("\t\t" + str(in_file))
+          for in_file in rule.input.keys():
+              print("\t\t" + in_file + ": " + str(rule.input[in_file]))
+      if rule._output:
+          print("\toutput:")
+          for out_file in rule.output:
+              print("\t\t" + out_file)
+          for out_file in rule.output.keys():
+              print("\t\t" + out_file + ": " + str(rule.output[out_file]))
+      if rule._params:
+          print("\tparams:")
+          for param in rule.params.keys():
+              print("\t\t" + param + ": " + str(rule.params[param]))
+      if rule.resources:
+          print("\tresources:")
+          for resource in rule.resources.keys():
+              print("\t\t" + resource + ": " + str(rule.resources[resource]))
+      if rule.conda_env:
+          print("\t\tconda: ", rule.conda_env)
+      if rule._log:
+          print("\t\tlog: ", rule._log)
+
+# -----------------------------------------------------------------------------#
+#  STAGE 1: Nextclade QC
+# -----------------------------------------------------------------------------#
+
+rule_name = "nextclade_dataset"
+rule nextclade_dataset:
+  """
+  Download Nextclade dataset.
+  """
+  message: "{wildcards.dataset} | Downloading Nextclade sars-cov-2 dataset."
+  output:
+    directory("data/{dataset}-nextclade-defaults"),
+  benchmark:
+    "benchmarks/{rule}/{{dataset}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{dataset}}_{today}.txt".format(today=today, rule=rule_name),
+  shell:
+    """
+    nextclade dataset get --name {wildcards.dataset} --output-dir data/{wildcards.dataset}-nextclade-defaults > {log} 2>&1;
+    """
+
+# ----------------------------------------------------------------------------#
+rule_name = "nextclade"
+rule nextclade:
+  """
+  Align sequences and perform QC with Nextclade.
+  """
+  message: "{wildcards.build} | Aligning sequences and performing QC with Nextclade."
+  input:
+    dataset   = "data/sars-cov-2-nextclade-defaults",
+    sequences = "data/{build}/sequences.fasta",
+    metadata  = "data/{build}/metadata.tsv",
+  output:
+    metadata     = "results/{build}/nextclade.metadata.tsv",
+    aligned      = "results/{build}/nextclade.aligned.fasta",
+    translations = directory("results/{build}/translations"),
+    qc           = "results/{build}/nextclade.qc.tsv",
+  params:
+    outdir        = "results/{build}",
+    basename      = "nextclade",
+    nextclade_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["nextclade_ref"],
+    custom_ref    = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    nextclade run \
+      --jobs {resources.cpus} \
+      --input-fasta {input.sequences} \
+      --input-dataset {input.dataset} \
+      --include-reference \
+      --output-dir {params.outdir} \
+      --output-tsv {output.qc} \
+      --output-fasta {output.aligned} \
+      --output-basename {params.basename} \
+      > {log} 2>&1;
+
+    # Migrate translations output
+    mkdir -p {params.outdir}/translations;
+    mv {params.outdir}/{params.basename}.gene* {output.translations}/;
+    mv {params.outdir}/{params.basename}.insertions* {output.translations}/;
+
+    # Rename ref strain
+    seqkit replace -p "{params.nextclade_ref}" -r "{params.custom_ref}" {output.aligned} \
+      > {output.aligned}.tmp;
+    mv {output.aligned}.tmp {output.aligned};
+
+    # Merge QC output with metadata
+    csvtk rename -t -f "seqName" -n "strain" {output.qc} \
+      | csvtk merge -t -f "strain" {input.metadata} - \
+      > {output.metadata}
+    """
+
+# ----------------------------------------------------------------------------#
+# This step involves an extremely inefficient way to mask an alignment
+# it's also getting to be long, and maybe should be a shell script
+
+rule_name = "nextclade_recombinants"
+rule nextclade_recombinants:
+  """
+  Extract recombinant from nextclade output.
+  """
+  message: "{wildcards.build} | Extracting recombinant candidates from nextclade output."
+  input:
+    aligned  = "results/{build}/nextclade.aligned.fasta",
+    qc       = "results/{build}/nextclade.qc.tsv",
+    bed      = "data/reference/problematic_sites.bed",
+  output:
+    aligned = "results/{build}/nextclade.recombinants.fasta",
+    bed     = "results/{build}/nextclade.masked.bed",
+    masked  = "results/{build}/nextclade.masked.fasta",
+    strains = report(
+                    "results/{build}/nextclade.recombinants.txt",
+                    caption="report/nextclade.rst",
+                    category="Stage 1: Nextclade",
+                    labels={"build": "{build}", "description" : "Recombinants List"},
+                  ),
+  params:
+    custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
+    min_muts   = lambda wildcards: config["builds"][wildcards.build]["nextclade_recombinants"]["min_muts"],
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    # Extract recombinants
+     python3 scripts/nextclade_recombinants.py --qc {input.qc} --min-muts {params.min_muts} > {output.strains};
+
+    # Filter Alignment
+    seqkit grep -p "{params.custom_ref}" {input.aligned} 1> {output.aligned} 2> {log};
+    seqkit grep -f "{output.strains}" {input.aligned} 1>> {output.aligned} 2>> {log};
+
+    # Mask alignment
+    seqkit seq -n {output.aligned} | while read strain; do sed "s|{params.custom_ref}|$strain|g" {input.bed}; done > {output.bed};
+    bedtools maskfasta -bed {output.bed} -fi {output.aligned} -fo {output.masked};
+    """
+
+# -----------------------------------------------------------------------------#
+#  STAGE 3: sc2rf
+# -----------------------------------------------------------------------------#
+
+rule_name = "sc2rf"
+rule sc2rf:
+  """
+  Identify recombinants with sc2rf.
+  """
+  message: "{wildcards.build} | Identifying recombinants with sc2rf."
+  input:
+    masked = "results/{build}/nextclade.masked.fasta",
+  output:
+    txt = report(
+            "results/{build}/sc2rf.txt",
+            caption="report/sc2rf.rst",
+            category="Stage 2: sc2rf",
+            labels={"build": "{build}", "description": "Console Output"},
+          ),
+    tsv = "results/{build}/sc2rf.tsv",
+  params:
+    sc2rf_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"],
+    max_name_length = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["max_name_length"],
+    primers = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["primers"],
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    echo "Parameters: --primers {params.primers} --max-name-length {params.max_name_length} {params.sc2rf_args}" > {output.txt};
+    cd sc2rf;
+    python3 sc2rf.py \
+      ../{input.masked} \
+      {params.sc2rf_args} \
+      --primers primers/{params.primers}.bed \
+      --max-name-length {params.max_name_length} \
+      --tsv ../{output.tsv} \
+      1>> ../{output.txt} 2> ../{log};
+    """
+
+# -----------------------------------------------------------------------------
+rule_name = "sc2rf_recombinants"
+rule sc2rf_recombinants:
+  """
+  Extract recombinant from sc2rf output.
+  """
+  message: "{wildcards.build} | Extracting recombinants from sc2rf output."
+  input:
+    txt = "results/{build}/sc2rf.txt",
+    tsv = "results/{build}/sc2rf.tsv",
+    aligned = "results/{build}/nextclade.masked.fasta",
+  output:
+    strains = "results/{build}/sc2rf.recombinants.txt",
+    aligned = "results/{build}/sc2rf.recombinants.fasta",
+    tsv = report(
+            "results/{build}/sc2rf.recombinants.tsv",
+            caption="report/sc2rf.rst",
+            category="Stage 2: sc2rf",
+            labels={"build": "{build}", "description": "Recombinants Table"},
+          ),
+  params:
+    custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
+    exclude_clades = lambda wildcards: "|".join(config["builds"][wildcards.build]["sc2rf_recombinants"]["exclude_clades"]),
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    # Strains List
+    cut -d " " -f 1 {input.txt} | grep -v "primers" | grep -E -i "/|^S[0-9]" 1> {output.strains} 2> {log};
+
+    # Table
+    echo -e "strain\\tclades" > {output.tsv}
+    grep -f {output.strains} {input.tsv} | grep -v -E "{params.exclude_clades}" >> {output.tsv};
+    tail -n+2 {output.tsv} | cut -f 1 > {output.strains};
+
+    # Alignment
+    seqkit grep -p "{params.custom_ref}" {input.aligned} > {output.aligned} 2>> {log};
+    seqkit grep -f "{output.strains}" {input.aligned} >> {output.aligned} 2>> {log};
+    """
+
+# -----------------------------------------------------------------------------#
+#  STAGE 3: UShER
+# -----------------------------------------------------------------------------#
+
+rule_name = "faToVcf"
+rule faToVcf:
+  """
+  Construct VCF of recombinant sequences.
+  """
+  message: "{wildcards.build} | Constructing VCF of recombinant sequences."
+  input:
+    fasta      = "results/{build}/sc2rf.recombinants.fasta",
+    prob_sites = "data/reference/problematic_sites.vcf",
+  output:
+    vcf = "results/{build}/sc2rf.vcf.gz",
+  params:
+    ref_strain = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
+    prefix     = "results/{build}/sc2rf.vcf",
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    faToVcf \
+      -ambiguousToN \
+      -maskSites={input.prob_sites} \
+      -ref='{params.ref_strain}' \
+      {input.fasta} \
+      {params.prefix};
+    gzip -f {params.prefix};
+    """
+
+# -----------------------------------------------------------------------------
+rule_name = "usher_download"
+rule usher_download:
+  """
+  Download UShER protobuf.
+  """
+  message: "{wildcards.input} | Downloading UShER protobuf."
+  wildcard_constraints:
+    input = "|".join(USHER_INPUTS),
+  output:
+    pb       = "data/{input}/usher.pb.gz",
+    metadata = "data/{input}/metadata.tsv",
+  params:
+    pb_url       = lambda wildcards: config["inputs"][wildcards.input]["pb_url"],
+    metadata_url = lambda wildcards: config["inputs"][wildcards.input]["metadata_url"],
+  benchmark:
+    "benchmarks/{rule}/{{input}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{input}}_{today}.txt".format(today=today, rule=rule_name),
+  threads: 1
+  resources:
+    cpus = 1,
+  shell:
+    """
+    wget -q -O {output.pb} {params.pb_url};
+    wget -q -O {output.metadata}.gz {params.metadata_url};
+
+    csvtk mutate2 -t -n "dataset" -e '"{wildcards.input}"' {output.metadata}.gz 1> {output.metadata} 2>> {log};
+
+    rm -f {output.metadata}.gz
+    """
+
+# -----------------------------------------------------------------------------
+rule_name = "usher"
+rule usher:
+  """
+  Place VCF samples with UShER.
+  """
+  message: "{wildcards.build} | Placing VCF samples with UShER."
+  wildcard_constraints:
+    mode = "|".join(LOCAL_INPUTS),
+  input:
+    vcf = "results/{build}/sc2rf.vcf.gz",
+    pb  = lambda wildcards: "data/{base_input}/usher.pb.gz".format(
+            base_input=config["builds"][wildcards.build]["base_input"]
+          ),
+  output:
+    pb              = "results/{build}/usher.pb.gz",
+    samples         = "results/{build}/usher.samples.txt",
+    tree            = "results/{build}/usher.tree.nwk",
+    placement_stats = "results/{build}/usher.placement_stats.tsv",
+    mut_paths       = "results/{build}/usher.mutation_paths.tsv",
+    clades          = report(
+                        "results/{build}/usher.clades.tsv",
+                        caption="report/usher.rst",
+                        category="Stage 3: UShER",
+                        labels={"build": "{build}", "description": "UShER Clades Table"},
+                      ),
+  params:
+    outdir = "results/{build}",
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    usher \
+      -i {input.pb} \
+      -o {output.pb} \
+      -v {input.vcf} \
+      --threads {resources.cpus} \
+      --outdir {params.outdir} \
+      2> {log};
+
+    # Rename and reformat output
+    mv {params.outdir}/mutation-paths.txt {output.mut_paths};
+
+    echo -e "strain\\tusher_best_set_difference\\tusher_num_best" > {output.placement_stats};
+    cat {params.outdir}/placement_stats.tsv >> {output.placement_stats};
+
+    echo -e "strain\\tusher_clade\\tusher_pango_lineage" > {output.clades};
+    cat {params.outdir}/clades.txt >> {output.clades};
+
+    matUtils extract -i {input.pb} -u {output.samples} -t {output.tree} 2>> {log};
+
+    # Cleanup
+    rm -f {params.outdir}/final-tree.nh
+    rm -f {params.outdir}/clades.txt
+    rm -f {params.outdir}/placement_stats.tsv
+    """
+
+# -----------------------------------------------------------------------------
+# The outdir param doesn't work correctly, hence the cd and relative paths
+
+rule_name = "usher_subtree"
+rule usher_subtree:
+  """
+  Create subtrees from UShER protobuf.
+  """
+  message: "{wildcards.build} | Creating subtrees from UShER protobuf."
+  input:
+    pb      = "results/{build}/usher.pb.gz",
+    samples = "results/{build}/sc2rf.recombinants.txt",
+  output:
+    subtrees_dir = directory("results/{build}/subtrees"),
+    metadata     = "results/{build}/subtrees_collapse/metadata.tsv",
+    collapse_dir = report(
+                    directory("results/{build}/subtrees_collapse"),
+                    patterns=["{name}.json"],
+                    caption="report/usher.rst",
+                    category="Stage 3: UShER",
+                    labels={"build": "{build}", "description" : "Auspice JSON"},
+                  ),
+  params:
+    k = lambda wildcards: config["builds"][wildcards.build]["usher_subtree"]["k"],
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    # Create subtrees
+    mkdir -p {output.subtrees_dir}
+    cd {output.subtrees_dir}
+    matUtils extract -i ../../../{input.pb} --nearest-k-batch ../../../{input.samples}:{params.k} > ../../../{log} 2>&1;
+    cd - >> ../../../{log}
+
+    # Collapse subtrees
+    mkdir -p {output.collapse_dir};
+    python3 scripts/usher_collapse.py --indir {output.subtrees_dir} --outdir {output.collapse_dir} >> {log} 2>&1;
+    """
+
+# -----------------------------------------------------------------------------
+rule_name = "usher_plot"
+rule usher_plot:
+  """
+  Plot UShER subtrees.
+  """
+  message: "{wildcards.build} | Plotting UShER subtrees."
+  input:
+    collapse_dir = rules.usher_subtree.output.collapse_dir,
+    samples      = "results/{build}/sc2rf.recombinants.txt",
+  output:
+    plot_dir = report(
+                directory("results/{build}/subtrees_plot"),
+                patterns=["{name}.png"],
+                caption="report/usher.rst",
+                category="Stage 3: UShER",
+                labels={"build": "{build}", "description" : "{name} Image"},
+              ),
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    mkdir -p {output.plot_dir};
+    for subtree in $(ls {input.collapse_dir}/*.nwk); do
+      python3 scripts/usher_plot.py --tree $subtree --strains {input.samples} --outdir {output.plot_dir};
+    done > {log} 2>&1;
+    """
+
+# -----------------------------------------------------------------------------#
+#  STAGE 4: Summary
+# -----------------------------------------------------------------------------#
+
+rule_name = "summary"
+rule summary:
+  """
+  Summarize results.
+  """
+  message: "{wildcards.build} | Summarizing results."
+  input:
+    nextclade = "results/{build}/nextclade.metadata.tsv",
+    sc2rf     = "results/{build}/sc2rf.recombinants.tsv",
+    usher     = "results/{build}/usher.clades.tsv",
+    subtrees  = "results/{build}/subtrees_collapse/metadata.tsv",
+  output:
+    summary   = report(
+                  "results/{build}/summary.tsv",
+                  caption="report/summary.rst",
+                  category="Stage 4: Summary",
+                  labels={"build": "{build}", "description": "Summary Table"},
+                ),
+  params:
+    extra_cols = lambda wildcards: config["builds"][wildcards.build]["summary"]["extra_cols"],
+  shell:
+    """
+    csvtk cut -t -f "strain,{params.extra_cols},clade,Nextclade_pango" {input.nextclade} \
+      | csvtk rename -t -f "clade" -n "Nextclade_clade" \
+      | csvtk merge -t --na "NA" -f "strain" {input.sc2rf} - \
+      | csvtk rename -t -f "clades" -n "sc2rf_clades" \
+      | csvtk merge -t -k --na "NA" -f "strain" - {input.usher} \
+      | csvtk merge -t -k --na "NA" -f "strain" - {input.subtrees} \
+      | csvtk sort -t -k "usher_subtree" \
+      > {output.summary};
+    """
