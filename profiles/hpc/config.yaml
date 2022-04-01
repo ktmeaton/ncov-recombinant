@@ -1,0 +1,51 @@
+#------------------------------------------------------------------------------#
+# Build Config
+#------------------------------------------------------------------------------#
+configfile:
+  - defaults/parameters.yaml
+
+#------------------------------------------------------------------------------#
+# Snakemake config
+#------------------------------------------------------------------------------#
+restart-times: 1
+max-jobs-per-second: 1
+latency-wait: 60
+keep-going: True
+show-failed-logs: True
+rerun-incomplete: True
+printshellcmds: True
+
+#------------------------------------------------------------------------------#
+# System config
+#------------------------------------------------------------------------------#
+
+# Total resources for the ENTIRE WORKFLOW
+# workflow.global_resources
+resources:
+  - cpus=64
+  - mem_mb=64000
+
+# Maximum number of jobs to run
+jobs : 2
+
+# Default resources for a SINGLE JOB
+# Divide your total resources by the maximum number of jobs
+default-resources:
+  - cpus=32
+  - mem_mb=32000
+  - time_min=720
+  - partition="MyPartition"
+
+# What commands should be run to DISPATCH a job?
+cluster:
+  mkdir -p logs/slurm/{rule} &&
+  source activate ncov-recombinant &&
+  sbatch
+    --partition={resources.partition}
+    --cpus-per-task={resources.cpus}
+    --mem={resources.mem_mb}
+    --job-name=ncov-recombinant:{rule}:{wildcards}
+    --output=logs/slurm/{rule}/{wildcards}-%j.out
+
+# What commands should be run to CANCEL a job?
+cluster-cancel: scancel

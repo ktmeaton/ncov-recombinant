@@ -1,0 +1,37 @@
+#------------------------------------------------------------------------------#
+# Build Config
+#------------------------------------------------------------------------------#
+
+configfile:
+  - defaults/parameters.yaml
+
+#------------------------------------------------------------------------------#
+# Snakemake config
+#------------------------------------------------------------------------------#
+restart-times: 1
+max-jobs-per-second: 1
+latency-wait: 10
+keep-going: True
+show-failed-logs: True
+rerun-incomplete: True
+printshellcmds: True
+
+#------------------------------------------------------------------------------#
+# System config
+#------------------------------------------------------------------------------#
+
+# Total resources for the ENTIRE WORKFLOW
+# workflow.global_resources
+resources:
+  - cpus=2
+  - mem_mb=4000
+
+# Maximum number of jobs to run
+jobs : 1
+
+# Default resources for a SINGLE JOB
+# Divide your total resources by the maximum number of jobs
+default-resources:
+  - cpus=2
+  - mem_mb=4000
+  - time_min=720
