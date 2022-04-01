@@ -76,6 +76,14 @@ SARS-CoV-2 recombinant sequence detection.
     - Breakpoints: `results/controls/sc2rf.txt`
     - Trees: `results/controls/subtrees_collapse`
 
+## SLURM
+
+The workflow can be dispatched using the SLURM job submission system. In `profiles/hpc`, modify the `partition` name in `default-resources` according to your system partition. Then dispatch the workflow using the following command, where `MyPartition` is replaced with your local value:
+
+```bash
+bash scripts/slurm.sh --profile profiles/hpc --partition MyPartition
+```
+
 ## Troubleshooting
 
 - Unlock the workflow after a failed run:

@@ -31,10 +31,10 @@ jobs : 2
 # Default resources for a SINGLE JOB
 # Divide your total resources by the maximum number of jobs
 default-resources:
+  - partition="MyPartition"
   - cpus=32
   - mem_mb=32000
   - time_min=720
-  - partition="MyPartition"
 
 # What commands should be run to DISPATCH a job?
 cluster:

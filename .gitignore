@@ -1,1 +1,8 @@
+.snakemake
+logs/
+benchmarks/
+results/
 slurm-*
+
+# Ignore custom system profiles
+profiles/custom
