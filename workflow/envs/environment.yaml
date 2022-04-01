@@ -1,0 +1,33 @@
+name: ncov-recombinant
+channels:
+  - bioconda
+  - conda-forge
+  - anaconda
+  - defaults
+dependencies:
+  # Workflow
+  - bioconda::snakemake=7.2.1
+  # Metadata and Sequence Manipulation
+  - bioconda::csvtk=0.23.0
+  - bioconda::seqkit=2.2.0
+  - bioconda::bedtools=2.30.0
+  # Subsampling
+  - bioconda::augur=14.0.0
+  # Alignmnent and Clade QC
+  - bioconda::nextclade=1.11.0
+  # Usher
+  - bioconda::usher=0.5.2
+  - anaconda::protobuf=3.18.1
+  # Python
+  - anaconda::python=3.9.10
+  - anaconda::pip=22.0.3
+  - anaconda::click=8.0.2
+  - conda-forge::pandas=1.4.1
+  - conda-forge::seaborn=0.11.0
+  # Development
+  - conda-forge::pre_commit=2.17.0
+  - anaconda::git=2.35.0
+  - pip:
+    # sc2rf
+    - termcolor==1.1.0
+    - tqdm==4.63.0
