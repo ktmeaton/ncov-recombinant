@@ -46,8 +46,10 @@ SARS-CoV-2 recombinant sequence detection.
 
 ## Test
 
-- Testing uses the "controls" dataset `data/controls`. These are publicly available recombinant sequences from [pango-designation](https://github.com/cov-lineages/pango-designation) issues.
-- Testing uses the system profile `profiles/laptop`, which specifies system resources of 2 cpus and 4 GB of memory.
+- Testing uses the "controls" dataset `data/controls`.
+- These are publicly available recombinant sequences from [pango-designation](https://github.com/cov-lineages/pango-designation) issues.
+- Testing uses the system profile `profiles/laptop`.
+- This specifies system resources of 1 cpus and 4 GB of memory.
 
 > Tip: Remember to run `conda activate ncov-recombinant` before running the commands below!
 

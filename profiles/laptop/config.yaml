@@ -23,7 +23,7 @@ printshellcmds: True
 # Total resources for the ENTIRE WORKFLOW
 # workflow.global_resources
 resources:
-  - cpus=2
+  - cpus=1
   - mem_mb=4000
 
 # Maximum number of jobs to run
@@ -32,6 +32,6 @@ jobs : 1
 # Default resources for a SINGLE JOB
 # Divide your total resources by the maximum number of jobs
 default-resources:
-  - cpus=2
+  - cpus=1
   - mem_mb=4000
-  - time_min=720
+  - time_min=60
