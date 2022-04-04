@@ -59,15 +59,15 @@ class WorkflowRunner:
 
 
 class OutputChecker:
-    def __init__(self, data_path, expected_path, workdir):
-        self.data_path = data_path
+    def __init__(self, output_path, expected_path, workdir):
+        self.output_path = output_path
         self.expected_path = expected_path
         self.workdir = workdir
 
     def check(self):
         input_files = set(
-            (Path(path) / f).relative_to(self.data_path)
-            for path, subdirs, files in os.walk(self.data_path)
+            (Path(path) / f).relative_to(self.output_path)
+            for path, subdirs, files in os.walk(self.output_path)
             for f in files
         )
         expected_files = set(
@@ -75,19 +75,39 @@ class OutputChecker:
             for path, _subdirs, files in os.walk(self.expected_path)
             for f in files
         )
+        ignore_prefixes = [
+            ".snakemake",
+            "benchmarks",
+            "logs",
+            "defaults",
+        ]
         unexpected_files = set()
         for path, _subdirs, files in os.walk(self.workdir):
             for f in files:
-                f = (Path(path) / f).relative_to(self.workdir)
+
+                # ignore .snakemake files
                 if str(f).startswith(".snakemake"):
                     continue
+
+                f = (Path(path) / f).relative_to(self.workdir)
+
+                # prefixes to ignore
+                exclude_file = False
+                for prefix in ignore_prefixes:
+                    if str(f).startswith(prefix):
+                        exclude_file = True
+                if exclude_file:
+                    continue
+
                 if f in expected_files:
                     self.compare_files(self.workdir / f, self.expected_path / f)
+
                 elif f in input_files:
                     # ignore input files
                     pass
                 else:
                     unexpected_files.add(f)
+
         if unexpected_files:
             raise ValueError(
                 "Unexpected files:\n{}".format(

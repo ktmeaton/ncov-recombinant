@@ -6,7 +6,7 @@ channels:
   - defaults
 dependencies:
   # Workflow
-  - bioconda::snakemake=7.2.1
+  - bioconda::snakemake=7.3.6
   # Metadata and Sequence Manipulation
   - bioconda::csvtk=0.23.0
   - bioconda::seqkit=2.2.0

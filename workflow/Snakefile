@@ -16,7 +16,7 @@ import json
 
 # Enforce minimum version
 from snakemake.utils import min_version
-min_version("7.2.1")
+min_version("7.3.6")
 
 # -----------------------------------------------------------------------------#
 # Setup
@@ -90,7 +90,6 @@ for build in config["builds"]:
 BUILDS = list(config["builds"].keys())
 USHER_INPUTS = [input for input in config["inputs"] if "usher" in config["inputs"][input]["type"]]
 LOCAL_INPUTS = [input for input in config["inputs"] if "local" in config["inputs"][input]["type"]]
-
 
 # Delete generic params (they've all been added to each build at this point)
 config.pop("rule_params", None)
@@ -180,14 +179,14 @@ rule nextclade_dataset:
   """
   message: "{wildcards.dataset} | Downloading Nextclade sars-cov-2 dataset."
   output:
-    directory("data/{dataset}-nextclade-defaults"),
+    dataset_dir = directory("data/{dataset}_{tag}"),
   benchmark:
-    "benchmarks/{rule}/{{dataset}}_{today}.tsv".format(today=today, rule=rule_name),
+    "benchmarks/{rule}/{{dataset}}_{{tag}}_{today}.tsv".format(today=today, rule=rule_name),
   log:
-    "logs/{rule}/{{dataset}}_{today}.txt".format(today=today, rule=rule_name),
+    "logs/{rule}/{{dataset}}_{{tag}}_{today}.txt".format(today=today, rule=rule_name),
   shell:
     """
-    nextclade dataset get --name {wildcards.dataset} --output-dir data/{wildcards.dataset}-nextclade-defaults > {log} 2>&1;
+    nextclade dataset get --name {wildcards.dataset} --tag {wildcards.tag} --output-dir {output.dataset_dir} > {log} 2>&1;
     """
 
 # ----------------------------------------------------------------------------#
@@ -198,7 +197,10 @@ rule nextclade:
   """
   message: "{wildcards.build} | Aligning sequences and performing QC with Nextclade."
   input:
-    dataset   = "data/sars-cov-2-nextclade-defaults",
+    dataset   = lambda wildcards: "data/{dataset}_{tag}".format(
+                  dataset=config["builds"][wildcards.build]["nextclade_dataset"]["dataset"],
+                  tag=config["builds"][wildcards.build]["nextclade_dataset"]["tag"],
+                ),
     sequences = "data/{build}/sequences.fasta",
     metadata  = "data/{build}/metadata.tsv",
   output:
@@ -206,6 +208,7 @@ rule nextclade:
     aligned      = "results/{build}/nextclade.aligned.fasta",
     translations = directory("results/{build}/translations"),
     qc           = "results/{build}/nextclade.qc.tsv",
+    errors       = "results/{build}/nextclade.errors.csv",
   params:
     outdir        = "results/{build}",
     basename      = "nextclade",

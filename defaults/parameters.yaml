@@ -50,6 +50,12 @@ inputs:
 
 rule_params:
 
+  # tag : datestamp of dataset (run `nextclade dataset list` for more info)
+  # dataset: The nextclade dataset to use as the reference
+  - name: nextclade_dataset
+    dataset: sars-cov-2
+    tag: "2022-03-31T12:00:00Z"
+
   # nextclade_ref  : The header of the reference used by nextclade
   # custom_ref     : The header of the reference in `data/reference/reference.fasta`.
   - name: nextclade

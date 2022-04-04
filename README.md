@@ -1,5 +1,10 @@
 # ncov-recombinant
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/ktmeaton/ncov-recombinant/blob/master/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/ktmeaton/ncov-recombinant.svg)](https://github.com/ktmeaton/ncov-recombinant/issues)
+[![Install CI](https://github.com/ktmeaton/ncov-recombinant/actions/workflows/install.yaml/badge.svg)](https://github.com/ktmeaton/ncov-recombinant/actions/workflows/install.yaml)
+[![Pipeline CI](https://github.com/ktmeaton/ncov-recombinant/actions/workflows/pipeline.yaml/badge.svg)](https://github.com/ktmeaton/ncov-recombinant/actions/workflows/pipeline.yaml)
+
 SARS-CoV-2 recombinant sequence detection.
 
 1. Align sequences and perform clade/lineage assignments with [Nextclade](https://github.com/nextstrain/nextclade).
@@ -37,7 +42,7 @@ SARS-CoV-2 recombinant sequence detection.
     cd ncov-recombinant
     ```
 
-2. Install dependencies in a conda environment (`ncov-recombinant`). This will take a while ☕:
+2. Install dependencies in a conda environment (`ncov-recombinant`):
 
     ```bash
     mamba env create -f workflow/envs/environment.yaml
