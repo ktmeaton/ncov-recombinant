@@ -37,7 +37,8 @@ jobs:
       # checkout repository
       - name: checkout repo
         uses: actions/checkout@v3
-        submodules: 'recursive'
+        with:
+          submodules: 'recursive'
 
       # setup conda with mamba
       - name: setup conda
