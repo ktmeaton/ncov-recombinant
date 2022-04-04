@@ -303,7 +303,7 @@ rule sc2rf:
   """
   message: "{wildcards.build} | Identifying recombinants with sc2rf."
   input:
-    masked = "results/{build}/nextclade.masked.fasta",
+    aligned = "results/{build}/nextclade.aligned.fasta",
   output:
     txt = report(
             "results/{build}/sc2rf.txt",
@@ -311,6 +311,7 @@ rule sc2rf:
             category="Stage 2: sc2rf",
             labels={"build": "{build}", "description": "Console Output"},
           ),
+    csv = "results/{build}/sc2rf.csv",
     tsv = "results/{build}/sc2rf.tsv",
   params:
     sc2rf_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"],
@@ -325,12 +326,13 @@ rule sc2rf:
     echo "Parameters: --primers {params.primers} --max-name-length {params.max_name_length} {params.sc2rf_args}" > {output.txt};
     cd sc2rf;
     python3 sc2rf.py \
-      ../{input.masked} \
+      ../{input.aligned} \
       {params.sc2rf_args} \
       --primers primers/{params.primers}.bed \
       --max-name-length {params.max_name_length} \
-      --tsv ../{output.tsv} \
+      --csvfile ../{output.csv} \
       1>> ../{output.txt} 2> ../{log};
+    csvtk csv2tab ../{output.csv} > ../{output.tsv};
     """
 
 # -----------------------------------------------------------------------------
@@ -343,7 +345,7 @@ rule sc2rf_recombinants:
   input:
     txt = "results/{build}/sc2rf.txt",
     tsv = "results/{build}/sc2rf.tsv",
-    aligned = "results/{build}/nextclade.masked.fasta",
+    aligned = "results/{build}/nextclade.aligned.fasta",
   output:
     strains = "results/{build}/sc2rf.recombinants.txt",
     aligned = "results/{build}/sc2rf.recombinants.fasta",
