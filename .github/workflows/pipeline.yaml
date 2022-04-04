@@ -1,14 +1,17 @@
 #------------------------------------------------------------------------------#
-name: Install
+name: Pipeline
 #------------------------------------------------------------------------------#
 # Workflow conditions
 on:
   push:
     branches:
       - '*'
-    paths:
-      - '.github/workflows/install.yaml'
-      - 'workflow/**'
+    paths-ignore:
+      - 'autologs/**'
+      - 'docs/**'
+      - 'images/**'
+      - 'ncov/**'
+      - 'sc2rf/**'
   pull_request:
     branches:
       - '*'
@@ -16,9 +19,9 @@ on:
     types: [published]
 #------------------------------------------------------------------------------#
 jobs:
-  #----------------------------------------------------------------------------#
-  install_conda:
-    name: Install with Conda
+#----------------------------------------------------------------------------#
+  install:
+    name: Install Pipeline
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
