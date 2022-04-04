@@ -1,0 +1,41 @@
+#------------------------------------------------------------------------------#
+name: Lint
+#------------------------------------------------------------------------------#
+# Workflow conditions
+on:
+  push:
+    branches:
+      - '*'
+    paths-ignore:
+      - 'autologs/**'
+      - 'ncov/**'
+      - 'sc2rf/**'
+  pull_request:
+    branches:
+      - '*'
+  release:
+    types: [published]
+#------------------------------------------------------------------------------#
+jobs:
+  #----------------------------------------------------------------------------#
+  # Check the pre-commit linters
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      #------------------------------------------------------------------------#
+      # Checkout repo
+      - uses: actions/checkout@v3
+      #------------------------------------------------------------------------#
+        # Install dependencies
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: install
+        run: |
+          pip install pre-commit==2.17.0
+          pre-commit install-hooks
+      #------------------------------------------------------------------------#
+      # Lint all files
+      - name: lint
+        run: pre-commit run --all-files

@@ -50,6 +50,12 @@ inputs:
 
 rule_params:
 
+  # tag : datestamp of dataset (run `nextclade dataset list` for more info)
+  # dataset: The nextclade dataset to use as the reference
+  - name: nextclade_dataset
+    dataset: sars-cov-2
+    tag: "2022-03-31T12:00:00Z"
+
   # nextclade_ref  : The header of the reference used by nextclade
   # custom_ref     : The header of the reference in `data/reference/reference.fasta`.
   - name: nextclade
@@ -65,11 +71,11 @@ rule_params:
   # sc2rf_args      : Additional arguments supplied to the program sc2rf
   - name: sc2rf
     max_name_length: 50
-    primers: "freed_V2_nml"
+    primers: "artic_v4"
     # Defaults
     sc2rf_args: ""
     # Ultra Sensitive (Debugging)
-    #sc2rf_args: "--parents 2-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1"
+    #sc2rf_args: "--parents 0-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1"
 
   # exclude_clades: Exclude strains that are recombinants of these clades
   - name: sc2rf_recombinants
@@ -109,4 +115,4 @@ builds:
 
     # Universal rule parameters can (optionally) be overridden for a specific build.
     sc2rf:
-      sc2rf_args: "--parents 2-4 --unique 2 --max-intermission-count 0 --breakpoints 1-2 --ansi"
+      sc2rf_args: "--ansi --parents 1-4 --breakpoints 1-10 --unique 2 --max-ambiguous 1000 --max-intermission-length 3 --max-intermission-count 1000"

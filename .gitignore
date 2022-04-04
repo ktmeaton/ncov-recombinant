@@ -1,4 +1,6 @@
 .snakemake
+**/__pycache__
+
 logs/
 benchmarks/
 results/
@@ -9,4 +11,4 @@ profiles/custom
 
 # Ignore datasets
 data/public-latest
-data/sars-cov-2-nextclade-defaults
+data/sars-cov-2_*

@@ -4,3 +4,4 @@
 1. Add Stage 2: sc2rf.
 1. Add Stage 3: UShER.
 1. Add Stage 4: Summary.
+1. Add Continuous Integration workflows: `lint`, `test`, `pipeline`, and `release`.
