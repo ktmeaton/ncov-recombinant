@@ -1,0 +1,60 @@
+#------------------------------------------------------------------------------#
+name: Install
+#------------------------------------------------------------------------------#
+# Workflow conditions
+on:
+  push:
+    branches:
+      - master
+      - dev
+    paths:
+      - 'workflow/**'
+  pull_request:
+    branches:
+      - '*'
+  release:
+    types: [published]
+#------------------------------------------------------------------------------#
+jobs:
+  #----------------------------------------------------------------------------#
+  install_conda:
+    name: Install with Conda
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      #------------------------------------------------------------------------#
+      # Env Variables Setup
+      - name: setup environment variables
+        run: |
+          echo "CONDA_ENVS_PATH=/home/runner/miniconda/envs:/usr/share/miniconda/envs" >> $GITHUB_ENV
+          echo "CONDA_PKGS_DIRS=/home/runner/miniconda/pkgs" >> $GITHUB_ENV
+          echo "CONDA_ENV_FILE=workflow/envs/environment.yaml" >> $GITHUB_ENV
+          echo "CONDA_ENV_NAME=ncov-recombinant" >> $GITHUB_ENV
+          echo "CI_PROFILE=profiles/ci" >> $GITHUB_ENV
+      #------------------------------------------------------------------------#
+      # Checkout Repository
+      - name: checkout repo
+        uses: actions/checkout@v2
+      #------------------------------------------------------------------------#
+      # Setup conda with mamba
+      - name: setup conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          mamba-version: "*"
+          channels: conda-forge
+
+      # Install conda environment
+      - name: create conda env
+        run: mamba env create -f $CONDA_ENV_FILE
+      #------------------------------------------------------------------------#
+      # run help
+      - name: run help
+        shell: bash -l {0}
+        run: |
+          conda activate $CONDA_ENV_NAME;
+          snakemake --profile $CI_PROFILE help;
+      #------------------------------------------------------------------------#
+      #- name: (debug) tmate session
+      #  uses: mxschmitt/action-tmate@v3
