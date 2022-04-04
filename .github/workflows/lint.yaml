@@ -6,9 +6,6 @@ on:
   push:
     branches:
       - '*'
-    paths:
-      - '*'
-      - '**/*'
     paths-ignore:
       - 'autologs/**'
       - 'ncov/**'
