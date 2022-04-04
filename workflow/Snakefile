@@ -358,6 +358,8 @@ rule sc2rf_recombinants:
   params:
     custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
     exclude_clades = lambda wildcards: "|".join(config["builds"][wildcards.build]["sc2rf_recombinants"]["exclude_clades"]),
+    sc2rf_strain_col = "sample",
+    sc2rf_clade_col = "examples",
   benchmark:
     "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
   log:
@@ -369,7 +371,11 @@ rule sc2rf_recombinants:
 
     # Table
     echo -e "strain\\tclades" > {output.tsv}
-    grep -f {output.strains} {input.tsv} | grep -v -E "{params.exclude_clades}" >> {output.tsv};
+    csvtk cut -t -f "{params.sc2rf_strain_col},{params.sc2rf_clade_col}" {input.tsv} \
+       | tail -n+2 \
+       | grep -f {output.strains} \
+       | grep -v -E "{params.exclude_clades}" \
+       >> {output.tsv};
     tail -n+2 {output.tsv} | cut -f 1 > {output.strains};
 
     # Alignment
@@ -598,12 +604,11 @@ rule summary:
     extra_cols = lambda wildcards: config["builds"][wildcards.build]["summary"]["extra_cols"],
   shell:
     """
-    csvtk cut -t -f "strain,{params.extra_cols},clade,Nextclade_pango" {input.nextclade} \
-      | csvtk rename -t -f "clade" -n "Nextclade_clade" \
-      | csvtk merge -t --na "NA" -f "strain" {input.sc2rf} - \
-      | csvtk rename -t -f "clades" -n "sc2rf_clades" \
-      | csvtk merge -t -k --na "NA" -f "strain" - {input.usher} \
-      | csvtk merge -t -k --na "NA" -f "strain" - {input.subtrees} \
-      | csvtk sort -t -k "usher_subtree" \
+    bash scripts/summary.sh \
+      --nextclade {input.nextclade} \
+      --sc2rf {input.sc2rf} \
+      --usher {input.usher} \
+      --subtrees {input.subtrees} \
+      --extra-cols {params.extra_cols} \
       > {output.summary};
     """

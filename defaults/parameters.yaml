@@ -75,7 +75,7 @@ rule_params:
     # Defaults
     sc2rf_args: ""
     # Ultra Sensitive (Debugging)
-    #sc2rf_args: "--parents 2-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1"
+    #sc2rf_args: "--parents 0-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1"
 
   # exclude_clades: Exclude strains that are recombinants of these clades
   - name: sc2rf_recombinants
@@ -115,4 +115,4 @@ builds:
 
     # Universal rule parameters can (optionally) be overridden for a specific build.
     sc2rf:
-      sc2rf_args: "--ansi --parents 1-2 --breakpoints 1-2 --unique 2 --max-intermission-length 3 --max-intermission-count 1000"
+      sc2rf_args: "--ansi --parents 1-4 --breakpoints 1-10 --unique 2 --max-ambiguous 1000 --max-intermission-length 3 --max-intermission-count 1000"
