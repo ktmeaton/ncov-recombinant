@@ -21,7 +21,7 @@ on:
 jobs:
   #----------------------------------------------------------------------------#
   install:
-    name: Install Pipeline
+    name: Install
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
