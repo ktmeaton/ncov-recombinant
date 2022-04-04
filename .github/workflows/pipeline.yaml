@@ -88,14 +88,14 @@ jobs:
       - name: run all
         shell: bash -l {0}
         run: |
-            conda activate $CONDA_ENV_NAME;
-            snakemake --profile $CI_PROFILE all;
+          eval "$(conda shell.bash hook)" && conda activate $CONDA_ENV_NAME;
+          snakemake --profile $CI_PROFILE all;
       # run report
       - name: run report
         shell: bash -l {0}
         run: |
-            conda activate $CONDA_ENV_NAME;
-            snakemake --profile $CI_PROFILE --report $REPORT_PATH;
+          conda activate $CONDA_ENV_NAME;
+          snakemake --profile $CI_PROFILE --report $REPORT_PATH;
 
       # artifact Upload
       - name: artifact report
