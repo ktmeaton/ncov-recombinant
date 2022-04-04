@@ -34,28 +34,25 @@ class WorkflowRunner:
         shutil.copytree(self.defaults_path, Path(workdir) / "defaults")
 
         # construct command
-        cmd = [
-            "python",
-            "-m",
-            "snakemake",
-            " ".join(self.targets),
-            "-f",
-            "-j1",
-            "--keep-target-files",
-            "--directory",
-            str(workdir),
-        ]
+        cmd = (
+            "snakemake --profile profiles/ci -f --keep-target-files"
+            + " --directory {dir} {targets}".format(
+                dir=workdir,
+                targets=" ".join(self.targets),
+            )
+        )
+        cmd_list = cmd.split(" ")
 
         # Debugging
-        print(" ".join(cmd), file=sys.stderr)
+        print(cmd, file=sys.stderr)
 
         # Run the test job.
-        sp.check_output(cmd)
+        sp.run(cmd_list, stdout=sp.PIPE)
         # Check the output byte by byte using cmp.
         OutputChecker(self.output_path, self.expected_path, workdir).check()
 
         # Debugging: comment out
-        shutil.rmtree(tmpdir)
+        # shutil.rmtree(tmpdir)
 
 
 class OutputChecker:
