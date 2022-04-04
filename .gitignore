@@ -1,4 +1,6 @@
 .snakemake
+**/__pycache__
+
 logs/
 benchmarks/
 results/

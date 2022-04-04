@@ -24,16 +24,20 @@ repos:
     rev: v4.1.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^.tests/
         args: [--markdown-linebreak-ext=md]
 
       - id: end-of-file-fixer
+        exclude: ^.tests/
 
       - id: check-yaml
+        exclude: ^.tests/
 
       - id: check-added-large-files
         args: ['--maxkb=10000']
 
       - id: mixed-line-ending
+        exclude: ^.tests/
         args: [--fix=lf]
 
       - id: detect-private-key
