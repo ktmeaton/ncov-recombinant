@@ -31,3 +31,4 @@ dependencies:
     # sc2rf
     - termcolor==1.1.0
     - tqdm==4.63.0
+    - snipit

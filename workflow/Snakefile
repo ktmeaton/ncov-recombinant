@@ -129,8 +129,19 @@ rule print_config:
   """
   message: "Printing full config."
   run:
-    config_json = json.dumps(config, indent = 4)
+    # Print the config
+    config_json = json.dumps(config, indent = 2)
     print(config_json)
+
+    # Save to json files
+    for build in BUILDS:
+      outfile_dir = os.path.join("results", build)
+      if not os.path.exists(outfile_dir):
+        os.mkdir(outfile_dir)
+      outfile_path = os.path.join(outfile_dir, "config.json")
+      with open(outfile_path, "w") as outfile:
+        outfile.write(config_json)
+
 
 # -----------------------------------------------------------------------------#
 rule help:
@@ -305,42 +316,51 @@ rule sc2rf:
   input:
     aligned = "results/{build}/nextclade.aligned.fasta",
   output:
-    debug = "results/{build}/sc2rf_debug.txt",
-    txt = report(
-            "results/{build}/sc2rf.txt",
-            caption="report/sc2rf.rst",
-            category="Stage 2: sc2rf",
-            labels={"build": "{build}", "description": "Console Output"},
-          ),
-    csv = "results/{build}/sc2rf.csv",
-    tsv = "results/{build}/sc2rf.tsv",
+    txt       = report(
+                  "results/{build}/sc2rf.txt",
+                  caption="report/sc2rf.rst",
+                  category="Stage 2: sc2rf",
+                  labels={"build": "{build}", "description": "Console Output"},
+                ),
+    csv       = "results/{build}/sc2rf.csv",
+    tsv       = "results/{build}/sc2rf.tsv",
+    debug_txt = "results/{build}/sc2rf_debug.txt",
+    debug_csv = "results/{build}/sc2rf_debug.csv",
+    debug_tsv = "results/{build}/sc2rf_debug.tsv",
   params:
     sc2rf_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"],
     debug_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["debug_args"],
     max_name_length = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["max_name_length"],
-    primers = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["primers"],
+    outdir = lambda wildcards: "results/{build}".format(build=wildcards.build),
   benchmark:
     "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
   log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+    regular = "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+    debug   = "logs/{rule}/{{build}}_debug_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
     # Regular Parameters
-    echo "Parameters: --primers {params.primers} --max-name-length {params.max_name_length} {params.sc2rf_args}" > {output.txt};
+    bash scripts/sc2rf.sh \
+      --aligned {input.aligned} \
+      --prefix "sc2rf" \
+      --outdir {params.outdir} \
+      --log {log.regular} \
+      --max-name-length {params.max_name_length} \
+      {params.sc2rf_args};
+
     # Debugging Parameters
-    echo "Parameters: --primers {params.primers} --max-name-length {params.max_name_length} {params.debug_args}" > {output.debug};
-
-    cd sc2rf;
-    # Regular Mode
-    python3 sc2rf.py ../{input.aligned} {params.sc2rf_args} --primers primers/{params.primers}.bed --max-name-length {params.max_name_length} --csvfile ../{output.csv} 1>> ../{output.txt} 2> ../{log};
-    # Debugging Mode
-    python3 sc2rf.py ../{input.aligned} {params.debug_args} --primers primers/{params.primers}.bed --max-name-length {params.max_name_length} 1>> ../{output.debug};
-
-    # Convert csv to tsv
-    csvtk csv2tab ../{output.csv} > ../{output.tsv};
+    bash scripts/sc2rf.sh \
+      --aligned {input.aligned} \
+      --prefix "sc2rf_debug" \
+      --outdir {params.outdir} \
+      --log {log.debug} \
+      --max-name-length {params.max_name_length} \
+      {params.debug_args};
     """
 
 # -----------------------------------------------------------------------------
+# This rule needs additional filtering (ex. regions length)
+
 rule_name = "sc2rf_recombinants"
 rule sc2rf_recombinants:
   """
@@ -363,29 +383,21 @@ rule sc2rf_recombinants:
   params:
     custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
     exclude_clades = lambda wildcards: "|".join(config["builds"][wildcards.build]["sc2rf_recombinants"]["exclude_clades"]),
-    sc2rf_strain_col = "sample",
-    sc2rf_clade_col = "examples",
   benchmark:
     "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
   log:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
+    # Filter Table
+    csvtk grep -t -v -f "sc2rf_clades" -r -p ".*{params.exclude_clades}.*" {input.tsv} 1> {output.tsv} 2> {log};
+
     # Strains List
-    cut -d " " -f 1 {input.txt} | grep -v "primers" | grep -E -i "/|^S[0-9]" 1> {output.strains} 2> {log};
+    csvtk cut -t -f "strain" {output.tsv} | tail -n+2 1> {output.strains} 2>> {log};
 
-    # Table
-    echo -e "strain\\tclades" > {output.tsv}
-    csvtk cut -t -f "{params.sc2rf_strain_col},{params.sc2rf_clade_col}" {input.tsv} \
-       | tail -n+2 \
-       | grep -f {output.strains} \
-       | grep -v -E "{params.exclude_clades}" \
-       >> {output.tsv};
-    tail -n+2 {output.tsv} | cut -f 1 > {output.strains};
-
-    # Alignment
-    seqkit grep -p "{params.custom_ref}" {input.aligned} > {output.aligned} 2>> {log};
-    seqkit grep -f "{output.strains}" {input.aligned} >> {output.aligned} 2>> {log};
+    # Filter Alignment
+    seqkit grep -p "{params.custom_ref}" {input.aligned} 1> {output.aligned} 2>> {log};
+    seqkit grep -f "{output.strains}" {input.aligned} 1>> {output.aligned} 2>> {log};
     """
 
 # -----------------------------------------------------------------------------#
@@ -433,9 +445,11 @@ rule usher_download:
   output:
     pb       = "data/{input}/usher.pb.gz",
     metadata = "data/{input}/metadata.tsv",
+    ver      = "data/{input}/version.txt",
   params:
     pb_url       = lambda wildcards: config["inputs"][wildcards.input]["pb_url"],
     metadata_url = lambda wildcards: config["inputs"][wildcards.input]["metadata_url"],
+    ver_url      = lambda wildcards: config["inputs"][wildcards.input]["ver_url"],
   benchmark:
     "benchmarks/{rule}/{{input}}_{today}.tsv".format(today=today, rule=rule_name),
   log:
@@ -447,6 +461,7 @@ rule usher_download:
     """
     wget -q -O {output.pb} {params.pb_url};
     wget -q -O {output.metadata}.gz {params.metadata_url};
+    wget -q -O {output.ver} {params.ver_url};
 
     csvtk mutate2 -t -n "dataset" -e '"{wildcards.input}"' {output.metadata}.gz 1> {output.metadata} 2>> {log};
 
@@ -598,6 +613,9 @@ rule summary:
     sc2rf     = "results/{build}/sc2rf.recombinants.tsv",
     usher     = "results/{build}/usher.clades.tsv",
     subtrees  = "results/{build}/subtrees_collapse/metadata.tsv",
+    usher_ver = lambda wildcards: "data/{base_input}/version.txt".format(
+            base_input=config["builds"][wildcards.build]["base_input"]
+          ),
 
   output:
     summary   = report(
@@ -610,7 +628,6 @@ rule summary:
     extra_cols         = lambda wildcards: config["builds"][wildcards.build]["summary"]["extra_cols"],
     nextclade_dataset  = lambda wildcards: config["builds"][wildcards.build]["nextclade_dataset"]["dataset"],
     nextclade_tag      = lambda wildcards: config["builds"][wildcards.build]["nextclade_dataset"]["tag"],
-    usher_dataset      = lambda wildcards: config["inputs"][config["builds"][wildcards.build]["base_input"]]["pb_url"],
   shell:
     """
     bash scripts/summary.sh \
@@ -620,6 +637,38 @@ rule summary:
       --subtrees {input.subtrees} \
       --extra-cols {params.extra_cols} \
       --nextclade-dataset {params.nextclade_dataset}_{params.nextclade_tag} \
-      --usher-dataset {params.usher_dataset} \
+      --usher-dataset {input.usher_ver} \
       > {output.summary};
     """
+
+# -----------------------------------------------------------------------------#
+
+# rule snipit:
+
+# rule export_taxonium:
+#   """
+#   Export to taxonium protobuf.
+#   """
+#   message: "{wildcards.build} | Exporting to taxonium protobuf."
+#   input:
+#     pb        = "results/{build}/usher.pb.gz",
+#     tsv       = "data/{build}/metadata.tsv",
+#     ref_fasta = "data/reference/reference.fasta",
+#     ref_gtf   = "data/reference/reference.gtf",
+#   output:
+#     pb  = "results/{build}/taxonium.pb.gz",
+#     tsv = "results/{build}/taxonium.metadata.tsv",
+#   shell:
+#     """
+#     # Rename pango_lineage to pangolin_lineage
+#     csvtk rename -t -f "pango_lineage" -n "pangolin_lineage" {input.tsv} > {output.tsv};
+
+#     matUtils extract \
+#       -i {input.pb} \
+#       -M {output.tsv} \
+#       -f {input.ref_fasta} \
+#       -g {input.ref_gtf} \
+#       --description "{wildcards.dataset}" \
+#       --extra-fields "{params.extra_fields}" \
+#       -l {output.pb}
+#     """

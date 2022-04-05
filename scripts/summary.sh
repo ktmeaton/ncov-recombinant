@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # -----------------------------------------------------------------------------
 # Argument Parsing
 
@@ -55,16 +54,18 @@ git_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
 nextclade_ver=$(nextclade --version)
 usher_ver=$(usher --version | cut -d " " -f 2 | sed 's/(\|)\|v//g')
 
-ncov_recombinant_ver="${git_branch}@${git_commit}"
+ncov_recombinant_ver="${git_branch}:${git_commit}"
 
 cd sc2rf
 git_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p' | sed 's/)//g' | rev | cut -d " " -f 1 | rev)
 git_commit_hash=$(git rev-parse HEAD)
 git_commit=${git_commit_hash:0:8}
-sc2rf_ver="${git_branch}@${git_commit}"
+sc2rf_ver="${git_branch}:${git_commit}"
 cd ..
 
-usher_dataset=$(basename $usher_dataset | cut -d "." -f 1)
+usher_dataset_name=$(basename $(dirname data/public-latest/version.txt))
+usher_dataset_ver=$(cut -d " " -f 8 usher_dataset | sed 's/(\|)\|;//g')
+usher_dataset_ver="${usher_dataset_name}:${usher_dataset_ver}"
 
 csvtk cut -t -f "strain,clade,Nextclade_pango" ${nextclade} \
        | csvtk rename -t -f "clade" -n "Nextclade_clade" \
@@ -78,4 +79,4 @@ csvtk cut -t -f "strain,clade,Nextclade_pango" ${nextclade} \
       | csvtk mutate2 -t -n "sc2rf_version" -e "\"$sc2rf_ver\"" \
       | csvtk mutate2 -t -n "usher_version" -e "\"$usher_ver\"" \
       | csvtk mutate2 -t -n "nextclade_dataset" -e "\"$nextclade_dataset\"" \
-      | csvtk mutate2 -t -n "usher_dataset" -e "\"$usher_dataset\""
+      | csvtk mutate2 -t -n "usher_dataset" -e "\"$usher_dataset_ver\""
