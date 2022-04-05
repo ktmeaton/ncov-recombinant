@@ -6,8 +6,8 @@ benchmarks/
 results/
 slurm-*
 
-# Ignore custom system profiles
-profiles/custom
+# Ignore custom profiles
+my_profiles/
 
 # Ignore datasets
 data/public-latest
