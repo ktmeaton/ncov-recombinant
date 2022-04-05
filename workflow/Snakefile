@@ -305,6 +305,7 @@ rule sc2rf:
   input:
     aligned = "results/{build}/nextclade.aligned.fasta",
   output:
+    debug = "results/{build}/sc2rf_debug.txt",
     txt = report(
             "results/{build}/sc2rf.txt",
             caption="report/sc2rf.rst",
@@ -315,6 +316,7 @@ rule sc2rf:
     tsv = "results/{build}/sc2rf.tsv",
   params:
     sc2rf_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"],
+    debug_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["debug_args"],    
     max_name_length = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["max_name_length"],
     primers = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["primers"],
   benchmark:
@@ -323,15 +325,18 @@ rule sc2rf:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
+    # Regular Parameters
     echo "Parameters: --primers {params.primers} --max-name-length {params.max_name_length} {params.sc2rf_args}" > {output.txt};
+    # Debugging Parameters
+    echo "Parameters: --primers {params.primers} --max-name-length {params.max_name_length} {params.debug_args}" > {output.debug};
+
     cd sc2rf;
-    python3 sc2rf.py \
-      ../{input.aligned} \
-      {params.sc2rf_args} \
-      --primers primers/{params.primers}.bed \
-      --max-name-length {params.max_name_length} \
-      --csvfile ../{output.csv} \
-      1>> ../{output.txt} 2> ../{log};
+    # Regular Mode
+    python3 sc2rf.py ../{input.aligned} {params.sc2rf_args} --primers primers/{params.primers}.bed --max-name-length {params.max_name_length} --csvfile ../{output.csv} 1>> ../{output.txt} 2> ../{log};
+    # Debugging Mode
+    python3 sc2rf.py ../{input.aligned} {params.debug_args} --primers primers/{params.primers}.bed --max-name-length {params.max_name_length} 1>> ../{output.debug};    
+
+    # Convert csv to tsv
     csvtk csv2tab ../{output.csv} > ../{output.tsv};
     """
 

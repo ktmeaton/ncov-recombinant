@@ -69,13 +69,13 @@ rule_params:
   # max_name_length : The maximum character length of strain names
   # primers:        : primer bed file prefix in `sc2rf/primers/`
   # sc2rf_args      : Additional arguments supplied to the program sc2rf
+  # debug_args      : Ultra-sensitive arguments for debugging
   - name: sc2rf
     max_name_length: 50
     primers: "artic_v4"
     # Defaults
     sc2rf_args: ""
-    # Ultra Sensitive (Debugging)
-    #sc2rf_args: "--parents 0-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1"
+    debug_args: "--parents 0-10 --breakpoints 0-100 --unique 2 --max-ambiguous 1000 --max-intermission-length 1"
 
   # exclude_clades: Exclude strains that are recombinants of these clades
   - name: sc2rf_recombinants
