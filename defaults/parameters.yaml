@@ -12,6 +12,7 @@
 # sequences (local)    : path to sequences for local input
 # metadata_url (usher) : url to metadata for usher input
 # pb_url (usher)       : url to protobuf for usher input
+# ver_url (usher)      : url to version info for usher input
 
 inputs:
 
@@ -29,14 +30,16 @@ inputs:
   - name: public-latest
     type:
       - usher
-    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/03/28/public-2022-03-28.metadata.tsv.gz
-    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/03/28/public-2022-03-28.all.masked.pb.gz
 
     # Latest: Not version controlled!
     # pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.all.masked.pb.gz
     # metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.metadata.tsv.gz
+    # ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.version.txt
 
-
+    # Date: Version controlled option
+    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/03/28/public-2022-04-02.metadata.tsv.gz
+    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/03/28/public-2022-04-02.all.masked.pb.gz
+    ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/02/public-2022-04-02.version.txt
 
 # -----------------------------------------------------------------------------
 # Rule Parameters
@@ -67,22 +70,18 @@ rule_params:
     min_muts : 2
 
   # max_name_length : The maximum character length of strain names
-  # primers:        : primer bed file prefix in `sc2rf/primers/`
   # sc2rf_args      : Additional arguments supplied to the program sc2rf
   # debug_args      : Ultra-sensitive arguments for debugging
   - name: sc2rf
     max_name_length: 50
-    primers: "artic_v4"
     # Defaults
     sc2rf_args: ""
-    debug_args: "--parents 0-10 --breakpoints 0-100 --unique 2 --max-ambiguous 1000 --max-intermission-length 1"
+    debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 2 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --mutation-threshold 0.5"
 
   # exclude_clades: Exclude strains that are recombinants of these clades
   - name: sc2rf_recombinants
     exclude_clades:
-      - "20I"
-      - "20J"
-      - "20H"
+      - "None"
 
   # k : The number of contextual samples to select when extracting subtrees.
   - name: usher_subtree
@@ -112,4 +111,4 @@ builds:
 
     # Universal rule parameters can (optionally) be overridden for a specific build.
     sc2rf:
-      sc2rf_args: "--ansi --parents 1-4 --breakpoints 1-10 --unique 2 --max-ambiguous 1000 --max-intermission-length 3 --max-intermission-count 1000"
+      sc2rf_args: "--ansi --parents 1-4 --breakpoints 1-4 --unique 2 --max-intermission-length 3 --max-intermission-count 999 --mutation-threshold 0.5"
