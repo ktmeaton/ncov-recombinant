@@ -316,7 +316,7 @@ rule sc2rf:
     tsv = "results/{build}/sc2rf.tsv",
   params:
     sc2rf_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"],
-    debug_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["debug_args"],    
+    debug_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["debug_args"],
     max_name_length = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["max_name_length"],
     primers = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["primers"],
   benchmark:
@@ -334,7 +334,7 @@ rule sc2rf:
     # Regular Mode
     python3 sc2rf.py ../{input.aligned} {params.sc2rf_args} --primers primers/{params.primers}.bed --max-name-length {params.max_name_length} --csvfile ../{output.csv} 1>> ../{output.txt} 2> ../{log};
     # Debugging Mode
-    python3 sc2rf.py ../{input.aligned} {params.debug_args} --primers primers/{params.primers}.bed --max-name-length {params.max_name_length} 1>> ../{output.debug};    
+    python3 sc2rf.py ../{input.aligned} {params.debug_args} --primers primers/{params.primers}.bed --max-name-length {params.max_name_length} 1>> ../{output.debug};
 
     # Convert csv to tsv
     csvtk csv2tab ../{output.csv} > ../{output.tsv};
