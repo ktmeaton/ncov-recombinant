@@ -593,6 +593,7 @@ rule summary:
     sc2rf     = "results/{build}/sc2rf.recombinants.tsv",
     usher     = "results/{build}/usher.clades.tsv",
     subtrees  = "results/{build}/subtrees_collapse/metadata.tsv",
+
   output:
     summary   = report(
                   "results/{build}/summary.tsv",
@@ -601,7 +602,10 @@ rule summary:
                   labels={"build": "{build}", "description": "Summary Table"},
                 ),
   params:
-    extra_cols = lambda wildcards: config["builds"][wildcards.build]["summary"]["extra_cols"],
+    extra_cols         = lambda wildcards: config["builds"][wildcards.build]["summary"]["extra_cols"],
+    nextclade_dataset  = lambda wildcards: config["builds"][wildcards.build]["nextclade_dataset"]["dataset"],
+    nextclade_tag      = lambda wildcards: config["builds"][wildcards.build]["nextclade_dataset"]["tag"],
+    usher_dataset      = lambda wildcards: config["inputs"][config["builds"][wildcards.build]["base_input"]]["pb_url"],
   shell:
     """
     bash scripts/summary.sh \
@@ -610,5 +614,7 @@ rule summary:
       --usher {input.usher} \
       --subtrees {input.subtrees} \
       --extra-cols {params.extra_cols} \
+      --nextclade-dataset {params.nextclade_dataset}_{params.nextclade_tag} \
+      --usher-dataset {params.usher_dataset} \
       > {output.summary};
     """
