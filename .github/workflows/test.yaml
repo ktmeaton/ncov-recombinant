@@ -69,4 +69,4 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate $CONDA_ENV_NAME;
-          python .tests/unit/test.py
+          .tests/unit/test_*.py
