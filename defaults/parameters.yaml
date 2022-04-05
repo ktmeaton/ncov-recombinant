@@ -100,8 +100,6 @@ rule_params:
 
 # name       : A directory will be created as results/{name}
 # base_input : The base phylogeny for UShER, must be an input with type "usher"
-# exp_input  : The experimental samples to detect recombination,
-#              must be an input with type "local".
 
 builds:
 
@@ -111,7 +109,6 @@ builds:
 
   - name: controls
     base_input: public-latest
-    exp_input: controls
 
     # Universal rule parameters can (optionally) be overridden for a specific build.
     sc2rf:
