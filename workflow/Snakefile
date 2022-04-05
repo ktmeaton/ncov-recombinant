@@ -628,6 +628,10 @@ rule summary:
     extra_cols         = lambda wildcards: config["builds"][wildcards.build]["summary"]["extra_cols"],
     nextclade_dataset  = lambda wildcards: config["builds"][wildcards.build]["nextclade_dataset"]["dataset"],
     nextclade_tag      = lambda wildcards: config["builds"][wildcards.build]["nextclade_dataset"]["tag"],
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
     bash scripts/summary.sh \
@@ -638,7 +642,7 @@ rule summary:
       --extra-cols {params.extra_cols} \
       --nextclade-dataset {params.nextclade_dataset}_{params.nextclade_tag} \
       --usher-dataset {input.usher_ver} \
-      > {output.summary};
+      1> {output.summary} 2> {log};
     """
 
 # -----------------------------------------------------------------------------#

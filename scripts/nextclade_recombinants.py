@@ -39,6 +39,15 @@ def main(
     for rec in qc_df.iterrows():
 
         strain = rec[1]["strain"]
+
+        # Identify based on next clade
+        clade = rec[1]["clade"]
+        if clade == "recombinant":
+            strain_recomb.append(strain)
+            continue
+
+        # Identify based on private mutation count
+
         clade_mut_count = {}
 
         muts = rec[1][mut_type]

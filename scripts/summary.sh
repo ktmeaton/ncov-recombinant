@@ -63,20 +63,19 @@ git_commit=${git_commit_hash:0:8}
 sc2rf_ver="${git_branch}:${git_commit}"
 cd ..
 
-usher_dataset_name=$(basename $(dirname data/public-latest/version.txt))
-usher_dataset_ver=$(cut -d " " -f 8 usher_dataset | sed 's/(\|)\|;//g')
+usher_dataset_name=$(basename $(dirname $usher_dataset))
+usher_dataset_ver=$(cut -d " " -f 8 $usher_dataset | sed 's/(\|)\|;//g')
 usher_dataset_ver="${usher_dataset_name}:${usher_dataset_ver}"
 
 csvtk cut -t -f "strain,clade,Nextclade_pango" ${nextclade} \
-       | csvtk rename -t -f "clade" -n "Nextclade_clade" \
-      | csvtk merge -t --na "NA" -f "strain" ${sc2rf} - \
-      | csvtk rename -t -f "clades" -n "sc2rf_clades" \
-      | csvtk merge -t -k --na "NA" -f "strain" - ${usher} \
-      | csvtk merge -t -k --na "NA" -f "strain" - ${subtrees} \
-      | csvtk sort -t -k "usher_subtree" \
-      | csvtk mutate2 -t -n "ncov-recombinant_version" -e "\"$ncov_recombinant_ver\"" \
-      | csvtk mutate2 -t -n "nextclade_version" -e "\"$nextclade_ver\"" \
-      | csvtk mutate2 -t -n "sc2rf_version" -e "\"$sc2rf_ver\"" \
-      | csvtk mutate2 -t -n "usher_version" -e "\"$usher_ver\"" \
-      | csvtk mutate2 -t -n "nextclade_dataset" -e "\"$nextclade_dataset\"" \
-      | csvtk mutate2 -t -n "usher_dataset" -e "\"$usher_dataset_ver\""
+  | csvtk rename -t -f "clade" -n "Nextclade_clade" \
+  | csvtk merge -t --na "NA" -f "strain" ${sc2rf} - \
+  | csvtk merge -t -k --na "NA" -f "strain" - ${usher} \
+  | csvtk merge -t -k --na "NA" -f "strain" - ${subtrees} \
+  | csvtk sort -t -k "usher_subtree" \
+  | csvtk mutate2 -t -n "ncov-recombinant_version" -e "\"$ncov_recombinant_ver\"" \
+  | csvtk mutate2 -t -n "nextclade_version" -e "\"$nextclade_ver\"" \
+  | csvtk mutate2 -t -n "sc2rf_version" -e "\"$sc2rf_ver\"" \
+  | csvtk mutate2 -t -n "usher_version" -e "\"$usher_ver\"" \
+  | csvtk mutate2 -t -n "nextclade_dataset" -e "\"$nextclade_dataset\"" \
+  | csvtk mutate2 -t -n "usher_dataset" -e "\"$usher_dataset_ver\""
