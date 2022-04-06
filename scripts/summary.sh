@@ -67,9 +67,9 @@ usher_dataset_name=$(basename $(dirname $usher_dataset))
 usher_dataset_ver=$(cut -d " " -f 8 $usher_dataset | sed 's/(\|)\|;//g')
 usher_dataset_ver="${usher_dataset_name}:${usher_dataset_ver}"
 
-csvtk cut -t -f "strain,clade,Nextclade_pango" ${nextclade} \
+csvtk cut -t -f "strain,${extra_cols},clade,Nextclade_pango" ${nextclade} \
   | csvtk rename -t -f "clade" -n "Nextclade_clade" \
-  | csvtk merge -t --na "NA" -f "strain" ${sc2rf} - \
+  | csvtk merge -t --na "NA" -f "strain" - ${sc2rf} \
   | csvtk merge -t -k --na "NA" -f "strain" - ${usher} \
   | csvtk merge -t -k --na "NA" -f "strain" - ${subtrees} \
   | csvtk sort -t -k "usher_subtree" \

@@ -5,6 +5,7 @@ logs/
 benchmarks/
 results/
 slurm-*
+reporting/
 
 # Ignore custom profiles
 my_profiles/
