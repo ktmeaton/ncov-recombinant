@@ -68,21 +68,26 @@ rule_params:
   # exclude_clades : Exclude strains that are recombinants of these clades
   - name: nextclade_recombinants
     exclude_clades:
-      - "None"
+        - "19" # From 2019
+        - "20A" # Non-VoC From 2020
+        - "20B"
+        - "20C"
+        - "20D"
+        - "20E"
+        - "20F"
+        - "20G"
 
   # max_name_length : The maximum character length of strain names
   # sc2rf_args      : Additional arguments supplied to the program sc2rf
   # debug_args      : Ultra-sensitive arguments for debugging
   - name: sc2rf
     max_name_length: 50
-    # Defaults
     sc2rf_args: ""
-    debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 2 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --mutation-threshold 0.5"
+    debug_args: "--ansi --parents 2-10 --breakpoints 1-100 --unique 2 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --mutation-threshold 0.5"
 
-  # exclude_clades: Exclude strains that are recombinants of these clades
+  # min_len: Ignore recombinants regions shorter than this
   - name: sc2rf_recombinants
-    exclude_clades:
-      - "None"
+    min_len: 100
 
   # k : The number of contextual samples to select when extracting subtrees.
   - name: usher_subtree

@@ -386,23 +386,21 @@ rule sc2rf_recombinants:
             labels={"build": "{build}", "description": "Recombinants Table"},
           ),
   params:
+    outdir     = lambda wildcards: "results/{build}".format(build=wildcards.build),
     custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
-    exclude_clades = lambda wildcards: "|".join(config["builds"][wildcards.build]["sc2rf_recombinants"]["exclude_clades"]),
+    min_len    = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["min_len"],
   benchmark:
     "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
   log:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    # Filter Table
-    csvtk grep -t -v -f "sc2rf_clades" -r -p ".*({params.exclude_clades}).*" {input.tsv} 1> {output.tsv} 2> {log};
-
-    # Strains List
-    csvtk cut -t -f "strain" {output.tsv} | tail -n+2 1> {output.strains} 2>> {log};
-
-    # Filter Alignment
-    seqkit grep -p "{params.custom_ref}" {input.aligned} 1> {output.aligned} 2>> {log};
-    seqkit grep -f "{output.strains}" {input.aligned} 1>> {output.aligned} 2>> {log};
+    python3 scripts/sc2rf_recombinants.py \
+      --tsv {input.tsv} \
+      --min-len {params.min_len} \
+      --outdir {params.outdir} \
+      --aligned {input.aligned} \
+      --custom-ref "{params.custom_ref}" 2> {log};
     """
 
 # -----------------------------------------------------------------------------#
