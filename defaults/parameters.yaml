@@ -65,9 +65,10 @@ rule_params:
     nextclade_ref: "MN908947 \\(Wuhan-Hu-1/2019\\)"
     custom_ref: "Wuhan/Hu-1/2019"
 
-  # min_muts : Minimum number of private labeled mutations to be a recombinant
+  # exclude_clades : Exclude strains that are recombinants of these clades
   - name: nextclade_recombinants
-    min_muts : 2
+    exclude_clades:
+      - "None"
 
   # max_name_length : The maximum character length of strain names
   # sc2rf_args      : Additional arguments supplied to the program sc2rf

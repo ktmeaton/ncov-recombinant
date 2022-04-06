@@ -284,7 +284,7 @@ rule nextclade_recombinants:
                   ),
   params:
     custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
-    min_muts   = lambda wildcards: config["builds"][wildcards.build]["nextclade_recombinants"]["min_muts"],
+    exclude_clades = lambda wildcards: "|".join(config["builds"][wildcards.build]["nextclade_recombinants"]["exclude_clades"]),
   benchmark:
     "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
   log:
@@ -292,7 +292,11 @@ rule nextclade_recombinants:
   shell:
     """
     # Extract recombinants
-     python3 scripts/nextclade_recombinants.py --qc {input.qc} --min-muts {params.min_muts} > {output.strains};
+    csvtk grep -t -f "clade,Nextclade_pango,qc.overallStatus" -r -p ".*(recombinant|X|bad|mediocre).*" {input.qc} \
+      | csvtk grep -t -v -f "clade" -r -p ".*({params.exclude_clades}).*" \
+      | csvtk cut -t -f "seqName" \
+      | tail -n+2 \
+      > {output.strains};
 
     # Filter Alignment
     seqkit grep -p "{params.custom_ref}" {input.aligned} 1> {output.aligned} 2> {log};
@@ -314,7 +318,8 @@ rule sc2rf:
   """
   message: "{wildcards.build} | Identifying recombinants with sc2rf."
   input:
-    aligned = "results/{build}/nextclade.aligned.fasta",
+    #aligned = "results/{build}/nextclade.aligned.fasta",
+    aligned = "results/{build}/nextclade.recombinants.fasta",
   output:
     txt       = report(
                   "results/{build}/sc2rf.txt",
@@ -390,7 +395,7 @@ rule sc2rf_recombinants:
   shell:
     """
     # Filter Table
-    csvtk grep -t -v -f "sc2rf_clades" -r -p ".*{params.exclude_clades}.*" {input.tsv} 1> {output.tsv} 2> {log};
+    csvtk grep -t -v -f "sc2rf_clades" -r -p ".*({params.exclude_clades}).*" {input.tsv} 1> {output.tsv} 2> {log};
 
     # Strains List
     csvtk cut -t -f "strain" {output.tsv} | tail -n+2 1> {output.strains} 2>> {log};
