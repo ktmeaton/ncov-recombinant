@@ -112,7 +112,7 @@ rule all:
           build_name=BUILDS,
           ),
         # Stage 3: UShER
-        expand("results/{build_name}/subtrees_plot",
+        expand("results/{build_name}/subtrees_collapse",
           build_name=BUILDS,
           ),
         # Stage 4: Summary
