@@ -53,6 +53,9 @@ cd sc2rf;
 echo "python3 sc2rf.py ${aligned} ${sc2rf_args[@]}" > ${outdir}/${prefix}.txt;
 python3 sc2rf.py ${aligned} ${sc2rf_args[@]} 1>> ${outdir}/${prefix}.txt 2> ${log};
 
+# Check if any recombinants were detected"
+if [[ -s ${prefix}.csv ]]; then
+
 # rename tabular columns
 # + placeholder until breakpoints/intermissions regions are reported
 csvtk rename -f "sample" -n "strain" ${outdir}/${prefix}.csv \
@@ -64,3 +67,8 @@ csvtk rename -f "sample" -n "strain" ${outdir}/${prefix}.csv \
   | csvtk mutate2 -n "sc2rf_intermissions_regions" -e '""' \
   | csvtk csv2tab \
   > ${outdir}/${prefix}.tsv
+
+# If not, touch an empty tabular file
+else
+  touch ${outdir}/${prefix}.tsv
+fi
