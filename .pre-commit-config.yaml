@@ -47,4 +47,5 @@ repos:
     rev: v0.30.0
     hooks:
       - id: markdownlint
-        args: [--disable=MD013]
+        args: [--config=.github/markdown_lint.yaml]
+        #args: [--disable=MD013]
