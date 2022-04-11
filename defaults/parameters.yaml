@@ -83,7 +83,7 @@ rule_params:
   - name: sc2rf
     max_name_length: 50
     sc2rf_args: ""
-    debug_args: "--ansi --parents 2-10 --breakpoints 1-100 --unique 2 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --mutation-threshold 0.5"
+    debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --mutation-threshold 0.5"
 
   # min_len: Ignore recombinants regions shorter than this
   - name: sc2rf_recombinants
@@ -117,4 +117,4 @@ builds:
 
     # Universal rule parameters can (optionally) be overridden for a specific build.
     sc2rf:
-      sc2rf_args: "--ansi --parents 1-4 --breakpoints 1-4 --unique 2 --max-intermission-length 3 --max-intermission-count 999 --mutation-threshold 0.5"
+      sc2rf_args: "--ansi --parents 2-4 --breakpoints 1-4 --unique 1 --max-intermission-length 3 --max-intermission-count 3 --mutation-threshold 0.5"
