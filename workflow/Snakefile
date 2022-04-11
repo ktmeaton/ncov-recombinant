@@ -535,7 +535,7 @@ rule usher:
     mv {params.outdir}/mutation-paths.txt {output.mut_paths};
 
     echo -e "strain\\tusher_best_set_difference\\tusher_num_best" > {output.placement_stats};
-    cat {params.outdir}/placement_stats.tsv >> {output.placement_stats};
+    sed 's/[[:space:]]*$//' {params.outdir}/placement_stats.tsv >> {output.placement_stats};
 
     echo -e "strain\\tusher_clade\\tusher_pango_lineage" > {output.clades};
     cat {params.outdir}/clades.txt >> {output.clades};
