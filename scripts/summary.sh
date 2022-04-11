@@ -72,7 +72,7 @@ csvtk cut -t -f "strain,${extra_cols},clade,Nextclade_pango" ${nextclade} \
   | csvtk merge -t --na "NA" -f "strain" - ${sc2rf} \
   | csvtk merge -t -k --na "NA" -f "strain" - ${usher} \
   | csvtk merge -t -k --na "NA" -f "strain" - ${subtrees} \
-  | csvtk sort -t -k "usher_subtree" \
+  | csvtk sort -t -k "usher_pango_lineage_map" \
   | csvtk mutate2 -t -n "ncov-recombinant_version" -e "\"$ncov_recombinant_ver\"" \
   | csvtk mutate2 -t -n "nextclade_version" -e "\"$nextclade_ver\"" \
   | csvtk mutate2 -t -n "sc2rf_version" -e "\"$sc2rf_ver\"" \

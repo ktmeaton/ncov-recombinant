@@ -91,11 +91,18 @@ rule_params:
 
   # k : The number of contextual samples to select when extracting subtrees.
   - name: usher_subtree
-    k: 50
+    k: 100
 
   # extra_cols : Extra columns from the metadata to output (csv)
   - name: summary
     extra_cols: "date,country"
+
+  # cols : Columns to output in the report (csv)
+  - name: report
+    cols: "strain,usher_pango_lineage_map,sc2rf_clades_filter,date,country,sc2rf_breakpoints_regions_filter,usher_subtree"
+    cols_rename: "strain,pango_lineage,clades,date,country,breakpoints,subtree"
+
+
 
 # -----------------------------------------------------------------------------
 # Builds

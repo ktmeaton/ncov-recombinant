@@ -503,6 +503,7 @@ rule usher:
     pb  = lambda wildcards: "data/{base_input}/usher.pb.gz".format(
             base_input=config["builds"][wildcards.build]["base_input"]
           ),
+    usher_to_pango = "data/controls/usher_to_pango.tsv",
   output:
     pb              = "results/{build}/usher.pb.gz",
     samples         = "results/{build}/usher.samples.txt",
@@ -539,7 +540,12 @@ rule usher:
 
     echo -e "strain\\tusher_clade\\tusher_pango_lineage" > {output.clades};
     cat {params.outdir}/clades.txt >> {output.clades};
+    csvtk mutate -t -f "usher_pango_lineage" -n "usher_pango_lineage_map" {output.clades} \
+      | csvtk replace -t -f "usher_pango_lineage_map" -p "(proposed[0-9]+)" -k {input.usher_to_pango} -r "{{kv}}" \
+      > {output.clades}.tmp;
+    mv {output.clades}.tmp {output.clades}
 
+    # Extract tree
     matUtils extract -i {input.pb} -u {output.samples} -t {output.tree} 2>> {log};
 
     # Cleanup
@@ -593,7 +599,7 @@ rule usher_subtree:
     """
 
 # -----------------------------------------------------------------------------#
-#  STAGE 4: Summary
+#  STAGE 4: Summary and Report
 # -----------------------------------------------------------------------------#
 
 rule_name = "summary"
@@ -640,6 +646,35 @@ rule summary:
       --nextclade-dataset {params.nextclade_dataset}_{params.nextclade_tag} \
       --usher-dataset {input.usher_ver} \
       1> {output.summary} 2> {log};
+    """
+
+# -----------------------------------------------------------------------------#
+rule_name = "report"
+rule report:
+  """
+  Generate a report.
+  """
+  message: "{wildcards.build} | Generating a report."
+  input:
+    summary = "results/{build}/summary.tsv",
+    pango_to_issue = "data/controls/pango_to_issue.tsv",
+  output:
+    report  = "results/{build}/report.tsv"
+  threads: 1
+  resources:
+    cpus = 1,
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  params:
+    cols = lambda wildcards: config["builds"][wildcards.build]["report"]["cols"],
+    cols_rename = lambda wildcards: config["builds"][wildcards.build]["report"]["cols_rename"],
+  shell:
+    """
+    csvtk cut -t -f "{params.cols}" {input.summary} \
+      | csvtk rename -t -f "{params.cols}" -n "{params.cols_rename}" \
+      > {output.report};
     """
 
 # -----------------------------------------------------------------------------#
