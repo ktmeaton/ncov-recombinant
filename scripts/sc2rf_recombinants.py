@@ -26,6 +26,7 @@ def main(
     # Import Dataframe
     df = pd.read_csv(tsv, sep="\t", index_col=0)
     df.fillna("", inplace=True)
+    df["sc2rf_clades_filter"] = [NO_DATA_CHAR] * len(df)
     df["sc2rf_clades_regions_filter"] = [NO_DATA_CHAR] * len(df)
     df["sc2rf_breakpoints_regions_filter"] = [NO_DATA_CHAR] * len(df)
 
@@ -81,11 +82,15 @@ def main(
         if num_breakpoints_filter > num_breakpoints:
             drop_strains.append(rec[0])
 
+        # Identify the new filtered clades
+        clades_filter = [regions_filter[s]["clade"] for s in regions_filter]
+
         # Construct the new filtered regions
         regions_filter = [
             "{}:{}|{}".format(s, regions_filter[s]["end"], regions_filter[s]["clade"])
             for s in regions_filter
         ]
+        df.at[rec[0], "sc2rf_clades_filter"] = ",".join(clades_filter)
         df.at[rec[0], "sc2rf_clades_regions_filter"] = ",".join(regions_filter)
         df.at[rec[0], "sc2rf_breakpoints_regions_filter"] = ",".join(breakpoints_filter)
 
