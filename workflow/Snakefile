@@ -115,8 +115,8 @@ rule all:
         expand("results/{build_name}/subtrees_collapse",
           build_name=BUILDS,
           ),
-        # Stage 4: Summary
-        expand("results/{build_name}/summary.tsv",
+        # Stage 4: Report
+        expand("results/{build_name}/report.tsv",
           build_name=BUILDS,
           ),
 # -----------------------------------------------------------------------------#
