@@ -82,12 +82,13 @@ rule_params:
   # debug_args      : Ultra-sensitive arguments for debugging
   - name: sc2rf
     max_name_length: 50
-    sc2rf_args: "--ansi --parents 2-4 --breakpoints 1-4 --unique 1 --max-intermission-length 3 --max-intermission-count 3 --mutation-threshold 0.5"
+    sc2rf_args: "--ansi --parents 2-4 --breakpoints 1-4 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --mutation-threshold 0.5"
     debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --mutation-threshold 0.5"
 
   # min_len: Ignore recombinants regions shorter than this
   - name: sc2rf_recombinants
     min_len: 100
+    max_parents: 2
 
   # k : The number of contextual samples to select when extracting subtrees.
   - name: usher_subtree
@@ -100,7 +101,7 @@ rule_params:
   # cols : Columns to output in the report (csv)
   - name: report
     cols: "strain,usher_pango_lineage_map,Nextclade_pango,sc2rf_clades_filter,date,country,sc2rf_breakpoints_regions_filter,usher_subtree"
-    cols_rename: "strain,pango_lineage,nextclade_lineage,clades,date,country,breakpoints,subtree"
+    cols_rename: "strain,usher_lineage,nextclade_lineage,clades,date,country,breakpoints,subtree"
 
 
 
