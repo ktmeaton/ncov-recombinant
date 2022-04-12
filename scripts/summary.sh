@@ -67,12 +67,14 @@ usher_dataset_name=$(basename $(dirname $usher_dataset))
 usher_dataset_ver=$(cut -d " " -f 8 $usher_dataset | sed 's/(\|)\|;//g')
 usher_dataset_ver="${usher_dataset_name}:${usher_dataset_ver}"
 
+sort_col="usher_subtree"
+
 csvtk cut -t -f "strain,${extra_cols},clade,Nextclade_pango" ${nextclade} \
   | csvtk rename -t -f "clade" -n "Nextclade_clade" \
   | csvtk merge -t --na "NA" -f "strain" - ${sc2rf} \
   | csvtk merge -t -k --na "NA" -f "strain" - ${usher} \
   | csvtk merge -t -k --na "NA" -f "strain" - ${subtrees} \
-  | csvtk sort -t -k "usher_pango_lineage_map" \
+  | csvtk sort -t -k "$sort_col" \
   | csvtk mutate2 -t -n "ncov-recombinant_version" -e "\"$ncov_recombinant_ver\"" \
   | csvtk mutate2 -t -n "nextclade_version" -e "\"$nextclade_ver\"" \
   | csvtk mutate2 -t -n "sc2rf_version" -e "\"$sc2rf_ver\"" \
