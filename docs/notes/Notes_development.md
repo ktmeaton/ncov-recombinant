@@ -10,4 +10,10 @@
 1. Test `sc2rf` dev to ignore clade regions that are ambiguous.
 1. Add column `usher_pango_lineage_map` that maps github issues to recombinant lineages.
 1. Add new rule `report`.
-1. TODO: Automate unit test update.
+
+## To Do
+
+1. Automate unit test update.
+1. Move `report` output to `reporting` directory.
+1. Filter non-recombinants from `sc2rf` ansi output.
+1. `subtrees_collapse` fails if only 1 tree specified

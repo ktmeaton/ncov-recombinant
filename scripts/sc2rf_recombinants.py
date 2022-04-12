@@ -108,6 +108,32 @@ def main(
     with open(outpath_strains, "w") as outfile:
         outfile.write(strains + "\n")
 
+    # write exclude strains
+    outpath_exclude = os.path.join(outdir, "sc2rf.recombinants.exclude.txt")
+    if len(drop_strains) > 0:
+        strains = "\n".join(drop_strains)
+        with open(outpath_exclude, "w") as outfile:
+            outfile.write(strains + "\n")
+    else:
+        cmd = "touch {outpath}".format(outpath=outpath_exclude)
+        os.system(cmd)
+
+    # filter the ansi output
+    inpath_ansi = os.path.join(outdir, "sc2rf.ansi.txt")
+    outpath_ansi = os.path.join(outdir, "sc2rf.recombinants.ansi.txt")
+    if len(drop_strains) > 0:
+        cmd = "grep -f {exclude} {inpath} > {outpath}".format(
+            exclude=outpath_exclude,
+            inpath=inpath_ansi,
+            outpath=outpath_ansi,
+        )
+    else:
+        cmd = "cp -f {inpath} {outpath}".format(
+            inpath=inpath_ansi,
+            outpath=outpath_ansi,
+        )
+    os.system(cmd)
+
     # write alignment
     outpath_fasta = os.path.join(outdir, "sc2rf.recombinants.fasta")
 

@@ -50,8 +50,8 @@ csvfile="${outdir}/${prefix}.csv"
 sc2rf_args+=("--csvfile $csvfile")
 
 cd sc2rf;
-echo "python3 sc2rf.py ${aligned} ${sc2rf_args[@]}" > ${outdir}/${prefix}.txt;
-python3 sc2rf.py ${aligned} ${sc2rf_args[@]} 1>> ${outdir}/${prefix}.txt 2> ${log};
+echo "python3 sc2rf.py ${aligned} ${sc2rf_args[@]}" > ${outdir}/${prefix}.ansi.txt;
+python3 sc2rf.py ${aligned} ${sc2rf_args[@]} 1>> ${outdir}/${prefix}.ansi.txt 2> ${log};
 
 # Check if any recombinants were detected"
 if [[ -s ${outdir}/${prefix}.csv ]]; then
