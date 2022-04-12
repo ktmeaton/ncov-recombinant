@@ -331,14 +331,14 @@ rule sc2rf:
     aligned = "results/{build}/nextclade.recombinants.fasta",
   output:
     txt       = report(
-                  "results/{build}/sc2rf.txt",
+                  "results/{build}/sc2rf.ansi.txt",
                   caption="report/sc2rf.rst",
                   category="Stage 2: sc2rf",
                   labels={"build": "{build}", "description": "Console Output"},
                 ),
     csv       = "results/{build}/sc2rf.csv",
     tsv       = "results/{build}/sc2rf.tsv",
-    debug_txt = "results/{build}/sc2rf_debug.txt",
+    debug_txt = "results/{build}/sc2rf_debug.ansi.txt",
     debug_csv = "results/{build}/sc2rf_debug.csv",
     debug_tsv = "results/{build}/sc2rf_debug.tsv",
   params:
@@ -385,12 +385,14 @@ rule sc2rf_recombinants:
   """
   message: "{wildcards.build} | Extracting recombinants from sc2rf output."
   input:
-    txt = "results/{build}/sc2rf.txt",
-    tsv = "results/{build}/sc2rf.tsv",
+    ansi    = "results/{build}/sc2rf.ansi.txt",
+    tsv     = "results/{build}/sc2rf.tsv",
     aligned = "results/{build}/nextclade.aligned.fasta",
   output:
     strains = "results/{build}/sc2rf.recombinants.txt",
     aligned = "results/{build}/sc2rf.recombinants.fasta",
+    ansi    = "results/{build}/sc2rf.recombinants.ansi.txt",
+    exclude = "results/{build}/sc2rf.recombinants.exclude.txt",
     tsv = report(
             "results/{build}/sc2rf.recombinants.tsv",
             caption="report/sc2rf.rst",
