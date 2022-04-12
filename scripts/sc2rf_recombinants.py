@@ -10,6 +10,9 @@ NO_DATA_CHAR = "NA"
 @click.command()
 @click.option("--tsv", help="TSV output from sc2rf.", required=True)
 @click.option("--min-len", help="Minimum region length.", required=True, default=10)
+@click.option(
+    "--max-parents", help="Maximum number of parents.", required=True, default=10
+)
 @click.option("--outdir", help="Output directory", required=True)
 @click.option("--aligned", help="Alignment", required=True)
 @click.option("--custom-ref", help="Reference strain name", required=True)
@@ -19,6 +22,7 @@ def main(
     outdir,
     aligned,
     custom_ref,
+    max_parents,
 ):
     """Detect recombinant seqences from sc2rf."""
 
@@ -85,6 +89,9 @@ def main(
         # Identify the new filtered clades
         clades_filter = [regions_filter[s]["clade"] for s in regions_filter]
 
+        if len(clades_filter) > max_parents:
+            drop_strains.append(rec[0])
+
         # Construct the new filtered regions
         regions_filter = [
             "{}:{}|{}".format(s, regions_filter[s]["end"], regions_filter[s]["clade"])
@@ -122,7 +129,7 @@ def main(
     inpath_ansi = os.path.join(outdir, "sc2rf.ansi.txt")
     outpath_ansi = os.path.join(outdir, "sc2rf.recombinants.ansi.txt")
     if len(drop_strains) > 0:
-        cmd = "grep -f {exclude} {inpath} > {outpath}".format(
+        cmd = "grep -v -f {exclude} {inpath} > {outpath}".format(
             exclude=outpath_exclude,
             inpath=inpath_ansi,
             outpath=outpath_ansi,

@@ -265,9 +265,6 @@ rule nextclade:
     """
 
 # ----------------------------------------------------------------------------#
-# This step involves an extremely inefficient way to mask an alignment
-# it's also getting to be long, and maybe should be a shell script
-
 rule_name = "nextclade_recombinants"
 rule nextclade_recombinants:
   """
@@ -280,14 +277,7 @@ rule nextclade_recombinants:
     bed      = "data/reference/problematic_sites.bed",
   output:
     aligned = "results/{build}/nextclade.recombinants.fasta",
-    bed     = "results/{build}/nextclade.masked.bed",
-    masked  = "results/{build}/nextclade.masked.fasta",
-    strains = report(
-                    "results/{build}/nextclade.recombinants.txt",
-                    caption="report/nextclade.rst",
-                    category="Stage 1: Nextclade",
-                    labels={"build": "{build}", "description" : "Recombinants List"},
-                  ),
+    strains = "results/{build}/nextclade.recombinants.txt",
   params:
     custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
     exclude_clades = lambda wildcards: "|".join(config["builds"][wildcards.build]["nextclade_recombinants"]["exclude_clades"]),
@@ -310,10 +300,6 @@ rule nextclade_recombinants:
     # Filter Alignment
     seqkit grep -p "{params.custom_ref}" {input.aligned} 1> {output.aligned} 2> {log};
     seqkit grep -f "{output.strains}" {input.aligned} 1>> {output.aligned} 2>> {log};
-
-    # Mask alignment
-    seqkit seq -n {output.aligned} | while read strain; do sed "s|{params.custom_ref}|$strain|g" {input.bed}; done > {output.bed};
-    bedtools maskfasta -bed {output.bed} -fi {output.aligned} -fo {output.masked};
     """
 
 # -----------------------------------------------------------------------------#
@@ -330,12 +316,7 @@ rule sc2rf:
     #aligned = "results/{build}/nextclade.aligned.fasta",
     aligned = "results/{build}/nextclade.recombinants.fasta",
   output:
-    txt       = report(
-                  "results/{build}/sc2rf.ansi.txt",
-                  caption="report/sc2rf.rst",
-                  category="Stage 2: sc2rf",
-                  labels={"build": "{build}", "description": "Console Output"},
-                ),
+    txt       = "results/{build}/sc2rf.ansi.txt",
     csv       = "results/{build}/sc2rf.csv",
     tsv       = "results/{build}/sc2rf.tsv",
     debug_txt = "results/{build}/sc2rf_debug.ansi.txt",
@@ -393,16 +374,12 @@ rule sc2rf_recombinants:
     aligned = "results/{build}/sc2rf.recombinants.fasta",
     ansi    = "results/{build}/sc2rf.recombinants.ansi.txt",
     exclude = "results/{build}/sc2rf.recombinants.exclude.txt",
-    tsv = report(
-            "results/{build}/sc2rf.recombinants.tsv",
-            caption="report/sc2rf.rst",
-            category="Stage 2: sc2rf",
-            labels={"build": "{build}", "description": "Recombinants Table"},
-          ),
+    tsv     = "results/{build}/sc2rf.recombinants.tsv",
   params:
     outdir     = lambda wildcards: "results/{build}".format(build=wildcards.build),
     custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
     min_len    = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["min_len"],
+    max_parents = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_parents"],
   threads: 1
   resources:
     cpus = 1,
@@ -415,6 +392,7 @@ rule sc2rf_recombinants:
     python3 scripts/sc2rf_recombinants.py \
       --tsv {input.tsv} \
       --min-len {params.min_len} \
+      --max-parents {params.max_parents} \
       --outdir {params.outdir} \
       --aligned {input.aligned} \
       --custom-ref "{params.custom_ref}" 2> {log};
@@ -512,12 +490,7 @@ rule usher:
     tree            = "results/{build}/usher.tree.nwk",
     placement_stats = "results/{build}/usher.placement_stats.tsv",
     mut_paths       = "results/{build}/usher.mutation_paths.tsv",
-    clades          = report(
-                        "results/{build}/usher.clades.tsv",
-                        caption="report/usher.rst",
-                        category="Stage 3: UShER",
-                        labels={"build": "{build}", "description": "UShER Clades Table"},
-                      ),
+    clades          = "results/{build}/usher.clades.tsv",
   params:
     outdir = "results/{build}",
   benchmark:
@@ -571,13 +544,7 @@ rule usher_subtree:
   output:
     subtrees_dir = directory("results/{build}/subtrees"),
     metadata     = "results/{build}/subtrees_collapse/metadata.tsv",
-    collapse_dir = report(
-                    directory("results/{build}/subtrees_collapse"),
-                    patterns=["{name}.json"],
-                    caption="report/usher.rst",
-                    category="Stage 3: UShER",
-                    labels={"build": "{build}", "description" : "Auspice JSON"},
-                  ),
+    collapse_dir = directory("results/{build}/subtrees_collapse"),
   params:
     k           = lambda wildcards: config["builds"][wildcards.build]["usher_subtree"]["k"],
     base_input  = lambda wildcards: config["builds"][wildcards.build]["base_input"],
@@ -624,12 +591,7 @@ rule summary:
           ),
 
   output:
-    summary   = report(
-                  "results/{build}/summary.tsv",
-                  caption="report/summary.rst",
-                  category="Stage 4: Summary",
-                  labels={"build": "{build}", "description": "Summary Table"},
-                ),
+    summary = "results/{build}/summary.tsv",
   params:
     extra_cols         = lambda wildcards: config["builds"][wildcards.build]["summary"]["extra_cols"],
     nextclade_dataset  = lambda wildcards: config["builds"][wildcards.build]["nextclade_dataset"]["dataset"],
@@ -680,6 +642,8 @@ rule report:
     """
     csvtk cut -t -f "{params.cols}" {input.summary} \
       | csvtk rename -t -f "{params.cols}" -n "{params.cols_rename}" \
+      | csvtk mutate2 -t -n "status" -e '""' \
+      | csvtk mutate2 -t -n "new_this_week" -e '""' \
       > {output.report};
     """
 
