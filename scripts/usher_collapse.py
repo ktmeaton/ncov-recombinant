@@ -26,60 +26,65 @@ def main(
 
     print("Parsed: {} trees".format(len(trees_list)))
 
-    for tree_1 in trees_list:
-        tree_1_idx = trees_list.index(tree_1)
+    # If there was only 1 tree...
+    if len(trees_list) == 1:
+        subtrees[1] = [trees_list[0]]
 
-        for tree_2 in trees_list[tree_1_idx + 1 :]:
+    else:
+        for tree_1 in trees_list:
+            tree_1_idx = trees_list.index(tree_1)
 
-            # Are these trees the same?
-            same_tree = filecmp.cmp(tree_1, tree_2)
+            for tree_2 in trees_list[tree_1_idx + 1 :]:
 
-            # How many subtrees are there currently
-            num_subtrees = len(subtrees)
+                # Are these trees the same?
+                same_tree = filecmp.cmp(tree_1, tree_2)
 
-            # -----------------------------------------------------------------------
-            # Case 1: No subtrees added yet
-            if num_subtrees == 0:
+                # How many subtrees are there currently
+                num_subtrees = len(subtrees)
 
-                if same_tree:
-                    num_subtrees += 1
-                    subtrees[num_subtrees] = [tree_1, tree_2]
-                else:
-                    num_subtrees += 1
-                    subtrees[num_subtrees] = [tree_1]
-                    num_subtrees += 1
-                    subtrees[num_subtrees] = [tree_2]
+                # -----------------------------------------------------------------------
+                # Case 1: No subtrees added yet
+                if num_subtrees == 0:
 
-            # -----------------------------------------------------------------------
-            # Case 2: Search existing trees
-            else:
-
-                for tree in [tree_1, tree_2]:
-
-                    subtree_found = False
-                    subtree_match = None
-
-                    # Iterate over subtrees
-                    for i in subtrees:
-                        # Iterate over files associated with subtree
-                        for filename in subtrees[i]:
-                            subtree_found = filecmp.cmp(filename, tree)
-                            subtree_match = i
-                            if subtree_found:
-                                break
-                        if subtree_found:
-                            break
-
-                    # If we found a match
-                    if subtree_found:
-                        subtrees[subtree_match].append(tree)
-                        # Remove duplicates
-                        subtrees[subtree_match] = list(set(subtrees[subtree_match]))
-
-                    # If we couldn't find a match
+                    if same_tree:
+                        num_subtrees += 1
+                        subtrees[num_subtrees] = [tree_1, tree_2]
                     else:
                         num_subtrees += 1
-                        subtrees[num_subtrees] = [tree]
+                        subtrees[num_subtrees] = [tree_1]
+                        num_subtrees += 1
+                        subtrees[num_subtrees] = [tree_2]
+
+                # -----------------------------------------------------------------------
+                # Case 2: Search existing trees
+                else:
+
+                    for tree in [tree_1, tree_2]:
+
+                        subtree_found = False
+                        subtree_match = None
+
+                        # Iterate over subtrees
+                        for i in subtrees:
+                            # Iterate over files associated with subtree
+                            for filename in subtrees[i]:
+                                subtree_found = filecmp.cmp(filename, tree)
+                                subtree_match = i
+                                if subtree_found:
+                                    break
+                            if subtree_found:
+                                break
+
+                        # If we found a match
+                        if subtree_found:
+                            subtrees[subtree_match].append(tree)
+                            # Remove duplicates
+                            subtrees[subtree_match] = list(set(subtrees[subtree_match]))
+
+                        # If we couldn't find a match
+                        else:
+                            num_subtrees += 1
+                            subtrees[num_subtrees] = [tree]
 
     # Write Output
 
