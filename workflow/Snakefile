@@ -579,7 +579,8 @@ rule usher_subtree:
                     labels={"build": "{build}", "description" : "Auspice JSON"},
                   ),
   params:
-    k = lambda wildcards: config["builds"][wildcards.build]["usher_subtree"]["k"],
+    k           = lambda wildcards: config["builds"][wildcards.build]["usher_subtree"]["k"],
+    base_input  = lambda wildcards: config["builds"][wildcards.build]["base_input"],
   threads: 1
   resources:
     cpus = 1,
@@ -598,6 +599,9 @@ rule usher_subtree:
     # Collapse subtrees
     mkdir -p {output.collapse_dir};
     python3 scripts/usher_collapse.py --indir {output.subtrees_dir} --outdir {output.collapse_dir} >> {log} 2>&1;
+
+    # Collapse metadata
+    bash scripts/usher_collapse_metadata.sh --base-input {params.base_input} --build {wildcards.build} >> {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------#

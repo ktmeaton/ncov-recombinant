@@ -99,8 +99,8 @@ rule_params:
 
   # cols : Columns to output in the report (csv)
   - name: report
-    cols: "strain,usher_pango_lineage_map,sc2rf_clades_filter,date,country,sc2rf_breakpoints_regions_filter,usher_subtree"
-    cols_rename: "strain,pango_lineage,clades,date,country,breakpoints,subtree"
+    cols: "strain,usher_pango_lineage_map,Nextclade_pango,sc2rf_clades_filter,date,country,sc2rf_breakpoints_regions_filter,usher_subtree"
+    cols_rename: "strain,pango_lineage,nextclade_lineage,clades,date,country,breakpoints,subtree"
 
 
 
