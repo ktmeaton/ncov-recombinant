@@ -55,7 +55,7 @@ cpus="${cpus:-1}"
 mem="${mem:-4GB}"
 
 today=$(date +"%Y-%m-%d")
-log_dir="logs/slurm"
+log_dir="logs/ncov-recombinant"
 
 # -----------------------------------------------------------------------------
 # Run the Workflow

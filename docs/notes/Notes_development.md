@@ -12,9 +12,12 @@
 1. Add new rule `report`.
 1. Filter non-recombinants from `sc2rf` ansi output.
 1. Fix `subtrees_collapse` failing if only 1 tree specified
+1. Add new rule `usher_metadata` for merge metadata for subtrees.
 
 ## To Do
 
+1. Consolidate `summary` and `usher_metadata`.
+1. Edit Auspice json to change default colorings,filters,and panels.
 1. Automate unit test update.
 1. Move `report` output to `reporting` directory.
-1. Test the `exclude_clades` param of Nextclade to make sure isn't removing.
+1. Test the `exclude_clades` param of Nextclade to make sure it isn't removing.
