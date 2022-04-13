@@ -93,6 +93,12 @@ rule_params:
   # k : The number of contextual samples to select when extracting subtrees.
   - name: usher_subtree
     k: 100
+    auspice_color_by: "lineage_usher"
+    auspice_tip_labels: ""
+
+  # extra_cols : Extra columns from the metadata to output (csv)
+  - name: usher_metadata
+    extra_cols: "date,country"
 
   # extra_cols : Extra columns from the metadata to output (csv)
   - name: summary
@@ -101,7 +107,7 @@ rule_params:
   # cols : Columns to output in the report (csv)
   - name: report
     cols: "strain,usher_pango_lineage_map,Nextclade_pango,sc2rf_clades_filter,date,country,sc2rf_breakpoints_regions_filter,usher_subtree"
-    cols_rename: "strain,usher_lineage,nextclade_lineage,clades,date,country,breakpoints,subtree"
+    cols_rename: "strain,lineage_usher,lineage_nextclade,parents,date,country,breakpoints,subtree"
 
 
 
@@ -122,6 +128,9 @@ builds:
 
   - name: controls
     base_input: public-latest
+
+    usher_metadata:
+      extra_cols: "date,country,gisaid_epi_isl,genbank_accession"
 
     # Universal rule parameters can (optionally) be overridden for a specific build.
     sc2rf:
