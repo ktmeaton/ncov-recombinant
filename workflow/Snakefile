@@ -678,9 +678,7 @@ rule report:
     """
     csvtk cut -t -f "{params.cols}" {input.summary} \
       | csvtk rename -t -f "{params.cols}" -n "{params.cols_rename}" \
-      | csvtk mutate2 -t -n "status" -e '""' \
-      | csvtk mutate2 -t -n "new_this_week" -e '""' \
-      > {output.report};
+      1> {output.report} 2> {log};
     """
 
 # -----------------------------------------------------------------------------#
