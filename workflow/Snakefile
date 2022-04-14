@@ -584,6 +584,7 @@ rule usher_subtree:
   params:
     k           = lambda wildcards: config["builds"][wildcards.build]["usher_subtree"]["k"],
     base_input  = lambda wildcards: config["builds"][wildcards.build]["base_input"],
+    low_memory_mode =  lambda wildcards: config["builds"][wildcards.build]["usher_subtree"]["low_memory_mode"],
   threads: 1
   resources:
     cpus = 1,
@@ -593,14 +594,17 @@ rule usher_subtree:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
+    # Check if using low memory mode (disables metadata)
+    if [[ {params.low_memory_mode} == "True" ]]; then
+      metadata_flag="";
+    else
+      metadata_flag="-M ../../../{input.metadata}";
+    fi
+
     # Create subtrees
     mkdir -p {output.subtrees_dir}
     cd {output.subtrees_dir}
-    matUtils extract \
-      -i ../../../{input.pb} \
-      --nearest-k-batch ../../../{input.samples}:{params.k} \
-      -M ../../../{input.metadata} \
-      > ../../../{log} 2>&1;
+    matUtils extract -i ../../../{input.pb} --nearest-k-batch ../../../{input.samples}:{params.k} ${{metadata_flag}} > ../../../{log} 2>&1;
     cd - >> ../../../{log}
 
     # Collapse subtrees

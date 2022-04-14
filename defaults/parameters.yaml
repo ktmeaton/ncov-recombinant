@@ -91,10 +91,10 @@ rule_params:
     max_parents: 2
 
   # k : The number of contextual samples to select when extracting subtrees.
+  # low_memory_mode: true if the metadata should not be used, false if it should
   - name: usher_subtree
     k: 100
-    auspice_color_by: "lineage_usher"
-    auspice_tip_labels: ""
+    low_memory_mode: true
 
   # extra_cols : Extra columns from the metadata to output (csv)
   - name: usher_metadata
