@@ -4,8 +4,14 @@
 
     - There are now publicly available samples.
 
+1. Add versions to the report.
+
 ## To DO
 
+1. Add citations to report.
+1. Update `sc2rf` to `bd2a4009` for `BA.4` and `BA.5` parents.
+1. Update UShER to 0.5.3.
+1. Use `date_to_decimal` to create `num_date` for auspice.
 1. Plot recombinant breakpoints differently.
 1. Summarize recombinants by parents and dates observed.
 1. Maybe change `summary` to `line list`?
