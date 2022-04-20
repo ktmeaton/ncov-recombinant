@@ -82,12 +82,13 @@ rule_params:
   # debug_args      : Ultra-sensitive arguments for debugging
   - name: sc2rf
     max_name_length: 50
-    sc2rf_args: "--ansi --parents 2-4 --breakpoints 1-4 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --mutation-threshold 0.5"
+    sc2rf_args: "--ansi --parents 2-4 --breakpoints 1-4 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --mutation-threshold 0.5 --ignore-shared-subs"
     debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --mutation-threshold 0.5"
 
   # min_len: Ignore recombinants regions shorter than this
+  # max_parents: Exlude samples with greater than this number of parents
   - name: sc2rf_recombinants
-    min_len: 100
+    min_len: 200
     max_parents: 2
 
   # k : The number of contextual samples to select when extracting subtrees.

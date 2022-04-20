@@ -373,13 +373,14 @@ rule sc2rf_recombinants:
     strains = "results/{build}/sc2rf.recombinants.txt",
     aligned = "results/{build}/sc2rf.recombinants.fasta",
     ansi    = "results/{build}/sc2rf.recombinants.ansi.txt",
-    exclude = "results/{build}/sc2rf.recombinants.exclude.txt",
+    exclude = "results/{build}/sc2rf.recombinants.exclude.tsv",
     tsv     = "results/{build}/sc2rf.recombinants.tsv",
   params:
     outdir     = lambda wildcards: "results/{build}".format(build=wildcards.build),
     custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
     min_len    = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["min_len"],
     max_parents = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_parents"],
+    exclude_clades = lambda wildcards: ",".join(config["builds"][wildcards.build]["nextclade_recombinants"]["exclude_clades"]),
   threads: 1
   resources:
     cpus = 1,
@@ -395,7 +396,9 @@ rule sc2rf_recombinants:
       --max-parents {params.max_parents} \
       --outdir {params.outdir} \
       --aligned {input.aligned} \
-      --custom-ref "{params.custom_ref}" 2> {log};
+      --custom-ref "{params.custom_ref}" \
+      --exclude-clades "{params.exclude_clades}" \
+      2> {log};
     """
 
 # -----------------------------------------------------------------------------#
@@ -539,6 +542,7 @@ rule usher_metadata:
   wildcard_constraints:
     mode = "|".join(LOCAL_INPUTS),
   input:
+    input_metadata = "data/{build}/metadata.tsv",
     base_metadata  = lambda wildcards: "data/{base_input}/metadata.tsv".format(
             base_input=config["builds"][wildcards.build]["base_input"]
           ),
@@ -549,6 +553,7 @@ rule usher_metadata:
   params:
     base_input  = lambda wildcards: config["builds"][wildcards.build]["base_input"],
     cols        = lambda wildcards: config["builds"][wildcards.build]["usher_metadata"]["cols"],
+    low_memory_mode =  lambda wildcards: config["builds"][wildcards.build]["usher_subtree"]["low_memory_mode"],
   threads: 1
   resources:
     cpus = 1,
@@ -558,11 +563,17 @@ rule usher_metadata:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    bash scripts/usher_metadata.sh \
-      --base-input {params.base_input} \
-      --build {wildcards.build} \
-      --extra-cols {params.cols} \
-      1> {output.metadata} 2> {log};
+    if [[ {params.low_memory_mode} == "True" ]]; then
+      cp {input.input_metadata} {output.metadata};
+    else
+      bash scripts/usher_metadata.sh \
+        --base-input {params.base_input} \
+        --build {wildcards.build} \
+        --extra-cols {params.cols} \
+        1> {output.metadata} 2> {log};
+    fi;
+
+    # Convert date col to decimal date
     python3 scripts/date_to_decimal.py {output.metadata} {output.decimal_date}
     """
 
@@ -577,7 +588,8 @@ rule usher_subtree:
   message: "{wildcards.build} | Creating subtrees from UShER protobuf."
   input:
     pb       = "results/{build}/usher.pb.gz",
-    metadata = "results/{build}/usher.metadata.tsv",
+    #metadata = "results/{build}/usher.metadata.tsv",
+    metadata = "results/{build}/usher.metadata.decimal_date.tsv",
     samples  = "results/{build}/sc2rf.recombinants.txt",
   output:
     subtrees_dir = directory("results/{build}/subtrees"),
@@ -586,7 +598,6 @@ rule usher_subtree:
   params:
     k           = lambda wildcards: config["builds"][wildcards.build]["usher_subtree"]["k"],
     base_input  = lambda wildcards: config["builds"][wildcards.build]["base_input"],
-    low_memory_mode =  lambda wildcards: config["builds"][wildcards.build]["usher_subtree"]["low_memory_mode"],
   threads: 1
   resources:
     cpus = 1,
@@ -596,17 +607,14 @@ rule usher_subtree:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    # Check if using low memory mode (disables metadata)
-    if [[ {params.low_memory_mode} == "True" ]]; then
-      metadata_flag="";
-    else
-      metadata_flag="-M ../../../{input.metadata}";
-    fi
-
     # Create subtrees
     mkdir -p {output.subtrees_dir}
     cd {output.subtrees_dir}
-    matUtils extract -i ../../../{input.pb} --nearest-k-batch ../../../{input.samples}:{params.k} ${{metadata_flag}} > ../../../{log} 2>&1;
+    matUtils extract \
+      -i ../../../{input.pb} \
+      --nearest-k-batch ../../../{input.samples}:{params.k} \
+      -M ../../../{input.metadata} \
+      > ../../../{log} 2>&1;
     cd - >> ../../../{log}
 
     # Collapse subtrees

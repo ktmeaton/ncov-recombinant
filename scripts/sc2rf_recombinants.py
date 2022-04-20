@@ -16,6 +16,7 @@ NO_DATA_CHAR = "NA"
 @click.option("--outdir", help="Output directory", required=True)
 @click.option("--aligned", help="Alignment", required=True)
 @click.option("--custom-ref", help="Reference strain name", required=True)
+@click.option("--exclude-clades", help="Clades to exclude (csv)", required=True)
 def main(
     tsv,
     min_len,
@@ -23,6 +24,7 @@ def main(
     aligned,
     custom_ref,
     max_parents,
+    exclude_clades,
 ):
     """Detect recombinant seqences from sc2rf."""
 
@@ -34,7 +36,9 @@ def main(
     df["sc2rf_clades_regions_filter"] = [NO_DATA_CHAR] * len(df)
     df["sc2rf_breakpoints_regions_filter"] = [NO_DATA_CHAR] * len(df)
 
-    drop_strains = []
+    exclude_clades = exclude_clades.split(",")
+
+    drop_strains = {}
 
     for rec in df.iterrows():
         regions_str = rec[1]["sc2rf_clades_regions"]
@@ -77,32 +81,63 @@ def main(
 
         # Check if all the regions were collapsed
         if len(regions_filter) < 2:
-            drop_strains.append(rec[0])
+            drop_strains[rec[0]] = "all regions collapsed"
 
-        # check breakpoints
+        # check if the number of breakpoints changed
+        # the filtered breakpoints should only ever be equal or less
         num_breakpoints = df["sc2rf_breakpoints"][rec[0]]
         num_breakpoints_filter = len(breakpoints_filter)
 
         if num_breakpoints_filter > num_breakpoints:
-            drop_strains.append(rec[0])
+            drop_strains[rec[0]] = "{} filtered breakpoints > {}".format(
+                num_breakpoints_filter, num_breakpoints
+            )
 
         # Identify the new filtered clades
         clades_filter = [regions_filter[s]["clade"] for s in regions_filter]
+        num_parents = len(set(clades_filter))
+        if num_parents > max_parents:
+            drop_strains[rec[0]] = "{} parents > {}".format(num_parents, max_parents)
 
-        if len(clades_filter) > max_parents:
-            drop_strains.append(rec[0])
+        # Check if any clades are in exclude clades
+
+        x_clade_found = False
+        for clade in clades_filter:
+            for x_clade in exclude_clades:
+                if x_clade in clade:
+                    drop_strains[rec[0]] = "{} is in exclude_clades".format(clade)
+                    x_clade_found = True
+                    break
+
+            if x_clade_found:
+                break
+
+        # Extract the lengths of each region
+        regions_length = [str(regions_filter[s]["end"] - s) for s in regions_filter]
 
         # Construct the new filtered regions
         regions_filter = [
             "{}:{}|{}".format(s, regions_filter[s]["end"], regions_filter[s]["clade"])
             for s in regions_filter
         ]
+
         df.at[rec[0], "sc2rf_clades_filter"] = ",".join(clades_filter)
         df.at[rec[0], "sc2rf_clades_regions_filter"] = ",".join(regions_filter)
+        df.at[rec[0], "sc2rf_clades_regions_length"] = ",".join(regions_length)
         df.at[rec[0], "sc2rf_breakpoints_regions_filter"] = ",".join(breakpoints_filter)
 
+    # write exclude strains
+    outpath_exclude = os.path.join(outdir, "sc2rf.recombinants.exclude.tsv")
+    if len(drop_strains) > 0:
+        with open(outpath_exclude, "w") as outfile:
+            for strain, reason in drop_strains.items():
+                outfile.write(strain + "\t" + reason + "\n")
+    else:
+        cmd = "touch {outpath}".format(outpath=outpath_exclude)
+        os.system(cmd)
+
     # drop strains
-    drop_strains = set(drop_strains)
+    drop_strains = set(drop_strains.keys())
     df.drop(drop_strains, inplace=True)
 
     # write output table
@@ -115,21 +150,11 @@ def main(
     with open(outpath_strains, "w") as outfile:
         outfile.write(strains + "\n")
 
-    # write exclude strains
-    outpath_exclude = os.path.join(outdir, "sc2rf.recombinants.exclude.txt")
-    if len(drop_strains) > 0:
-        strains = "\n".join(drop_strains)
-        with open(outpath_exclude, "w") as outfile:
-            outfile.write(strains + "\n")
-    else:
-        cmd = "touch {outpath}".format(outpath=outpath_exclude)
-        os.system(cmd)
-
     # filter the ansi output
     inpath_ansi = os.path.join(outdir, "sc2rf.ansi.txt")
     outpath_ansi = os.path.join(outdir, "sc2rf.recombinants.ansi.txt")
     if len(drop_strains) > 0:
-        cmd = "grep -v -f {exclude} {inpath} > {outpath}".format(
+        cmd = "cut -f 1 {exclude} | grep -v -f - {inpath} > {outpath}".format(
             exclude=outpath_exclude,
             inpath=inpath_ansi,
             outpath=outpath_ansi,
