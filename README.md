@@ -6,7 +6,7 @@
 [![Test CI](https://github.com/ktmeaton/ncov-recombinant/actions/workflows/test.yaml/badge.svg)](https://github.com/ktmeaton/ncov-recombinant/actions/workflows/test.yaml)
 [![Pipeline CI](https://github.com/ktmeaton/ncov-recombinant/actions/workflows/pipeline.yaml/badge.svg)](https://github.com/ktmeaton/ncov-recombinant/actions/workflows/pipeline.yaml)
 
-SARS-CoV-2 recombinant sequence detection.
+SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://github.com/nextstrain/ncov).
 
 1. Align sequences and perform clade/lineage assignments with [Nextclade](https://github.com/nextstrain/nextclade).
 1. Identify parental clades and plot recombination breakpoints with [sc2rf](https://github.com/lenaschimmel/sc2rf).
@@ -16,14 +16,18 @@ SARS-CoV-2 recombinant sequence detection.
 
 ### Line list
 
-| strain                    | country | date       | Nextclade_clade | Nextclade_pango | sc2rf_clades | usher_pango_lineage | usher_subtree |
-| ------------------------- | ------- | ---------- | --------------- | --------------- | ------------ | ------------------- | ------------- |
-| England/PLYM-332E079/2022 | England | 2022-01-18 | recombinant     | XF              | 21J/BA.1     | proposed441         | 1             |
-| England/PLYM-336A651/2022 | England | 2022-01-20 | recombinant     | XF              | 21J/BA.1     | proposed441         | 1             |
-| England/ALDP-31AE19E/2022 | England | 2022-01-06 | recombinant     | XF              | 21J/BA.1     | proposed422         | 1             |
-|USA/VT-CDCBI-CRSP_LEYQGGQYKC7CTXDR/2022|USA|2022-02-03|recombinant|XE|BA.1/BA.2|proposed467|2|
-|USA/VT-CDCBI-CRSP_3IGFKAUB6STYVNPK/2022|USA|2022-02-14|recombinant|XE|BA.1/BA.2|proposed467|2|
-|USA/VT-CDCBI-CRSP_HOVIFDUIEJBVOGLK/2022|USA|2022-02-16|recombinant|XE|BA.1/BA.2|proposed467|2|
+|                 strain                  | lineage | parents                           |    date    | country  | breakpoints |
+|:---------------------------------------:|:-------:| --------------------------------- |:----------:|:--------:|:-----------:|
+|        England/BRBR-3899D04/2022        |   XE    | Omicron/BA.1/21K,Omicron/BA.2/21L | 2022-02-27 | England  | 10450:11536 |
+|        England/ALDP-31AE19E/2022        |   XF    | Delta/21J,Omicron/BA.1/21K        | 2022-01-06 | England  | 21619:21761 |
+|        England/PLYM-336A651/2022        |   XF    | Delta/21J,Omicron/BA.1/21K        | 2022-01-20 | England  | 21619:21761 |
+|      USA/TN-CDC-ASC210559252/2021       |   XF    | Delta/21J,Omicron/BA.1/21K        | 2021-12-31 |   USA    | 21988:22577 |
+|       Scotland/QEUH-37E04A0/2022        |   XG    | Omicron/BA.1/21K,Omicron/BA.2/21L | 2022-02-21 | Scotland |  5387:8392  |
+|        England/MILK-385C31A/2022        |   XH    | Omicron/BA.1/21K,Omicron/BA.2/21L | 2022-02-24 | England  | 10450:11536 |
+| USA/VT-CDCBI-CRSP_3IGFKAUB6STYVNPK/2022 |   XJ    | Omicron/BA.1/21K,Omicron/BA.2/21L | 2022-02-14 |   USA    | 15241:15713 |
+| USA/NY-Broad-CRSP_WH5TJZ42BYV4BC3T/2022 |   XM    | Omicron/BA.1/21K,Omicron/BA.2/21L | 2022-03-28 |   USA    | 18164:19954 |
+|        England/MILK-38AA91B/2022        |   XQ    | Omicron/BA.1/21K,Omicron/BA.2/21L | 2022-02-28 | England  |  4322:5385  |
+|        USA/CO-CDC-FG-248528/2022        |   XS    | Delta/21J,Omicron/BA.1/21K        | 2022-01-19 |   USA    | 10030:10448 |
 
 ### Breakpoints
 
