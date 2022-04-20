@@ -20,7 +20,10 @@ def decimal_date(date):
         try:
             date = datetime.strptime(date, "%Y-%m")
         except ValueError:
-            date = datetime.strptime(date, "%Y")
+            try:
+                date = datetime.strptime(date, "%Y")
+            except ValueError:
+                return "?"
 
         decimal_date = float(date.year)
         return decimal_date
