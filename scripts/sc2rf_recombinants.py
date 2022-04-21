@@ -17,6 +17,9 @@ NO_DATA_CHAR = "NA"
 @click.option("--aligned", help="Alignment", required=True)
 @click.option("--custom-ref", help="Reference strain name", required=True)
 @click.option("--exclude-clades", help="Clades to exclude (csv)", required=True)
+@click.option(
+    "--breakpoints", help="Recombinant lineage and breakpoint metadata", required=True
+)
 def main(
     tsv,
     min_len,
@@ -25,16 +28,32 @@ def main(
     custom_ref,
     max_parents,
     exclude_clades,
+    breakpoints,
 ):
     """Detect recombinant seqences from sc2rf."""
 
     # -----------------------------------------------------------------------------
     # Import Dataframe
+
+    # sc2rf output
     df = pd.read_csv(tsv, sep="\t", index_col=0)
     df.fillna("", inplace=True)
     df["sc2rf_clades_filter"] = [NO_DATA_CHAR] * len(df)
     df["sc2rf_clades_regions_filter"] = [NO_DATA_CHAR] * len(df)
     df["sc2rf_breakpoints_regions_filter"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_lineage"] = [NO_DATA_CHAR] * len(df)
+
+    # breakpoint
+    breakpoint_df = pd.read_csv(breakpoints, sep="\t")
+    breakpoint_df.fillna(NO_DATA_CHAR, inplace=True)
+    drop_rows = breakpoint_df[breakpoint_df["breakpoints"] == NO_DATA_CHAR].index
+    breakpoint_df.drop(drop_rows, inplace=True)
+    breakpoint_df["breakpoints"] = [
+        bp.split(",") for bp in breakpoint_df["breakpoints"]
+    ]
+
+    # A breakpoint match if within 10 base pairs
+    breakpoint_approx_bp = 10
 
     exclude_clades = exclude_clades.split(",")
 
@@ -121,10 +140,47 @@ def main(
             for s in regions_filter
         ]
 
+        # Identify lineage based on breakpoint
+        sc2rf_lineage = ""
+        sc2rf_lineages = {bp: [] for bp in breakpoints_filter}
+
+        for bp_s in breakpoints_filter:
+            start_s = int(bp_s.split(":")[0])
+            end_s = int(bp_s.split(":")[1])
+
+            for bp_rec in breakpoint_df.iterrows():
+                for bp_i in bp_rec[1]["breakpoints"]:
+                    start_i = int(bp_i.split(":")[0])
+                    end_i = int(bp_i.split(":")[1])
+                    start_diff = abs(start_s - start_i)
+                    end_diff = abs(end_s - end_i)
+
+                    if (
+                        start_diff <= breakpoint_approx_bp
+                        and end_diff <= breakpoint_approx_bp
+                    ):
+
+                        sc2rf_lineages[bp_s].append(bp_rec[1]["lineage"])
+
+            # Collapse any duplicate lineages (ex. XF)
+            sc2rf_lineages[bp_s] = list(set(sc2rf_lineages[bp_s]))
+
+        # if len(sc2rf_lineages) == num_breakpoints_filter:
+        collapse_lineages = []
+        for bp in sc2rf_lineages.values():
+            for lineage in bp:
+                collapse_lineages.append(lineage)
+
+        sc2rf_lineage = ",".join(list(set(collapse_lineages)))
+
         df.at[rec[0], "sc2rf_clades_filter"] = ",".join(clades_filter)
         df.at[rec[0], "sc2rf_clades_regions_filter"] = ",".join(regions_filter)
         df.at[rec[0], "sc2rf_clades_regions_length"] = ",".join(regions_length)
         df.at[rec[0], "sc2rf_breakpoints_regions_filter"] = ",".join(breakpoints_filter)
+        df.at[rec[0], "sc2rf_breakpoints_regions_lineages"] = ",".join(
+            breakpoints_filter
+        )
+        df.at[rec[0], "sc2rf_lineage"] = sc2rf_lineage
 
     # write exclude strains
     outpath_exclude = os.path.join(outdir, "sc2rf.recombinants.exclude.tsv")

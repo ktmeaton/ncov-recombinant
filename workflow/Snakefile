@@ -369,6 +369,7 @@ rule sc2rf_recombinants:
     ansi    = "results/{build}/sc2rf.ansi.txt",
     tsv     = "results/{build}/sc2rf.tsv",
     aligned = "results/{build}/nextclade.aligned.fasta",
+    breakpoints = "data/controls/breakpoints.tsv",
   output:
     strains = "results/{build}/sc2rf.recombinants.txt",
     aligned = "results/{build}/sc2rf.recombinants.fasta",
@@ -398,6 +399,7 @@ rule sc2rf_recombinants:
       --aligned {input.aligned} \
       --custom-ref "{params.custom_ref}" \
       --exclude-clades "{params.exclude_clades}" \
+      --breakpoints {input.breakpoints} \
       2> {log};
     """
 
