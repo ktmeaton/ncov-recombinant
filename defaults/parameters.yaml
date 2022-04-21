@@ -130,9 +130,6 @@ builds:
   - name: controls
     base_input: public-latest
 
+    # Universal rule parameters can (optionally) be overridden for a specific build.
     usher_metadata:
       extra_cols: "date,country,gisaid_epi_isl,genbank_accession"
-
-    # Universal rule parameters can (optionally) be overridden for a specific build.
-    sc2rf:
-      sc2rf_args: "--ansi --parents 2-4 --breakpoints 1-4 --unique 1 --max-intermission-length 3 --max-intermission-count 3 --mutation-threshold 0.5"

@@ -11,10 +11,30 @@
 1. Use `date_to_decimal.py` to create `num_date` for auspice subtrees.
 1. Add an `--exclude-clades` param to `sc2rf_recombinants.py`.
 1. Add param `--ignore-shared-subs` to `sc2rf`.
+
+    - This makes regions detection more conservative.
+    - The result is that regions/clade will be smaller and breakpoints larger.
+    - These breakpoints more closely match pango-designation issues.
+
 1. Bump up `min_len` for `sc2rf_recombinants` to 200 bp.
 
 ## To DO
 
+### Priority
+
+1. Add column `lineage_breakpoint` to `sc2rf_recombinants` output.
+
+    - I want this to take the form of X*, or proposed{issue} to follow UShER.
+    - To accomplish this, I need a mapping of breakpoints to lineages and issues.
+
+### Misc
+
+1. Drop redundant `XF` strains?
+1. Tidy up all the x_to_x.tsv files in `data/controls`.
+
+    - `issue_to_lineage.tsv` used by rule `usher`.
+
+1. Investigate why X* lineages are excluded from nextclade
 1. Add citations to report.
 1. Update `sc2rf` to `bd2a4009` for `BA.4` and `BA.5` parents.
 1. Update UShER to 0.5.3.
