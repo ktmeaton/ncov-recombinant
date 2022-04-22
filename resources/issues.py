@@ -13,12 +13,18 @@ query_url = base_url + params
 
 @click.command()
 @click.option("--token", help="Github API Token", required=True)
-@click.option("--output", help="Output path", required=True)
-def main(
-    token,
-    output,
-):
+@click.option("--output", help="Path to the outfile TSV file", required=True)
+@click.option(
+    "--breakpoints",
+    help=(
+        "TSV of curated breakpoints with columns 'lineage', 'issue', and 'breakpoints'"
+    ),
+    required=False,
+)
+def main(token, output, breakpoints):
     """Fetch pango-designation issues"""
+
+    breakpoints_curated = breakpoints
 
     # Construct the header
     header_cols = [
@@ -26,9 +32,9 @@ def main(
         "lineage",
         "status",
         "status_description",
-        "title",
         "countries",
-        "breakpoint",
+        "breakpoints",
+        "title",
         "date_created",
         "date_updated",
         "date_closed",
@@ -58,6 +64,8 @@ def main(
             number = issue["number"]
             # sanitize quotes out of title
             title = issue["title"].replace('"', "")
+            # sanitize markdown formatters
+            title = title.replace("*", "")
 
             # If title includes recombinant or recombinantion
             if "recombinant" in title.lower() or "recombination" in title.lower():
@@ -104,7 +112,7 @@ def main(
 
             # Try to extract info from the body
             body = issue["body"]
-            breakpoint = ""
+            breakpoints = ""
             countries = ""
 
             for line in body.split("\n"):
@@ -113,10 +121,10 @@ def main(
 
                 # Breakpoints
                 if "breakpoint:" in line.lower():
-                    breakpoint = line
+                    breakpoints = line
                     break
                 elif "breakpoint" in line.lower():
-                    breakpoint = line
+                    breakpoints = line
 
                 # Countries (nicely structures)
                 if "countries circulating" in line.lower():
@@ -135,7 +143,7 @@ def main(
             data["status_description"] = status_description
             data["title"] = title
             data["countries"] = countries
-            data["breakpoint"] = breakpoint
+            data["breakpoints"] = breakpoints
             data["date_created"] = date_created
             data["date_updated"] = date_updated
             data["date_closed"] = date_closed
@@ -147,14 +155,37 @@ def main(
             # Add data to the main dataframe
             df = pd.concat([df, df_data], ignore_index=True)
 
-        break
+    # -------------------------------------------------------------------------
+    # Curate breakpoints
+
+    if breakpoints_curated:
+        df_breakpoints = pd.read_csv(breakpoints_curated, sep="\t")
+        df.insert(5, "breakpoints_curated", [""] * len(df))
+
+        for rec in df.iterrows():
+            issue = rec[1]["issue"]
+            lineage = rec[1]["lineage"]
+
+            if issue not in list(df_breakpoints["issue"]):
+                continue
+
+            match = df_breakpoints[df_breakpoints["issue"] == issue]
+            bp = list(match["breakpoints"])[0]
+            if bp != np.nan:
+                df.at[rec[0], "breakpoints_curated"] = bp
+
+    # -------------------------------------------------------------------------
+    # Sort the final dataframe
+    status_order = {"designated": 0, "recombinant": 1, "monitor": 2, "not accepted": 3}
 
     # Change empty cells to NaN so they'll be sorted to the end
-    df = df.replace("", np.nan)
-    df.sort_values(["lineage", "status"], inplace=True)
-    # Restore the nan values to empty string
-    df.fillna("", inplace=True)
-
+    df = df.replace({"lineage": "", "status": ""}, np.nan)
+    df.sort_values(
+        ["status", "lineage"],
+        inplace=True,
+        ascending=True,
+        key=lambda x: x.map(status_order),
+    )
     df.to_csv(output, sep="\t", index=False)
 
 
