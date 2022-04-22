@@ -43,6 +43,7 @@
 1. Tidy up all the x_to_x.tsv files in `data/controls`.
 
     - `issue_to_lineage.tsv` used by rule `usher`.
+    - `lineage_to_issue.tsv` used by rule `report`.
 
 1. Investigate why X* lineages are excluded from nextclade
 1. Add citations to report.

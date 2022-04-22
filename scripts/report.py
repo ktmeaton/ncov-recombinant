@@ -16,8 +16,6 @@ PANGO_ISSUES_URL = "https://github.com/cov-lineages/pango-designation/issues/"
 
 @click.command()
 @click.option("--summary", help="Summary (tsv).", required=True)
-@click.option("--cols", help="Columns to rename (csv)", required=True)
-@click.option("--cols-rename", help="Renamed columns (csv)", required=True)
 @click.option(
     "--years", help="Reporting years (csv)", required=True, default="2022,2021"
 )
@@ -49,6 +47,7 @@ def main(
 
     # Import Dataframes
     summary_df = pd.read_csv(summary, sep="\t")
+    summary_df.fillna(NO_DATA_CHAR, inplace=True)
 
     lineage_issue_df = pd.read_csv(lineage_to_issue, sep="\t", header=None)
     lineage_issue_df.columns = ["lineage", "issue"]
@@ -57,15 +56,49 @@ def main(
     breakpoint_issue_df.columns = ["breakpoint", "issue"]
 
     # Select and rename columns from summary
-    cols = "strain,sc2rf_lineage,usher_pango_lineage_map,Nextclade_pango,sc2rf_clades_filter,date,country,sc2rf_breakpoints_regions_filter,usher_subtree"
-    cols_rename = "strain,lineage_sc2rf,lineage_usher,lineage_nextclade,parents,date,country,breakpoints,subtree"
-    cols_list = cols.split(",")
-    cols_rename_list = cols_rename.split(",")
-    rename_dict = {c: r for c, r in zip(cols_list, cols_rename_list)}
+    cols_dict = {
+        "strain": "strain",
+        "sc2rf_lineage": "lineage_sc2rf",
+        "usher_pango_lineage_map": "lineage_usher",
+        "Nextclade_pango": "lineage_nextclade",
+        "sc2rf_clades_filter": "parents",
+        "date": "date",
+        "country": "country",
+        "sc2rf_breakpoints_regions_filter": "breakpoints",
+        "usher_subtree": "subtree",
+    }
+    cols_list = list(cols_dict.keys())
+
     report_df = summary_df[cols_list]
-    report_df.rename(columns=rename_dict, inplace=True)
+    report_df.rename(columns=cols_dict, inplace=True)
     outpath = os.path.join(outdir, "linelist.tsv")
     report_df.to_csv(outpath, sep="\t", index=False)
+    report_df.insert(1, "lineage", [NO_DATA_CHAR] * len(report_df))
+    report_df.insert(2, "classifier", [NO_DATA_CHAR] * len(report_df))
+
+    # Lineage classification
+    print(report_df)
+    for rec in report_df.iterrows():
+        lineage = ""
+        classifier = ""
+        lineages_sc2rf = rec[1]["lineage_sc2rf"].split(",")
+        lineage_usher = rec[1]["lineage_usher"]
+
+        # If sc2rf was unambiguous
+        if len(lineages_sc2rf) == 1 and lineages_sc2rf[0] != NO_DATA_CHAR:
+            lineage = lineages_sc2rf[0]
+            classifier = "sc2rf"
+        # Otherwise, use UShER
+        else:
+            lineage = lineage_usher
+            classifier = "UShER"
+
+        report_df.at[rec[0], "lineage"] = lineage
+        report_df.at[rec[0], "classifier"] = classifier
+
+    # Drop other lineage cols
+    drop_cols = ["lineage_sc2rf", "lineage_usher", "lineage_nextclade"]
+    report_df.drop(columns=drop_cols, inplace=True)
 
     # Check if previous report was specified
     if prev_report:
@@ -111,6 +144,7 @@ def main(
         "earliest_date",
         "latest_date",
         "lineage:issue",
+        "classifier",
         "subtree",
         "year",
     ]
@@ -127,9 +161,10 @@ def main(
         sequences = len(bp_df)
         earliest_date = min(bp_df["datetime"])
         latest_date = max(bp_df["datetime"])
-        subtree = list(bp_df["subtree"])[0]
-        lineage = list(bp_df["lineage_usher"])[0]
+        lineage = list(bp_df["lineage"])[0]
         issue = NO_DATA_CHAR
+        classifier = list(bp_df["classifier"])[0]
+        subtree = list(bp_df["subtree"])[0]
         year = earliest_date.year
 
         # Try to find the issue based on lineages (designated)
@@ -150,7 +185,8 @@ def main(
 
         for clade, rename in CLADES_RENAME.items():
             parents = parents.replace(clade, rename)
-        parents = parents.replace(",", ", ")
+        parents = list(set(parents.split(",")))
+        parents = ", ".join(parents)
 
         # Calculate growth from previous report
         growth = 0
@@ -174,6 +210,7 @@ def main(
         data["earliest_date"].append(earliest_date)
         data["latest_date"].append(latest_date)
         data["lineage:issue"].append(lineage_issue)
+        data["classifier"].append(classifier)
         data["subtree"].append(subtree)
         data["year"].append(year)
 

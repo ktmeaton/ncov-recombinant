@@ -695,11 +695,14 @@ rule report:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    python3 scripts/report.py \
-      --summary {input.summary} \
-      --prev-report {params.prev_report} \
-      2> {log};
+    # Check if we're specifying a previous report to compare to
+    prev_report_flag=""
+    if [[ "{params.prev_report}" ]]; then
+      prev_report_flag="--prev-report {params.prev_report}"
+    fi
 
+    # Generate report
+    python3 scripts/report.py --summary {input.summary} $prev_report_flag 2> {log};
     """
 
 # -----------------------------------------------------------------------------#
