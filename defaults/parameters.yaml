@@ -101,14 +101,11 @@ rule_params:
   - name: usher_metadata
     cols: "date,country"
 
-  # cols  : Columns (csv) to output in the report
-  # cols_rename: New names for columns (csv) in report
   # prev_report: Path to a previous report for growth calculation
   # years: csv list of years to include in the report
   - name: report
-    cols: "strain,usher_pango_lineage_map,Nextclade_pango,sc2rf_clades_filter,date,country,sc2rf_breakpoints_regions_filter,usher_subtree"
-    cols_rename: "strain,lineage_usher,lineage_nextclade,parents,date,country,breakpoints,subtree"
-    prev_report: "results/{build}/report.tsv"
+    prev_report: ""
+    #prev_report: "results/{build}/report.tsv"
     years: "2022,2021"
 
 
