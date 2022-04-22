@@ -16,9 +16,8 @@ NO_DATA_CHAR = "NA"
 @click.option("--outdir", help="Output directory", required=True)
 @click.option("--aligned", help="Alignment", required=True)
 @click.option("--custom-ref", help="Reference strain name", required=True)
-@click.option("--exclude-clades", help="Clades to exclude (csv)", required=True)
 @click.option(
-    "--breakpoints", help="Recombinant lineage and breakpoint metadata", required=True
+    "--issues", help="Issues TSV metadata from pango-designation", required=True
 )
 def main(
     tsv,
@@ -27,8 +26,7 @@ def main(
     aligned,
     custom_ref,
     max_parents,
-    exclude_clades,
-    breakpoints,
+    issues,
 ):
     """Detect recombinant seqences from sc2rf."""
 
@@ -44,18 +42,17 @@ def main(
     df["sc2rf_lineage"] = [NO_DATA_CHAR] * len(df)
 
     # breakpoint
-    breakpoint_df = pd.read_csv(breakpoints, sep="\t")
+    breakpoint_col = "breakpoints_curated"
+    breakpoint_df = pd.read_csv(issues, sep="\t")
     breakpoint_df.fillna(NO_DATA_CHAR, inplace=True)
-    drop_rows = breakpoint_df[breakpoint_df["breakpoints"] == NO_DATA_CHAR].index
+    drop_rows = breakpoint_df[breakpoint_df[breakpoint_col] == NO_DATA_CHAR].index
     breakpoint_df.drop(drop_rows, inplace=True)
-    breakpoint_df["breakpoints"] = [
-        bp.split(",") for bp in breakpoint_df["breakpoints"]
+    breakpoint_df[breakpoint_col] = [
+        bp.split(",") for bp in breakpoint_df[breakpoint_col]
     ]
 
     # A breakpoint match if within 10 base pairs
     breakpoint_approx_bp = 10
-
-    exclude_clades = exclude_clades.split(",")
 
     drop_strains = {}
 
@@ -93,14 +90,18 @@ def main(
                         breakpoint = "{}:{}".format(breakpoint_start, breakpoint_end)
                         breakpoints_filter.append(breakpoint)
 
-                    # store prev record
-                    prev_clade = clade
-                    prev_start_coord = start_coord
-                    prev_end_coord = end_coord
+                # store prev record
+                prev_clade = clade
+                prev_start_coord = start_coord
+                prev_end_coord = end_coord
 
         # Check if all the regions were collapsed
         if len(regions_filter) < 2:
             drop_strains[rec[0]] = "all regions collapsed"
+
+        # Process coords in between region as breakpoints
+        # print("\t",regions_filter)
+        # print("\t",breakpoints_filter)
 
         # check if the number of breakpoints changed
         # the filtered breakpoints should only ever be equal or less
@@ -117,19 +118,6 @@ def main(
         num_parents = len(set(clades_filter))
         if num_parents > max_parents:
             drop_strains[rec[0]] = "{} parents > {}".format(num_parents, max_parents)
-
-        # Check if any clades are in exclude clades
-
-        x_clade_found = False
-        for clade in clades_filter:
-            for x_clade in exclude_clades:
-                if x_clade in clade:
-                    drop_strains[rec[0]] = "{} is in exclude_clades".format(clade)
-                    x_clade_found = True
-                    break
-
-            if x_clade_found:
-                break
 
         # Extract the lengths of each region
         regions_length = [str(regions_filter[s]["end"] - s) for s in regions_filter]
@@ -149,7 +137,7 @@ def main(
             end_s = int(bp_s.split(":")[1])
 
             for bp_rec in breakpoint_df.iterrows():
-                for bp_i in bp_rec[1]["breakpoints"]:
+                for bp_i in bp_rec[1][breakpoint_col]:
                     start_i = int(bp_i.split(":")[0])
                     end_i = int(bp_i.split(":")[1])
                     start_diff = abs(start_s - start_i)

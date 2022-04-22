@@ -1,0 +1,32 @@
+#------------------------------------------------------------------------------#
+# Build Config
+#------------------------------------------------------------------------------#
+
+configfile:
+  - defaults/parameters.yaml # Load default inputs, builds, and rule param
+  - profiles/tutorial/builds.yaml # Load custom inputs, builds, and rule params
+
+#------------------------------------------------------------------------------#
+# Snakemake config
+#------------------------------------------------------------------------------#
+
+restart-times: 1
+max-jobs-per-second: 1
+latency-wait: 10
+keep-going: True
+show-failed-logs: True
+rerun-incomplete: True
+printshellcmds: True
+
+#------------------------------------------------------------------------------#
+# System config
+#------------------------------------------------------------------------------#
+
+# Maximum number of jobs to run
+jobs : 1
+
+# Default resources for a SINGLE JOB
+default-resources:
+  - cpus=1
+  - mem_mb=4000
+  - time_min=60

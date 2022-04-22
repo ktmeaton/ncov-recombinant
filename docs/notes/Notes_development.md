@@ -4,6 +4,7 @@
 
     - There are now publicly available samples.
 
+1. Correct `XF` and `XJ` controls to match issues.
 1. Create a markdown report with program versions.
 1. Fix `sc2rf_recombinants` bug where samples with >2 breakpoints were being excluded.
 1. Summarize recombinants by parents and dates observed.
@@ -33,11 +34,26 @@
     - `seaborn`
     - `snipit`
     - `bedtools`
-    - Comment out `git` and `pre-commit`.
+    - Comment out dev tools: `git` and `pre-commit`.
+
+1. Use github api to pull recombinant issues.
+1. Consolidate \*_to_\* files into `resources/issues.tsv`.
+
+    - `issue_to_lineage.tsv` used by rule `usher` and `usher_metadata`.
+    - `lineage_to_issue.tsv` used by rule `report`.
+
+1. Use the `--clades` param of `sc2rf` rather than using `exclude_clades`.
 
 ## To DO
 
 ### Priority
+
+1. Add a `tutorial` profile.
+
+    - (N=2) Designated Recombinants (pango-designation)
+    - (N=2) Proposed Recombinants (issues, UCSC)
+    - (N=2) Unpublished Recombinants
+    - (N=2) Non Recombinant
 
 1. Add documentation to the report.
 
@@ -46,18 +62,20 @@
 
 ### Misc
 
-1. Drop redundant `XF` strains?
-1. Tidy up all the x_to_x.tsv files in `data/controls`.
+1. Remove nwk output from `usher` and `usher_subtrees`:
 
-    - `issue_to_lineage.tsv` used by rule `usher`.
-    - `lineage_to_issue.tsv` used by rule `report`.
+    - Pull subtree sample names from json instead
 
-1. Investigate why X* lineages are excluded from nextclade
+1. Troubleshoot `sc2rf` update to `bd2a4009` which drops all deltacrons.
+
+    - The last stable commit was `5ac8d04`.
+
+1. Remove the `resources` in config.yaml.
+1. Investigate the reasons that X* lineages are excluded by `sc2rf`.
 1. Add citations to report.
-1. Update `sc2rf` to `bd2a4009` for `BA.4` and `BA.5` parents.
 1. Update UShER to 0.5.3.
 1. Plot recombinant breakpoints differently.
-1. Edit Auspice json to change default colorings,filters,and panels.
+1. Edit Auspice json to change default colorings,filters,and panels (also sort).
 1. Automate unit test update.
 1. Not implemented recombinant lineages:
 

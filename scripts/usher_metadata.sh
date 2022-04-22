@@ -32,7 +32,7 @@ nextclade="results/${build}/nextclade.metadata.tsv"
 sc2rf="results/${build}/sc2rf.recombinants.tsv"
 usher_clades="results/${build}/usher.clades.tsv"
 usher_placement="results/${build}/usher.placement_stats.tsv"
-issue_to_lineage="data/controls/issue_to_lineage.tsv"
+issue_to_lineage="resources/issue_to_lineage.tsv"
 
 default_cols="strain"
 extract_cols="clade,usher_clade,Nextclade_pango,usher_pango_lineage,dataset,sc2rf_clades_filter,sc2rf_clades_regions_filter,sc2rf_breakpoints_regions_filter,usher_num_best"

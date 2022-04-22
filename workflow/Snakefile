@@ -180,6 +180,34 @@ rule help:
           print("\t\tlog: ", rule._log)
 
 # -----------------------------------------------------------------------------#
+#  STAGE 0: Setup
+# -----------------------------------------------------------------------------#
+
+rule_name = "issues_download"
+rule issues_download:
+  """
+  Download pango-designation issues.
+  """
+  message: "Downloading pango-designation issues."
+  input:
+    breakpoints = "resources/breakpoints.tsv",
+  output:
+    issues = "resources/issues.tsv",
+    issue_to_lineage = "resources/issue_to_lineage.tsv"
+  threads: 1
+  resources:
+    cpus = 1,
+  benchmark:
+    "benchmarks/{rule}/{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    python3 resources/issues.py --breakpoints {input.breakpoints} 1> {output.issues} 2> {log};
+    csvtk cut -t -f "issue,lineage" {output.issues}| tail -n+2 > {output.issue_to_lineage} 2>> {log};
+    """
+
+# -----------------------------------------------------------------------------#
 #  STAGE 1: Nextclade QC
 # -----------------------------------------------------------------------------#
 
@@ -323,6 +351,7 @@ rule sc2rf:
     debug_csv = "results/{build}/sc2rf_debug.csv",
     debug_tsv = "results/{build}/sc2rf_debug.tsv",
   params:
+    clades     = lambda wildcards: " ".join(config["builds"][wildcards.build]["sc2rf"]["clades"]),
     sc2rf_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"],
     debug_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["debug_args"],
     max_name_length = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["max_name_length"],
@@ -344,6 +373,7 @@ rule sc2rf:
       --outdir {params.outdir} \
       --log {log.regular} \
       --max-name-length {params.max_name_length} \
+      --clades "{params.clades}" \
       {params.sc2rf_args};
 
     # Debugging Parameters
@@ -353,6 +383,7 @@ rule sc2rf:
       --outdir {params.outdir} \
       --log {log.debug} \
       --max-name-length {params.max_name_length} \
+      --clades "{params.clades}" \
       {params.debug_args};
     """
 
@@ -369,7 +400,7 @@ rule sc2rf_recombinants:
     ansi    = "results/{build}/sc2rf.ansi.txt",
     tsv     = "results/{build}/sc2rf.tsv",
     aligned = "results/{build}/nextclade.aligned.fasta",
-    breakpoints = "data/controls/breakpoints.tsv",
+    issues  = "resources/issues.tsv",
   output:
     strains = "results/{build}/sc2rf.recombinants.txt",
     aligned = "results/{build}/sc2rf.recombinants.fasta",
@@ -381,7 +412,6 @@ rule sc2rf_recombinants:
     custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
     min_len    = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["min_len"],
     max_parents = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_parents"],
-    exclude_clades = lambda wildcards: ",".join(config["builds"][wildcards.build]["nextclade_recombinants"]["exclude_clades"]),
   threads: 1
   resources:
     cpus = 1,
@@ -398,8 +428,7 @@ rule sc2rf_recombinants:
       --outdir {params.outdir} \
       --aligned {input.aligned} \
       --custom-ref "{params.custom_ref}" \
-      --exclude-clades "{params.exclude_clades}" \
-      --breakpoints {input.breakpoints} \
+      --issues {input.issues} \
       2> {log};
     """
 
@@ -488,11 +517,10 @@ rule usher:
     pb  = lambda wildcards: "data/{base_input}/usher.pb.gz".format(
             base_input=config["builds"][wildcards.build]["base_input"]
           ),
-    issue_to_lineage = "data/controls/issue_to_lineage.tsv",
+    issue_to_lineage = "resources/issue_to_lineage.tsv",
   output:
     pb              = "results/{build}/usher.pb.gz",
     samples         = "results/{build}/usher.samples.txt",
-    tree            = "results/{build}/usher.tree.nwk",
     placement_stats = "results/{build}/usher.placement_stats.tsv",
     mut_paths       = "results/{build}/usher.mutation_paths.tsv",
     clades          = "results/{build}/usher.clades.tsv",
@@ -524,9 +552,6 @@ rule usher:
       | csvtk replace -t -f "usher_pango_lineage_map" -p "proposed([0-9]+)" -k {input.issue_to_lineage} -r "{{kv}}" \
       > {output.clades}.tmp;
     mv {output.clades}.tmp {output.clades}
-
-    # Extract tree
-    matUtils extract -i {input.pb} -u {output.samples} -t {output.tree} 2>> {log};
 
     # Cleanup
     rm -f {params.outdir}/final-tree.nh

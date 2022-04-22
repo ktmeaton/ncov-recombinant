@@ -12,6 +12,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    --clades)
+      clades=$2
+      shift # past argument
+      shift # past value
+      ;;
     --prefix)
       prefix=$2
       shift # past argument
@@ -50,8 +55,14 @@ csvfile="${outdir}/${prefix}.csv"
 sc2rf_args+=("--csvfile $csvfile")
 
 cd sc2rf;
-echo "python3 sc2rf.py ${aligned} ${sc2rf_args[@]}" > ${outdir}/${prefix}.ansi.txt;
-python3 sc2rf.py ${aligned} ${sc2rf_args[@]} 1>> ${outdir}/${prefix}.ansi.txt 2> ${log};
+
+# rebuild examples
+
+log_rebuild=${log%.*}_rebuild.log
+python3 sc2rf.py --rebuild-examples > ${log_rebuild}
+
+echo "python3 sc2rf.py ${aligned} --clades ${clades} ${sc2rf_args[@]}" > ${outdir}/${prefix}.ansi.txt;
+python3 sc2rf.py ${aligned} --clades ${clades} ${sc2rf_args[@]} 1>> ${outdir}/${prefix}.ansi.txt 2> ${log};
 
 # Check if any recombinants were detected"
 if [[ -s ${outdir}/${prefix}.csv ]]; then
