@@ -2,6 +2,7 @@
 import click
 import os
 import pandas as pd
+import copy
 
 NO_DATA_CHAR = "NA"
 CLADES_RENAME = {
@@ -69,7 +70,7 @@ def main(
     }
     cols_list = list(cols_dict.keys())
 
-    report_df = summary_df[cols_list]
+    report_df = copy.deepcopy(summary_df[cols_list])
     report_df.rename(columns=cols_dict, inplace=True)
     outpath = os.path.join(outdir, "linelist.tsv")
     report_df.to_csv(outpath, sep="\t", index=False)
@@ -77,7 +78,7 @@ def main(
     report_df.insert(2, "classifier", [NO_DATA_CHAR] * len(report_df))
 
     # Lineage classification
-    print(report_df)
+
     for rec in report_df.iterrows():
         lineage = ""
         classifier = ""
@@ -295,11 +296,11 @@ def main(
         report_content += year_desc + "\n"
 
         dates = [d.strftime("%Y-%m-%d") for d in year_df["earliest_date"]]
-        year_df["earliest_date"] = dates
+        year_df.loc[year_df.index, "earliest_date"] = dates
         dates = [d.strftime("%Y-%m-%d") for d in year_df["latest_date"]]
-        year_df["latest_date"] = dates
+        year_df.loc[year_df.index, "latest_date"] = dates
 
-        year_df.drop("year", axis="columns", inplace=True)
+        year_df = year_df.drop("year", axis="columns")
         year_table = year_df.to_markdown(index=False, tablefmt="github")
         report_content += year_table + "\n\n"
 
