@@ -4,16 +4,17 @@ import requests
 import click
 import pandas as pd
 import numpy as np
+import sys
+from datetime import datetime
 
-
+rate_limit_url = "https://api.github.com/rate_limit"
 base_url = "https://api.github.com/repos/cov-lineages/pango-designation/issues"
 params = "?state=all&per_page=100&page={page_num}"
 query_url = base_url + params
 
 
 @click.command()
-@click.option("--token", help="Github API Token", required=True)
-@click.option("--output", help="Path to the outfile TSV file", required=True)
+@click.option("--token", help="Github API Token", required=False)
 @click.option(
     "--breakpoints",
     help=(
@@ -21,7 +22,7 @@ query_url = base_url + params
     ),
     required=False,
 )
-def main(token, output, breakpoints):
+def main(token, breakpoints):
     """Fetch pango-designation issues"""
 
     breakpoints_curated = breakpoints
@@ -45,10 +46,29 @@ def main(token, output, breakpoints):
     pages = range(1, 100)
     for page_num in pages:
 
-        print("Fetching page: {}".format(page_num))
+        # Is the user supplied an API token, use it
+        headers = ""
+        if token:
+            headers = {"Authorization": "token {}".format(token)}
 
-        # Fetch the issue page
-        headers = {"Authorization": "token {}".format(token)}
+        # Check the current rate limt
+        r = requests.get(rate_limit_url, headers=headers)
+        api_stats = r.json()
+        requests_limit = api_stats["resources"]["core"]["limit"]
+        requests_remaining = api_stats["resources"]["core"]["remaining"]
+
+        reset_time = api_stats["resources"]["core"]["reset"]
+        reset_date = datetime.fromtimestamp(reset_time)
+
+        if requests_remaining == 0:
+            msg = "ERROR: Hourly API limit of {} requests exceeded,".format(
+                requests_limit
+            )
+            msg += " rate limit will reset after {}.".format(reset_date)
+            print(msg, file=sys.stderr)
+            sys.exit(1)
+
+        # We're under the rate limit, and can proceed
         r = requests.get(query_url.format(page_num=page_num), headers=headers)
         issues_json = r.json()
 
@@ -181,12 +201,14 @@ def main(token, output, breakpoints):
     # Change empty cells to NaN so they'll be sorted to the end
     df = df.replace({"lineage": "", "status": ""}, np.nan)
     df.sort_values(
-        ["status", "lineage"],
+        [
+            "status",
+            "lineage",
+        ],
         inplace=True,
-        ascending=True,
         key=lambda x: x.map(status_order),
     )
-    df.to_csv(output, sep="\t", index=False)
+    df.to_csv(sys.stdout, sep="\t", index=False)
 
 
 if __name__ == "__main__":
