@@ -11,8 +11,6 @@ dependencies:
   - bioconda::csvtk=0.23.0
   - bioconda::seqkit=2.2.0
   - bioconda::bedtools=2.30.0
-  # Subsampling
-  - bioconda::augur=14.0.0
   # Alignmnent and Clade QC
   - bioconda::nextclade=1.11.0
   # Usher
@@ -28,7 +26,7 @@ dependencies:
   - conda-forge::pre_commit=2.17.0
   - anaconda::git=2.35.0
   - pip:
-    # sc2rf
+    # sc2rf dependencies
     - termcolor==1.1.0
     - tqdm==4.63.0
     - snipit
