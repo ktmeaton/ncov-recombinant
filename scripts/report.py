@@ -36,8 +36,6 @@ PANGO_ISSUES_URL = "https://github.com/cov-lineages/pango-designation/issues/"
 @click.option("--prev-report", help="Previous report", required=False)
 def main(
     summary,
-    cols,
-    cols_rename,
     years,
     lineage_to_issue,
     breakpoint_to_issue,
@@ -59,6 +57,8 @@ def main(
     breakpoint_issue_df.columns = ["breakpoint", "issue"]
 
     # Select and rename columns from summary
+    cols = "strain,sc2rf_lineage,usher_pango_lineage_map,Nextclade_pango,sc2rf_clades_filter,date,country,sc2rf_breakpoints_regions_filter,usher_subtree"
+    cols_rename = "strain,lineage_sc2rf,lineage_usher,lineage_nextclade,parents,date,country,breakpoints,subtree"
     cols_list = cols.split(",")
     cols_rename_list = cols_rename.split(",")
     rename_dict = {c: r for c, r in zip(cols_list, cols_rename_list)}

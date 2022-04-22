@@ -16,16 +16,26 @@
     - The result is that regions/clade will be smaller and breakpoints larger.
     - These breakpoints more closely match pango-designation issues.
 
+1. Update breakpoints in controls metadata to reflect the output with `--ignore-shared-subs`.
 1. Bump up `min_len` for `sc2rf_recombinants` to 200 bp.
+1. Add column `sc2rf_lineage` to `sc2rf_recombinants` output.
+
+    - Takes the form of X*, or proposed{issue} to follow UShER.
 
 ## To DO
 
 ### Priority
 
-1. Add column `lineage_breakpoint` to `sc2rf_recombinants` output.
+1. Consolidate lineage assignments into a single column.
 
-    - I want this to take the form of X*, or proposed{issue} to follow UShER.
-    - To accomplish this, I need a mapping of breakpoints to lineages and issues.
+    - sc2rf takes priority if a single lineage is identified.
+    - usher is next, to resolve ties or if sc2rf had no lineage.
+    - finally, we use nextclade... at all?
+
+1. Add documentation to the report.
+
+    - What the sequences column format means: X (+X)
+    - What the different lineage assignments are ()
 
 ### Misc
 

@@ -576,7 +576,7 @@ rule usher_metadata:
     fi;
 
     # Convert date col to decimal date
-    python3 scripts/date_to_decimal.py {output.metadata} {output.decimal_date}
+    python3 scripts/date_to_decimal.py {output.metadata} {output.decimal_date} >> {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------
@@ -684,8 +684,6 @@ rule report:
     report        = "results/{build}/report.md",
     recombinants  = "results/{build}/recombinants.tsv",
   params:
-    cols        = lambda wildcards: config["builds"][wildcards.build]["report"]["cols"],
-    cols_rename = lambda wildcards: config["builds"][wildcards.build]["report"]["cols_rename"],
     years       = lambda wildcards: config["builds"][wildcards.build]["report"]["years"],
     prev_report = lambda wildcards: config["builds"][wildcards.build]["report"]["prev_report"].format(build=wildcards.build),
   threads: 1
@@ -700,8 +698,6 @@ rule report:
     python3 scripts/report.py \
       --summary {input.summary} \
       --prev-report {params.prev_report} \
-      --cols {params.cols} \
-      --cols-rename {params.cols_rename} \
       2> {log};
 
     """
