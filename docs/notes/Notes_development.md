@@ -22,15 +22,22 @@
 
     - Takes the form of X*, or proposed{issue} to follow UShER.
 
-## To DO
-
-### Priority
-
 1. Consolidate lineage assignments into a single column.
 
     - sc2rf takes priority if a single lineage is identified.
     - usher is next, to resolve ties or if sc2rf had no lineage.
-    - finally, we use nextclade... at all?
+
+1. Slim down the conda environment and remove unnecessary programs.
+
+    - `augur`
+    - `seaborn`
+    - `snipit`
+    - `bedtools`
+    - Comment out `git` and `pre-commit`.
+
+## To DO
+
+### Priority
 
 1. Add documentation to the report.
 
