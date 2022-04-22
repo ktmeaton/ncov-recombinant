@@ -78,12 +78,23 @@ rule_params:
         - "20G"
 
   # max_name_length : The maximum character length of strain names
+  # clades          : Restrict parent search to these clades
   # sc2rf_args      : Additional arguments supplied to the program sc2rf
   # debug_args      : Ultra-sensitive arguments for debugging
   - name: sc2rf
     max_name_length: 50
-    sc2rf_args: "--ansi --parents 2-4 --breakpoints 1-4 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --mutation-threshold 0.5 --ignore-shared-subs"
-    debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --mutation-threshold 0.5"
+    clades:
+      #- "20I" # Alpha
+      #- "20H" # Beta
+      #- "20J" # Gamma
+      - "21I" # Delta
+      - "21J" # Delta
+      - "BA.1" # Omicron
+      - "BA.2" # Omicron
+      - "BA.3" # Omicron
+
+    sc2rf_args: "--ansi --parents 2-4 --breakpoints 1-4 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --mutation-threshold 0.75 --ignore-shared-subs"
+    debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --mutation-threshold 0.75"
 
   # min_len: Ignore recombinants regions shorter than this
   # max_parents: Exlude samples with greater than this number of parents
@@ -105,7 +116,6 @@ rule_params:
   # years: csv list of years to include in the report
   - name: report
     prev_report: ""
-    #prev_report: "results/{build}/report.tsv"
     years: "2022,2021"
 
 

@@ -125,11 +125,11 @@ def main(
         shutil.copyfile(in_path, out_path)
 
         # Strain List
-        out_path_strains = os.path.join(outdir, "subtree_{}.txt".format(i))
-        strains_list = [t.name for t in tree.get_terminals()]
-        strains_text = "\n".join(strains_list)
-        with open(out_path_strains, "w") as outfile:
-            outfile.write(strains_text + "\n")
+        # out_path_strains = os.path.join(outdir, "subtree_{}.txt".format(i))
+        # strains_list = [t.name for t in tree.get_terminals()]
+        # strains_text = "\n".join(strains_list)
+        # with open(out_path_strains, "w") as outfile:
+        #     outfile.write(strains_text + "\n")
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ reporting/
 my_profiles/
 
 # Ignore datasets
-data/public-latest
+data/public-*
 data/sars-cov-2_*
 data/canada
 data/requests
