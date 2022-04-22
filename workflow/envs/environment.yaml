@@ -10,7 +10,6 @@ dependencies:
   # Metadata and Sequence Manipulation
   - bioconda::csvtk=0.23.0
   - bioconda::seqkit=2.2.0
-  - bioconda::bedtools=2.30.0
   # Alignmnent and Clade QC
   - bioconda::nextclade=1.11.0
   # Usher
@@ -21,9 +20,9 @@ dependencies:
   - anaconda::pip=22.0.3
   - anaconda::click=8.0.2
   - conda-forge::pandas=1.4.1
-  # Development
-  - conda-forge::pre_commit=2.17.0
-  - anaconda::git=2.35.0
+  # For dev users
+  #- conda-forge::pre_commit=2.17.0
+  #- anaconda::git=2.35.0
   - pip:
     # sc2rf dependencies
     - termcolor==1.1.0
