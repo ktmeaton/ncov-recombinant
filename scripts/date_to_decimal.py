@@ -16,7 +16,10 @@ def decimal_date(date):
 
     try:
         date = datetime.strptime(date, "%Y-%m-%d")
-    except ValueError:
+    except (ValueError, TypeError) as error:
+        # nan vals will be flagged as a TypeError
+        if type(error) == TypeError:
+            return "?"
         try:
             date = datetime.strptime(date, "%Y-%m")
         except ValueError:
