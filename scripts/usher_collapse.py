@@ -3,9 +3,6 @@ import click
 import filecmp
 import shutil
 import os
-import json
-from Bio import Phylo
-from augur.utils import json_to_tree
 
 NO_DATA_CHAR = "NA"
 
@@ -126,13 +123,6 @@ def main(
         in_path = subtrees_collapse[i]
         out_path = os.path.join(outdir, "subtree_{}.json".format(i))
         shutil.copyfile(in_path, out_path)
-
-        # Convert to newick
-        out_path_nwk = os.path.join(outdir, "subtree_{}.nwk".format(i))
-        with open(out_path) as infile:
-            tree_json = json.load(infile)
-        tree = json_to_tree(tree_json)
-        Phylo.write(tree, out_path_nwk, "newick")
 
         # Strain List
         out_path_strains = os.path.join(outdir, "subtree_{}.txt".format(i))
