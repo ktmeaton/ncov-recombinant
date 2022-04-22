@@ -21,7 +21,6 @@ dependencies:
   - anaconda::pip=22.0.3
   - anaconda::click=8.0.2
   - conda-forge::pandas=1.4.1
-  - conda-forge::seaborn=0.11.0
   # Development
   - conda-forge::pre_commit=2.17.0
   - anaconda::git=2.35.0
