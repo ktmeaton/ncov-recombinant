@@ -58,8 +58,8 @@ cd sc2rf;
 
 # rebuild examples
 
-log_rebuild=${log%.*}_rebuild.log
-python3 sc2rf.py --rebuild-examples > ${log_rebuild}
+#log_rebuild=${log%.*}_rebuild
+#python3 sc2rf.py --rebuild-examples 1> ${log_rebuild}.log 2> ${log_rebuild}.err
 
 echo "python3 sc2rf.py ${aligned} --clades ${clades} ${sc2rf_args[@]}" > ${outdir}/${prefix}.ansi.txt;
 python3 sc2rf.py ${aligned} --clades ${clades} ${sc2rf_args[@]} 1>> ${outdir}/${prefix}.ansi.txt 2> ${log};

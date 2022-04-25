@@ -49,12 +49,14 @@ done
 
 git_commit_hash=$(git rev-parse HEAD)
 git_commit=${git_commit_hash:0:8}
-git_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+git_tag=$(git tag | tail -n1)
+#git_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
 
 nextclade_ver=$(nextclade --version)
 usher_ver=$(usher --version | cut -d " " -f 2 | sed 's/(\|)\|v//g')
 
-ncov_recombinant_ver="${git_branch}:${git_commit}"
+
+ncov_recombinant_ver="${git_tag}:${git_commit}"
 
 cd sc2rf
 git_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p' | sed 's/)//g' | rev | cut -d " " -f 1 | rev)

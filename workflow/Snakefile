@@ -193,7 +193,7 @@ rule issues_download:
     breakpoints = "resources/breakpoints.tsv",
   output:
     issues = "resources/issues.tsv",
-    issue_to_lineage = "resources/issue_to_lineage.tsv"
+    issue_to_lineage = "resources/issue_to_lineage.tsv",
   threads: 1
   resources:
     cpus = 1,
@@ -543,6 +543,9 @@ rule usher:
     # Rename and reformat output
     mv {params.outdir}/mutation-paths.txt {output.mut_paths};
 
+    # Extract samples
+    matUtils extract -i {input.pb} -u {output.samples} 2>> {log};
+
     echo -e "strain\\tusher_best_set_difference\\tusher_num_best" > {output.placement_stats};
     sed 's/[[:space:]]*$//' {params.outdir}/placement_stats.tsv >> {output.placement_stats};
 
@@ -704,6 +707,7 @@ rule report:
   message: "{wildcards.build} | Summarizing results into a report."
   input:
     summary = "results/{build}/summary.tsv",
+    issues      = "resources/issues.tsv",
   output:
     linelist      = "results/{build}/linelist.tsv",
     report        = "results/{build}/report.md",
@@ -727,7 +731,7 @@ rule report:
     fi
 
     # Generate report
-    python3 scripts/report.py --summary {input.summary} $prev_report_flag 2> {log};
+    python3 scripts/report.py --summary {input.summary} --issues {input.issues} $prev_report_flag 2> {log};
     """
 
 # -----------------------------------------------------------------------------#
