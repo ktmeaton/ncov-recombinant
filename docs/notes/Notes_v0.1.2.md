@@ -45,4 +45,4 @@
 1. Add documentation to the report.
 
     - What the sequences column format means: X (+X)
-    - What the different lineage assignments are ()
+    - What the different lineage classifers.

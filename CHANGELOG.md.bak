@@ -1,0 +1,79 @@
+# CHANGELOG
+
+## Development
+
+### Commits
+
+## v0.1.2
+
+### Notes
+
+1. Add lineage `XM` to controls.
+1. Correct `XF` and `XJ` controls to match issues.
+1. Create a markdown report with program versions.
+1. Fix `sc2rf_recombinants` bug where samples with >2 breakpoints were being excluded.
+1. Summarize recombinants by parents and dates observed.
+1. Change `report.tsv` to `linelist.tsv`.
+1. Use `date_to_decimal.py` to create `num_date` for auspice subtrees.
+1. Add an `--exclude-clades` param to `sc2rf_recombinants.py`.
+1. Add param `--ignore-shared-subs` to `sc2rf`.
+1. Update breakpoints in controls metadata to reflect the output with `--ignore-shared-subs`.
+1. Bump up `min_len` for `sc2rf_recombinants` to 200 bp.
+1. Add column `sc2rf_lineage` to `sc2rf_recombinants` output.
+1. Consolidate lineage assignments into a single column.
+1. Slim down the conda environment and remove unnecessary programs.
+1. Use github api to pull recombinant issues.
+1. Consolidate \*_to_\* files into `resources/issues.tsv`.
+1. Use the `--clades` param of `sc2rf` rather than using `exclude_clades`.
+1. Disabled `--rebuild-examples` in `sc2rf` because of requests error.
+1. Add column `issue` to `recombinants.tsv`.
+1. Get `ncov-recombinant` version using tag.
+1. Add documentation to the report.
+
+### Pull Requests
+
+10 10
+* [```pull/10```](https://github.com/ktmeaton/ncov-recombinant/pull/10) Automated report generation and sc2rf lineage assignments
+* [```pull/10```](https://github.com/ktmeaton/ncov-recombinant/pull/10) Automated report generation and sc2rf lineage assignments
+
+### Commits
+
+* [```d2d4cd80```](https://github.com/ktmeaton/ncov-recombinant/commit/d2d4cd80) update notes for v0.1.2
+* [```17ae6eeb```](https://github.com/ktmeaton/ncov-recombinant/commit/17ae6eeb) add issue to recombinants report
+* [```2ab8dd30```](https://github.com/ktmeaton/ncov-recombinant/commit/2ab8dd30) (broken) troubleshoot usher collapse json
+* [```e4fd3352```](https://github.com/ktmeaton/ncov-recombinant/commit/e4fd3352) update breakpoints
+* [```c743ad3d```](https://github.com/ktmeaton/ncov-recombinant/commit/c743ad3d) update sc2rf examples
+* [```62e1ffc1```](https://github.com/ktmeaton/ncov-recombinant/commit/62e1ffc1) update and clean controls data
+* [```9c401a0c```](https://github.com/ktmeaton/ncov-recombinant/commit/9c401a0c) add curated breakpoints to issues
+* [```7cf953ad```](https://github.com/ktmeaton/ncov-recombinant/commit/7cf953ad) add an issues script and resources file
+* [```fbf35e51```](https://github.com/ktmeaton/ncov-recombinant/commit/fbf35e51) major environment reduction
+* [```1b1f16e9```](https://github.com/ktmeaton/ncov-recombinant/commit/1b1f16e9) remove bedtools from env
+* [```7b650279```](https://github.com/ktmeaton/ncov-recombinant/commit/7b650279) remove seaborn from env
+* [```b32608e7```](https://github.com/ktmeaton/ncov-recombinant/commit/b32608e7) remove snipit from env
+* [```9cab231e```](https://github.com/ktmeaton/ncov-recombinant/commit/9cab231e) remove augur from env
+* [```a69836a8```](https://github.com/ktmeaton/ncov-recombinant/commit/a69836a8) fix pandas warnings in report
+* [```b3137ed3```](https://github.com/ktmeaton/ncov-recombinant/commit/b3137ed3) remove script usher_plot as now we rely on auspice
+* [```06fa080d```](https://github.com/ktmeaton/ncov-recombinant/commit/06fa080d) remove script update_controls which is now done manually
+* [```e8d46a64```](https://github.com/ktmeaton/ncov-recombinant/commit/e8d46a64) consolidate lineage call in report
+* [```ccfea688```](https://github.com/ktmeaton/ncov-recombinant/commit/ccfea688) hardcode columns for report
+* [```5172755e```](https://github.com/ktmeaton/ncov-recombinant/commit/5172755e) improve type catching in date_to_decimal
+* [```74f0e528```](https://github.com/ktmeaton/ncov-recombinant/commit/74f0e528) update controls breakpoints and add col sc2rf_lineage
+* [```d4664015```](https://github.com/ktmeaton/ncov-recombinant/commit/d4664015) add param --ignore-shared-subs to sc2rf
+* [```659d7f83```](https://github.com/ktmeaton/ncov-recombinant/commit/659d7f83) overhaul reporting workflow
+* [```e8e3444f```](https://github.com/ktmeaton/ncov-recombinant/commit/e8e3444f) update controls metadata and dev notes
+* [```07a5ff52```](https://github.com/ktmeaton/ncov-recombinant/commit/07a5ff52) add XM to controls
+
+## v0.1.1
+
+### Notes
+
+1. Add lineage `XD` to controls.
+1. Add lineage `XQ` to controls.
+1. Add lineage `XS` to controls.
+1. Exclude lineage `XR` because it has no public genomes.
+1. Test `sc2rf` dev to ignore clade regions that are ambiguous.
+1. Add column `usher_pango_lineage_map` that maps github issues to recombinant lineages.
+1. Add new rule `report`.
+1. Filter non-recombinants from `sc2rf` ansi output.
+1. Fix `subtrees_collapse` failing if only 1 tree specified
+1. Add new rule `usher_metadata` for merge metadata for subtrees.
