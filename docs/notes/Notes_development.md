@@ -38,11 +38,10 @@
 
 1. Use github api to pull recombinant issues.
 1. Consolidate \*_to_\* files into `resources/issues.tsv`.
-
-    - `issue_to_lineage.tsv` used by rule `usher` and `usher_metadata`.
-    - `lineage_to_issue.tsv` used by rule `report`.
-
 1. Use the `--clades` param of `sc2rf` rather than using `exclude_clades`.
+1. Disabled `--rebuild-examples` in `sc2rf` because of requests error.
+1. Add column `issue` to `recombinants.tsv`.
+1. Get `ncov-recombinant` version using tag.
 
 ## To DO
 

@@ -3,8 +3,16 @@ import click
 import filecmp
 import shutil
 import os
+import json
 
 NO_DATA_CHAR = "NA"
+
+
+def json_get_strains(json_tree):
+    if "children" not in json_tree:
+        return json_tree["name"]
+    else:
+        return ",".join([json_get_strains(c) for c in json_tree["children"]])
 
 
 @click.command()
@@ -125,11 +133,14 @@ def main(
         shutil.copyfile(in_path, out_path)
 
         # Strain List
-        # out_path_strains = os.path.join(outdir, "subtree_{}.txt".format(i))
-        # strains_list = [t.name for t in tree.get_terminals()]
-        # strains_text = "\n".join(strains_list)
-        # with open(out_path_strains, "w") as outfile:
-        #     outfile.write(strains_text + "\n")
+        with open(out_path) as infile:
+            json_data = json.load(infile)
+
+        strains_csv = json_get_strains(json_data["tree"])
+        strains_text = strains_csv.replace(",", "\n")
+        out_path_strains = os.path.join(outdir, "subtree_{}.txt".format(i))
+        with open(out_path_strains, "w") as outfile:
+            outfile.write(strains_text + "\n")
 
 
 if __name__ == "__main__":
