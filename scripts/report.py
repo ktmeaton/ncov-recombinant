@@ -3,6 +3,7 @@ import click
 import os
 import pandas as pd
 import copy
+import re
 
 NO_DATA_CHAR = "NA"
 CLADES_RENAME = {
@@ -26,12 +27,14 @@ PANGO_ISSUES_URL = "https://github.com/cov-lineages/pango-designation/issues/"
     required=True,
     default="resources/issues.tsv",
 )
-@click.option("--prev-report", help="Previous report", required=False)
+@click.option("--prev-linelist", help="Previous linelist", required=False)
+@click.option("--changelog", help="Markdown changelog", required=False)
 def main(
     summary,
     years,
     issues,
-    prev_report,
+    prev_linelist,
+    changelog,
 ):
     """Create a linelist and recombinant report"""
 
@@ -71,9 +74,9 @@ def main(
     # Lineage classification consensus
 
     for rec in report_df.iterrows():
-        lineage = ""
-        classifier = ""
-        issue = ""
+        lineage = NO_DATA_CHAR
+        classifier = NO_DATA_CHAR
+        issue = NO_DATA_CHAR
         lineages_sc2rf = rec[1]["lineage_sc2rf"].split(",")
         lineage_usher = rec[1]["lineage_usher"]
         bp = rec[1]["breakpoints"]
@@ -82,7 +85,8 @@ def main(
         if len(lineages_sc2rf) == 1 and lineages_sc2rf[0] != NO_DATA_CHAR:
             lineage = lineages_sc2rf[0]
             classifier = "sc2rf"
-        # Otherwise, use UShER
+
+        # Otherwise use UShER
         else:
             lineage = lineage_usher
             classifier = "UShER"
@@ -91,25 +95,41 @@ def main(
         if lineage in list(issues_df["lineage"]):
             match = issues_df[issues_df["lineage"] == lineage]
             issue = match["issue"].values[0]
+        # Try to get issue from sc2rf lineage
+        else:
+            issues = []
+            for lin in lineages_sc2rf:
+                # ex. proposed517 is issue 517
+                if "proposed" in lin:
+                    issue = lin.replace("proposed", "")
+                    issues.append(issue)
+            if len(issues) > 1:
+                issue = ",".join(issues)
 
         report_df.at[rec[0], "lineage"] = lineage
         report_df.at[rec[0], "classifier"] = classifier
-        report_df.at[rec[0], "issue"] = issue
+        report_df.at[rec[0], "issue"] = str(issue)
 
     # Drop other lineage cols
     drop_cols = ["lineage_sc2rf", "lineage_usher", "lineage_nextclade"]
     report_df.drop(columns=drop_cols, inplace=True)
 
     # -------------------------------------------------------------------------
-    # Previous Report Comparison
+    # Previous Linelist Comparison
 
-    if prev_report:
+    if prev_linelist:
 
         # Identify new samples
-        prev_report_df = pd.read_csv(prev_report, sep="\t")
-        sample_col = prev_report_df.columns[0]
-        prev_samples = list(prev_report_df[sample_col])
-        current_samples = list(report_df[sample_col])
+        prev_linelist_df = pd.read_csv(prev_linelist, sep="\t")
+
+        # Use first column as the sample ID
+        linelist_sample_col = prev_linelist_df.columns[0]
+        report_sample_col = report_df.columns[0]
+
+        prev_samples = list(prev_linelist_df[linelist_sample_col])
+        current_samples = list(report_df[report_sample_col])
+
+        # Add "new" column
         new_samples = []
         for s in current_samples:
             if s not in prev_samples:
@@ -117,12 +137,6 @@ def main(
             else:
                 new_samples.append("no")
         report_df["new"] = new_samples
-
-        # Identify prev sequences for each breakpoint (for growth)
-        prev_report_df = prev_report_df.pivot_table(
-            index="breakpoints", values="date", aggfunc="count"
-        ).reset_index()
-        prev_report_df.columns = ["breakpoints", "sequences"]
 
     # Convert date to datetime
     report_df["datetime"] = pd.to_datetime(report_df["date"], format="%Y-%m-%d")
@@ -191,15 +205,30 @@ def main(
 
         for clade, rename in CLADES_RENAME.items():
             parents = parents.replace(clade, rename)
-        parents = list(set(parents.split(",")))
-        parents.sort()
-        parents = ", ".join(parents)
 
-        # Calculate growth from previous report
+        parents_uniq = []
+        for p in parents.split(","):
+            if p not in parents_uniq:
+                parents_uniq.append(p)
+        parents = ", ".join(parents_uniq)
+
+        # Calculate growth from previous linelist
         growth = 0
-        if prev_report and bp in list(prev_report_df["breakpoints"]):
-            match = prev_report_df[prev_report_df["breakpoints"] == bp]
-            sequences_prev = match["sequences"].values[0]
+        if prev_linelist:
+
+            prev_lineage_col = None
+            for col in prev_linelist_df.columns:
+                if "lineage" in col:
+                    prev_lineage_col = col
+                    break
+
+            # Try to match on both breakpoint and lineage
+            match = prev_linelist_df[
+                (prev_linelist_df["breakpoints"] == bp)
+                & (prev_linelist_df[prev_lineage_col] == lineage)
+            ]
+
+            sequences_prev = len(match)
             growth = sequences - sequences_prev
             if growth <= 0:
                 growth = str(growth)
@@ -209,6 +238,18 @@ def main(
         sequences_int = sequences
         sequences = "{} ({})".format(sequences, growth)
 
+        # issues will be a csv if there was a single breakpoint
+        # and sc2rf found "proposed" lineages
+        if "," in issue:
+            issues_urls = [
+                "[{issue}]({url})".format(issue=i, url=PANGO_ISSUES_URL + i)
+                for i in issue.split(",")
+            ]
+            issue = ",".join(issues_urls)
+
+        elif issue != NO_DATA_CHAR:
+            issue_url = PANGO_ISSUES_URL + str(issue)
+            issue = "[{}]({})".format(issue, issue_url)
         lineage_issue = "{}:{}".format(lineage, issue)
 
         # Update data
@@ -281,7 +322,10 @@ def main(
         num_pending = len(pending)
         num_unknown = num_recombinants - num_designated - num_pending
 
-        year_header = "## {year} | {parents}\n".format(year=year, parents=parents)
+        if len(parents) > 1:
+            year_header = "## {year} | {parents}\n".format(year=year, parents=parents)
+        else:
+            year_header = "## {year}\n".format(year=year)
         report_content += year_header + "\n"
 
         year_desc = ""
@@ -310,10 +354,10 @@ def main(
 
         report_content += year_desc + "\n"
 
-        dates = [d.strftime("%Y-%m-%d") for d in year_df["earliest_date"]]
-        year_df.loc[year_df.index, "earliest_date"] = dates
-        dates = [d.strftime("%Y-%m-%d") for d in year_df["latest_date"]]
-        year_df.loc[year_df.index, "latest_date"] = dates
+        # dates = [str(d.strftime("%Y-%m-%d")) for d in year_df["earliest_date"]]
+        # year_df.loc[year_df.index, "earliest_date"] = dates
+        # dates = [str(d.strftime("%Y-%m-%d")) for d in year_df["latest_date"]]
+        # year_df.loc[year_df.index, "latest_date"] = dates
 
         year_df = year_df.drop("year", axis="columns")
 
@@ -324,6 +368,8 @@ def main(
         )
 
         year_table = year_df.to_markdown(index=False, tablefmt="github")
+        # Hack fix for dates
+        year_table = year_table.replace(" 00:00:00", " " * 9)
         report_content += year_table + "\n\n"
         report_content += year_table_note + "\n\n"
 
@@ -336,6 +382,20 @@ def main(
     ver_info += "## Versions\n\n"
     ver_info += ver_df.to_markdown(index=False, tablefmt="github")
     report_content += ver_info + "\n\n"
+
+    # Append a changelog
+
+    if changelog:
+
+        changelog_content = ""
+        changelog_content += "## Changelog\n\n"
+        with open(changelog) as infile:
+            changelog_raw = infile.read()
+            # Bump header levels down by 1 (extra #)
+            changelog_bump = re.sub("^#", "##", changelog_raw)
+            changelog_content += changelog_bump
+
+        report_content += changelog_content + "\n\n"
 
     outpath = os.path.join(outdir, "report.md")
     with open(outpath, "w") as outfile:
