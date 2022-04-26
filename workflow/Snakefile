@@ -352,6 +352,8 @@ rule sc2rf:
     debug_tsv = "results/{build}/sc2rf_debug.tsv",
   params:
     clades     = lambda wildcards: " ".join(config["builds"][wildcards.build]["sc2rf"]["clades"]),
+    primers    = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["primers"],
+    primers_name = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["primers_name"],
     sc2rf_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"],
     debug_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["debug_args"],
     max_name_length = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["max_name_length"],
@@ -366,6 +368,12 @@ rule sc2rf:
     debug   = "logs/{rule}/{{build}}_debug_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
+    # Check if we're using primers
+    primers_flag=""
+    if [[ "{params.primers}" ]]; then
+      primers_flag="--primers {params.primers} --primers-name {params.primers_name}"
+    fi
+
     # Regular Parameters
     bash scripts/sc2rf.sh \
       --aligned {input.aligned} \
@@ -374,6 +382,7 @@ rule sc2rf:
       --log {log.regular} \
       --max-name-length {params.max_name_length} \
       --clades "{params.clades}" \
+      ${{primers_flag}} \
       {params.sc2rf_args};
 
     # Debugging Parameters
@@ -384,6 +393,7 @@ rule sc2rf:
       --log {log.debug} \
       --max-name-length {params.max_name_length} \
       --clades "{params.clades}" \
+      ${{primers_flag}} \
       {params.debug_args};
     """
 
@@ -713,8 +723,9 @@ rule report:
     report        = "results/{build}/report.md",
     recombinants  = "results/{build}/recombinants.tsv",
   params:
-    years       = lambda wildcards: config["builds"][wildcards.build]["report"]["years"],
-    prev_report = lambda wildcards: config["builds"][wildcards.build]["report"]["prev_report"].format(build=wildcards.build),
+    years         = lambda wildcards: config["builds"][wildcards.build]["report"]["years"],
+    changelog     = lambda wildcards: config["builds"][wildcards.build]["report"]["changelog"],
+    prev_linelist = lambda wildcards: config["builds"][wildcards.build]["report"]["prev_linelist"],
   threads: 1
   resources:
     cpus = 1,
@@ -724,14 +735,21 @@ rule report:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    # Check if we're specifying a previous report to compare to
-    prev_report_flag=""
-    if [[ "{params.prev_report}" ]]; then
-      prev_report_flag="--prev-report {params.prev_report}"
+    # Check if we're specifying a previous linelist to compare to
+    prev_linelist_flag=""
+    if [[ "{params.prev_linelist}" ]]; then
+      prev_linelist_flag="--prev-linelist {params.prev_linelist}"
+    fi
+
+    # Check if we're specifying a changelog to append to
+    changelog_flag=""
+    if [[ "{params.changelog}" ]]; then
+      changelog_flag="--changelog {params.changelog}"
     fi
 
     # Generate report
-    python3 scripts/report.py --summary {input.summary} --issues {input.issues} $prev_report_flag 2> {log};
+    cmd="python3 scripts/report.py --years {params.years} --summary {input.summary} --issues {input.issues} $prev_linelist_flag $changelog_flag 2> {log}";
+    eval $cmd
     """
 
 # -----------------------------------------------------------------------------#

@@ -59,5 +59,4 @@ builds:
     report:
       cols: "nml_lab_id,strain,gisaid_epi_isl,usher_subtree,usher_pango_lineage_map,Nextclade_pango,sc2rf_clades_filter,date,division,sc2rf_breakpoints_regions_filter,purpose_of_sequencing,purpose_of_sequencing_details,border_sample"
       cols_rename: "nml_lab_id,ngs_id,gisaid_epi_isl,subtree,lineage_usher,lineage_nextclade,parents,date,division,breakpoints,purpose_of_sequencing,purpose_of_sequencing_details,border_sample"
-      prev_report: ""
       years: "2022,2021"

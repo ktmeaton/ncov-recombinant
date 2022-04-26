@@ -1,9 +1,23 @@
 # Development
 
+1. Fix bug in `sc2rf_recombinants` regions/breakpoints logic.
+1. Fix bug in `sc2rf` where a sample has no definitive substitutions.
+1. Change `sc2rf_lineage` column to use NA for no lineage found.
+
+    - This is to troubleshot when only one breakpoint matches a lineage.
+
+1. Bump up the `min_len` of `sc2rf_recombinants` to 1000 bp.
+1. Add parameters `primer` and `primer_name` to `sc2rf`.
+1. Add `sc2rf_mutations_version` to summary based on a datestamp of `virus_properties.json`.
+1. Change `--mutation-threshold` of `sc2rf` back to 0.50 for majority vote.
+1. Allow multiple issues in report.
+
 ## To DO
 
 ### Priority
 
+1. Growth calculations is currently broken for report.
+1. Recombinant clades are now larger enough (ex. XE, > 100) to be split over multiple trees.
 1. Add a `tutorial` profile.
 
     - (N=2) Designated Recombinants (pango-designation)

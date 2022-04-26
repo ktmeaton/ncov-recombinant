@@ -17,6 +17,16 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    --primers)
+      primers=$2
+      shift # past argument
+      shift # past value
+      ;;
+    --primers-name)
+      primers_name=$2
+      shift # past argument
+      shift # past value
+      ;;
     --prefix)
       prefix=$2
       shift # past argument
@@ -45,6 +55,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+primers_name=${primers_name:-primers}
+
 # Correct relative paths
 aligned="../${aligned}"
 log="../${log}"
@@ -54,6 +66,11 @@ outdir="../${outdir}"
 csvfile="${outdir}/${prefix}.csv"
 sc2rf_args+=("--csvfile $csvfile")
 
+# Add primers
+if [[ "${primers}" ]]; then
+  cp $primers sc2rf/${primers_name}.bed
+  sc2rf_args+=("--primers ${primers_name}.bed")
+fi
 cd sc2rf;
 
 # rebuild examples
