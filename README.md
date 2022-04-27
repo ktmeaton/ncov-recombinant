@@ -54,31 +54,18 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
     conda activate ncov-recombinant
     ```
 
-## Test
-
-- Testing uses the "controls" dataset `data/controls`.
-- These are publicly available recombinant sequences from [pango-designation](https://github.com/cov-lineages/pango-designation) issues.
-- Testing uses the system profile `profiles/laptop`.
-- This specifies system resources of 1 cpus and 4 GB of memory.
-
-> Tip: Remember to run `conda activate ncov-recombinant` before running the commands below!
-
-1. Preview the run configuration.
-
-    ```bash
-    snakemake --profile profiles/laptop print_config
-    ```
+## Tutorial
 
 1. Preview the commands that are going to be run.
 
     ```bash
-    snakemake --profile profiles/laptop --dryrun --printshellcmds
+    snakemake --profile profiles/tutorial --dryrun --printshellcmds
     ```
 
 1. Run the workflow.
 
     ```bash
-    snakemake --profile profiles/laptop
+    snakemake --profile profiles/tutorial
     ```
 
 1. Inspect the output
@@ -86,16 +73,16 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
     - Sample line list:
 
         ```bash
-        csvtk pretty -t results/controls/summary.tsv
+        csvtk pretty -t results/tutorial/linelist.tsv
         ```
 
-    - Breakpoints: `results/controls/sc2rf.txt`
+    - Breakpoints:
 
         ```bash
-        less -S results/controls/sc2rf.txt
+        less -S results/tutorial/sc2rf.recombinants.ansi.txt
         ```
 
-    - Trees: PNG and Auspice JSON in  `results/controls/subtrees_collapse`
+    - Trees: Aupoad JSON in  `results/tutorials/subtrees_collapse/` to <https://auspice.us/>
 
 ## SLURM
 
@@ -110,8 +97,15 @@ bash scripts/slurm.sh --profile profiles/hpc --partition MyPartition
 - Unlock the workflow after a failed run:
 
     ```bash
-    snakemake --profile profiles/laptop --unlock
+    snakemake --profile profiles/tutorial --unlock
     ```
 
 - Logs for each rule will be stored at: `logs/<rule>/<build>_<date>.txt`
-- If using slurm (`profiles/hpc`) the master log will be at: `logs/slurm/ncov-recombinant_<date>_<jobid>.log`
+- If using slurm (`profiles/hpc`) the master log will be at: `logs/ncov-recombinant/ncov-recombinant_<date>_<jobid>.log`
+
+## Credits
+
+- nextstrain/ncov: https://github.com/nextstrain/ncov
+- nextstrain/nextclade: https://github.com/nextstrain/nextclade
+- lenaschimmel/sc2rf: https://github.com/lenaschimmel/sc2rf
+- yatisht/usher: https://github.com/yatisht/usher
