@@ -530,7 +530,6 @@ rule usher:
     issue_to_lineage = "resources/issue_to_lineage.tsv",
   output:
     pb              = "results/{build}/usher.pb.gz",
-    samples         = "results/{build}/usher.samples.txt",
     placement_stats = "results/{build}/usher.placement_stats.tsv",
     mut_paths       = "results/{build}/usher.mutation_paths.tsv",
     clades          = "results/{build}/usher.clades.tsv",
@@ -552,9 +551,6 @@ rule usher:
 
     # Rename and reformat output
     mv {params.outdir}/mutation-paths.txt {output.mut_paths};
-
-    # Extract samples
-    matUtils extract -i {input.pb} -u {output.samples} 2>> {log};
 
     echo -e "strain\\tusher_best_set_difference\\tusher_num_best" > {output.placement_stats};
     sed 's/[[:space:]]*$//' {params.outdir}/placement_stats.tsv >> {output.placement_stats};
