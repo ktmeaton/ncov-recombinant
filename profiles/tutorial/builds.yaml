@@ -54,9 +54,4 @@ builds:
 
     # Universal rule parameters can (optionally) be overridden for a specific build.
     usher_metadata:
-      extra_cols: "date,country,gisaid_epi_isl,genbank_accession"
-
-    report:
-      cols: "nml_lab_id,strain,gisaid_epi_isl,usher_subtree,usher_pango_lineage_map,Nextclade_pango,sc2rf_clades_filter,date,division,sc2rf_breakpoints_regions_filter,purpose_of_sequencing,purpose_of_sequencing_details,border_sample"
-      cols_rename: "nml_lab_id,ngs_id,gisaid_epi_isl,subtree,lineage_usher,lineage_nextclade,parents,date,division,breakpoints,purpose_of_sequencing,purpose_of_sequencing_details,border_sample"
-      years: "2022,2021"
+      extra_cols: "genbank_accession"
