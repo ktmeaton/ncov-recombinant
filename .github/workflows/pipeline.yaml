@@ -72,16 +72,3 @@ jobs:
         run: |
           conda activate $CONDA_ENV_NAME;
           snakemake --profile $CI_PROFILE all;
-      # run report
-      - name: run report
-        shell: bash -l {0}
-        run: |
-          conda activate $CONDA_ENV_NAME;
-          snakemake --report report.html;
-
-      # artifact Upload
-      - name: artifact report
-        uses: actions/upload-artifact@v2
-        with:
-          name: report
-          path: report.html
