@@ -56,6 +56,8 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 
 ## Tutorial
 
+> Tip: Remember to run `conda activate ncov-recombinant` first!
+
 1. Preview the commands that are going to be run.
 
     ```bash
@@ -82,7 +84,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
         less -S results/tutorial/sc2rf.recombinants.ansi.txt
         ```
 
-    - Trees: Aupoad JSON in  `results/tutorials/subtrees_collapse/` to <https://auspice.us/>
+    - Trees: Upload Auspice JSON in `results/tutorial/subtrees_collapse/` to <https://auspice.us/>
 
 ## SLURM
 
