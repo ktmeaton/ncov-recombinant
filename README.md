@@ -73,7 +73,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
     - Sample line list:
 
         ```bash
-        csvtk pretty -t results/tutorial/linelist.tsv
+        csvtk pretty -t results/tutorial/linelist.tsv | less -S
         ```
 
     - Breakpoints:
