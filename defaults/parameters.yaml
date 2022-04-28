@@ -109,20 +109,22 @@ rule_params:
   # k               : The number of contextual samples to select when extracting subtrees.
   # low_memory_mode : true if the metadata should not be used, false if it should
   - name: usher_subtree
-    k: 100
+    k: 500
     low_memory_mode: true
 
-  # cols : Metadata columns (csv) to output
+  # cols : csv list of metadata columns to output
   - name: usher_metadata
     cols: "date,country"
 
-  # prev_linelist : (Optional) Path to a previous linelist (output of rule report) for growth calculation
-  # changelog     : (Optional) Path to a markdown changelog to append to the report.
-  # years         : csv list of years to include in the report
+  # years            : (Optional) csv list of years to include in the report
+  # prev_linelist    : (Optional) Path to a previous linelist (output of rule report) for growth calculation
+  # changelog        : (Optional) Path to a markdown changelog to append to the report.
+  # extra_cols       : (Optional) csv list of columns from the summary to include in the linelist
   - name: report
+    years: ""
     prev_linelist: ""
     changelog: ""
-    years: "2022,2021"
+    extra_cols: ""
 
 
 # -----------------------------------------------------------------------------

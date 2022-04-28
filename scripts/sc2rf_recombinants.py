@@ -136,7 +136,7 @@ def main(
 
         # Identify lineage based on breakpoint
         sc2rf_lineage = ""
-        sc2rf_lineages = {bp: [] for bp in breakpoints_filter}
+        sc2rf_lineages = {bp_s: [] for bp_s in breakpoints_filter}
 
         for bp_s in breakpoints_filter:
             start_s = int(bp_s.split(":")[0])
@@ -162,7 +162,7 @@ def main(
                 sc2rf_lineages[bp_s].append(NO_DATA_CHAR)
 
             # Collapse any duplicate lineages (ex. XF)
-            sc2rf_lineages[bp_s] = list(set(sc2rf_lineages[bp_s]))
+            # sc2rf_lineages[bp_s] = list(set(sc2rf_lineages[bp_s]))
 
         # if len(sc2rf_lineages) == num_breakpoints_filter:
         collapse_lineages = []
@@ -170,7 +170,30 @@ def main(
             for lineage in bp:
                 collapse_lineages.append(lineage)
 
-        sc2rf_lineage = ",".join(list(set(collapse_lineages)))
+        collapse_lineages = list(set(collapse_lineages))
+
+        # When there are multiple breakpoint, a match must be the same for all!
+        collapse_lineages_filter = []
+        for lin in collapse_lineages:
+
+            if lin == NO_DATA_CHAR:
+                continue
+            # By default, assume they all match
+            matches_all_bp = True
+            for bp_s in sc2rf_lineages:
+                # If the lineage is missing, it's not in all bp
+                if lin not in sc2rf_lineages[bp_s]:
+                    matches_all_bp = False
+                    break
+
+            # Check if we should drop it
+            if matches_all_bp:
+                collapse_lineages_filter.append(lin)
+
+        if len(collapse_lineages_filter) == 0:
+            collapse_lineages_filter = [NO_DATA_CHAR]
+
+        sc2rf_lineage = ",".join(collapse_lineages_filter)
 
         df.at[rec[0], "sc2rf_clades_filter"] = ",".join(clades_filter)
         df.at[rec[0], "sc2rf_clades_regions_filter"] = ",".join(regions_filter)
