@@ -11,25 +11,44 @@
 1. Add `sc2rf_mutations_version` to summary based on a datestamp of `virus_properties.json`.
 1. Change `--mutation-threshold` of `sc2rf` back to 0.50 for majority vote.
 1. Allow multiple issues in report.
-
-## To DO
-
-### Priority
-
-1. Growth calculations is currently broken for report.
-1. Recombinant clades are now larger enough (ex. XE, > 100) to be split over multiple trees.
 1. Add a `tutorial` profile.
 
     - (N=2) Designated Recombinants (pango-designation)
     - (N=2) Proposed Recombinants (issues, UCSC)
     - (N=2) Unpublished Recombinants
-    - (N=2) Non Recombinant
 
-### Misc
+1. Bump up subtree size from 100 sequences to 500 sequences.
+
+    - Trying to future proof against XE growth (200+ sequences)
 
 1. Remove nwk output from `usher` and `usher_subtrees`:
 
     - Pull subtree sample names from json instead
+
+1. Use three categories of recombinants:
+
+    - Designated
+    - Proposed
+    - Unpublished
+
+1. Add column `status` to recombinants.
+
+## To DO
+
+### Priority
+
+1. Add optional columns to report.
+1. Clarify what "breakpoints" mean in terms of coordinates.
+1. Remove column classifier, as we will always use UShER. Separate out columns lineage and issue.
+1. Sort report table by category (designated, proposed, unpublished)
+1. Add doc about what "subtree" means in report.
+1. Add doc about how a recombinan type is defined.
+1. Split `recombinants.tsv` by subtree as well.
+1. Use parent order for breakpoint matching, as we see same breakpoint different parents.
+1. Growth calculations is currently broken for report.
+1. Recombinant clades are now larger enough (ex. XE, > 100) to be split over multiple trees.
+
+### Misc
 
 1. Troubleshoot `sc2rf` update to `bd2a4009` which drops all deltacrons.
 

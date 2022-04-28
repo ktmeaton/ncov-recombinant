@@ -719,9 +719,11 @@ rule report:
     report        = "results/{build}/report.md",
     recombinants  = "results/{build}/recombinants.tsv",
   params:
+    # All optional, catch in shell
     years         = lambda wildcards: config["builds"][wildcards.build]["report"]["years"],
     changelog     = lambda wildcards: config["builds"][wildcards.build]["report"]["changelog"],
     prev_linelist = lambda wildcards: config["builds"][wildcards.build]["report"]["prev_linelist"],
+    extra_cols    = lambda wildcards: config["builds"][wildcards.build]["report"]["extra_cols"],
   threads: 1
   resources:
     cpus = 1,
@@ -731,20 +733,20 @@ rule report:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    # Check if we're specifying a previous linelist to compare to
-    prev_linelist_flag=""
-    if [[ "{params.prev_linelist}" ]]; then
-      prev_linelist_flag="--prev-linelist {params.prev_linelist}"
-    fi
+    years=""
+    if [[ "{params.years}" ]]; then years="--years {params.years}"; fi
 
-    # Check if we're specifying a changelog to append to
-    changelog_flag=""
-    if [[ "{params.changelog}" ]]; then
-      changelog_flag="--changelog {params.changelog}"
-    fi
+    prev_linelist=""
+    if [[ "{params.prev_linelist}" ]]; then prev_linelist="--prev-linelist {params.prev_linelist}"; fi
+
+    changelog=""
+    if [[ "{params.changelog}" ]]; then changelog="--changelog {params.changelog}"; fi
+
+    extra_cols=""
+    if [[ "{params.extra_cols}" ]]; then extra_cols="--extra-cols {params.extra_cols}"; fi
 
     # Generate report
-    cmd="python3 scripts/report.py --years {params.years} --summary {input.summary} --issues {input.issues} $prev_linelist_flag $changelog_flag 2> {log}";
+    cmd="python3 scripts/report.py --summary {input.summary} --issues {input.issues} $years $prev_linelist $changelog $extra_cols 2> {log}";
     eval $cmd
     """
 
