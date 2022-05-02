@@ -32,6 +32,13 @@
     - Unpublished
 
 1. Add column `status` to recombinants.
+1. Update `nextclade_dataset` to 2022-04-28.
+1. Separate out columns lineage and issue in `report`.
+1. Set Auspice default coloring to `lineage_usher` where possible.
+1. Add `taxoniumtools` and `chronumental` to environment.
+1. Split `usher_subtree` and `usher_subtree_collapse` into separate rules.
+
+    - This speeds up testing for collapsing trees and styling the Auspice JSON.
 
 ## To DO
 
@@ -39,14 +46,12 @@
 
 1. Add optional columns to report.
 1. Clarify what "breakpoints" mean in terms of coordinates.
-1. Remove column classifier, as we will always use UShER. Separate out columns lineage and issue.
 1. Sort report table by category (designated, proposed, unpublished)
 1. Add doc about what "subtree" means in report.
-1. Add doc about how a recombinan type is defined.
+1. Add doc about how a recombinant type is defined.
 1. Split `recombinants.tsv` by subtree as well.
 1. Use parent order for breakpoint matching, as we see same breakpoint different parents.
 1. Growth calculations is currently broken for report.
-1. Recombinant clades are now larger enough (ex. XE, > 100) to be split over multiple trees.
 
 ### Misc
 

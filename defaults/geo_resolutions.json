@@ -1,0 +1,1409 @@
+[
+  {
+    "key": "region",
+    "demes": {
+      "Europe": {
+        "latitude": 49.646237,
+        "longitude": 10.799454
+      },
+      "Africa": {
+        "latitude": 4.070194,
+        "longitude": 21.824559
+      },
+      "Asia": {
+        "latitude": 30.451098,
+        "longitude": 86.654576
+      },
+      "North America": {
+        "latitude": 28.2367447,
+        "longitude": -97.738017
+      },
+      "South America": {
+        "latitude": -13.083583,
+        "longitude": -58.470721
+      },
+      "Oceania": {
+        "latitude": -25.0562891,
+        "longitude": 152.008576
+      }
+    }
+  },
+  {
+    "key": "country",
+    "demes": {
+      "Greece": {
+        "latitude": 39.0,
+        "longitude": 22.0
+      },
+      "Singapore": {
+        "latitude": 1.344189,
+        "longitude": 103.867546
+      },
+      "Slovakia": {
+        "latitude": 48.66667,
+        "longitude": 19.5
+      },
+      "Mongolia": {
+        "latitude": 47.504782,
+        "longitude": 102.997672
+      },
+      "Myanmar": {
+        "latitude": 20.600856,
+        "longitude": 96.287616
+      },
+      "Switzerland": {
+        "latitude": 46.8182,
+        "longitude": 8.2275
+      },
+      "New Zealand": {
+        "latitude": -41.500083,
+        "longitude": 172.8344077
+      },
+      "Malaysia": {
+        "latitude": 4.264153,
+        "longitude": 102.222436
+      },
+      "Poland": {
+        "latitude": 52.0977181,
+        "longitude": 19.0258159
+      },
+      "Finland": {
+        "latitude": 61.751734,
+        "longitude": 26.186437
+      },
+      "Lesotho": {
+        "latitude": -29.6039267,
+        "longitude": 28.3350193
+      },
+      "Serbia": {
+        "latitude": 43.745902,
+        "longitude": 20.848918
+      },
+      "Kosovo": {
+        "latitude": 42.6026,
+        "longitude": 20.903
+      },
+      "Uganda": {
+        "latitude": 1.861287,
+        "longitude": 32.55149
+      },
+      "Hong Kong": {
+        "latitude": 22.3964,
+        "longitude": 114.1095
+      },
+      "Pakistan": {
+        "latitude": 30.0,
+        "longitude": 70.0
+      },
+      "Portugal": {
+        "latitude": 39.54046,
+        "longitude": -8.174701
+      },
+      "Benin": {
+        "latitude": 9.961027,
+        "longitude": 2.327362
+      },
+      "Ghana": {
+        "latitude": 7.811417,
+        "longitude": -1.089272
+      },
+      "Spain": {
+        "latitude": 40.4637,
+        "longitude": -3.7492
+      },
+      "Gabon": {
+        "latitude": -0.8999695,
+        "longitude": 11.6899699
+      },
+      "Venezuela": {
+        "latitude": 7.838891,
+        "longitude": -65.916409
+      },
+      "Peru": {
+        "latitude": -9.650468,
+        "longitude": -75.328211
+      },
+      "Iran": {
+        "latitude": 34.5732,
+        "longitude": 51.876
+      },
+      "Indonesia": {
+        "latitude": -0.897599,
+        "longitude": 114.181602
+      },
+      "Belgium": {
+        "latitude": 50.707735,
+        "longitude": 4.677726
+      },
+      "Egypt": {
+        "latitude": 26.8206,
+        "longitude": 30.8025
+      },
+      "Guinea": {
+        "latitude": 10.7226226,
+        "longitude": -10.7083587
+      },
+      "Jamaica": {
+        "latitude": 18.1096,
+        "longitude": -77.2975
+      },
+      "South Korea": {
+        "latitude": 36.609249,
+        "longitude": 127.917932
+      },
+      "Iraq": {
+        "latitude": 33.0955793,
+        "longitude": 44.1749775
+      },
+      "Togo": {
+        "latitude": 8.88625,
+        "longitude": 1.069709
+      },
+      "China": {
+        "latitude": 33.394333,
+        "longitude": 104.689839
+      },
+      "Sweden": {
+        "latitude": 59.6749712,
+        "longitude": 14.5208584
+      },
+      "Bangladesh": {
+        "latitude": 24.506442,
+        "longitude": 90.041454
+      },
+      "Djibouti": {
+        "latitude": 11.85677545,
+        "longitude": 42.757784519943655
+      },
+      "Germany": {
+        "latitude": 51.1657,
+        "longitude": 10.4515
+      },
+      "Iceland": {
+        "latitude": 64.90614,
+        "longitude": -18.4826
+      },
+      "India": {
+        "latitude": 21.077353,
+        "longitude": 78.723951
+      },
+      "Argentina": {
+        "latitude": -37.052315,
+        "longitude": -64.869142
+      },
+      "Brazil": {
+        "latitude": -10.3333332,
+        "longitude": -53.1999999
+      },
+      "Lebanon": {
+        "latitude": 33.945959,
+        "longitude": 35.86863
+      },
+      "Ecuador": {
+        "latitude": -1.0541,
+        "longitude": -78.1489
+      },
+      "Turkey": {
+        "latitude": 39.046746,
+        "longitude": 36.767068
+      },
+      "Thailand": {
+        "latitude": 14.8971921,
+        "longitude": 100.83273
+      },
+      "Colombia": {
+        "latitude": 2.893108,
+        "longitude": -73.7845142
+      },
+      "Morocco": {
+        "latitude": 32.549785,
+        "longitude": -5.480765
+      },
+      "Czech Republic": {
+        "latitude": 49.8175,
+        "longitude": 15.473
+      },
+      "Georgia": {
+        "latitude": 41.989378,
+        "longitude": 43.597463
+      },
+      "Taiwan": {
+        "latitude": 23.8169,
+        "longitude": 121.031365
+      },
+      "Nigeria": {
+        "latitude": 10.0,
+        "longitude": 8.0
+      },
+      "Russia": {
+        "latitude": 64.6863136,
+        "longitude": 97.7453061
+      },
+      "Gambia": {
+        "latitude": 13.5,
+        "longitude": -15.5
+      },
+      "Canada": {
+        "latitude": 61.0666922,
+        "longitude": -107.991707
+      },
+      "Romania": {
+        "latitude": 45.9432,
+        "longitude": 24.9668
+      },
+      "Malawi": {
+        "latitude": -13.2687204,
+        "longitude": 33.9301963
+      },
+      "Tunisia": {
+        "latitude": 33.654143,
+        "longitude": 9.065134
+      },
+      "Kenya": {
+        "latitude": 0.0236,
+        "longitude": 37.9062
+      },
+      "Mexico": {
+        "latitude": 19.4325301,
+        "longitude": -99.1332101
+      },
+      "Palau": {
+        "latitude": 5.3783537,
+        "longitude": 132.9102573
+      },
+      "Palestine": {
+        "latitude": 31.94696655,
+        "longitude": 35.27386547291496
+      },
+      "Ethiopia": {
+        "latitude": 9.145,
+        "longitude": 40.4897
+      },
+      "Austria": {
+        "latitude": 47.5162,
+        "longitude": 14.5501
+      },
+      "Zimbabwe": {
+        "latitude": -18.4554963,
+        "longitude": 29.7468414
+      },
+      "Japan": {
+        "latitude": 35.68536,
+        "longitude": 139.75309
+      },
+      "Saudi Arabia": {
+        "latitude": 25.0,
+        "longitude": 45.0
+      },
+      "Philippines": {
+        "latitude": 11.383086,
+        "longitude": 123.521862
+      },
+      "USA": {
+        "latitude": 38.916963,
+        "longitude": -98.891372
+      },
+      "United Kingdom": {
+        "latitude": 54.242833,
+        "longitude": -2.088739
+      },
+      "Dominican Republic": {
+        "latitude": 19.0974031,
+        "longitude": -70.3028026
+      },
+      "France": {
+        "latitude": 46.2276,
+        "longitude": 2.2137
+      },
+      "Seychelles": {
+        "latitude": -4.6574977,
+        "longitude": 55.4540146
+      },
+      "Israel": {
+        "latitude": 31.217736,
+        "longitude": 34.903129
+      },
+      "Paraguay": {
+        "latitude": -23.3165935,
+        "longitude": -58.1693445
+      },
+      "Ireland": {
+        "latitude": 52.865,
+        "longitude": -7.979
+      },
+      "Uruguay": {
+        "latitude": -33.0,
+        "longitude": -56.0
+      },
+      "Australia": {
+        "latitude": -24.7761085,
+        "longitude": 134.755
+      },
+      "Cambodia": {
+        "latitude": 13.0,
+        "longitude": 105.0
+      },
+      "Bahrain": {
+        "latitude": 26.0667,
+        "longitude": 50.5577
+      },
+      "Denmark": {
+        "latitude": 56.2639,
+        "longitude": 9.5018
+      },
+      "Liechtenstein": {
+        "latitude": 47.1416307,
+        "longitude": 9.5531527
+      },
+      "Sierra Leone": {
+        "latitude": 8.6400349,
+        "longitude": -11.8400269
+      },
+      "Norway": {
+        "latitude": 61.3109,
+        "longitude": 8.73701
+      },
+      "Italy": {
+        "latitude": 43.382775,
+        "longitude": 12.183629
+      },
+      "Belize": {
+        "latitude": 16.8259793,
+        "longitude": -88.7600927
+      },
+      "South Africa": {
+        "latitude": -28.8166235,
+        "longitude": 24.991639
+      },
+      "Mali": {
+        "latitude": 16.3700359,
+        "longitude": -2.2900239
+      },
+      "Malta": {
+        "latitude": 35.8885993,
+        "longitude": 14.4476911
+      },
+      "Netherlands": {
+        "latitude": 52.1326,
+        "longitude": 5.2913
+      },
+      "Chile": {
+        "latitude": -31.7613364,
+        "longitude": -71.3187696
+      }
+    }
+  },
+  {
+    "key": "division",
+    "demes": {
+      "North Carolina": {
+        "latitude": 35.7596,
+        "longitude": -79.0193
+      },
+      "Rio de Janeiro": {
+        "latitude": -22.89445,
+        "longitude": -43.2099
+      },
+      "Singapore": {
+        "latitude": 1.344189,
+        "longitude": 103.867546
+      },
+      "Slovakia": {
+        "latitude": 48.66667,
+        "longitude": 19.5
+      },
+      "Mongolia": {
+        "latitude": 47.504782,
+        "longitude": 102.997672
+      },
+      "Pennsylvania": {
+        "latitude": 41.2033,
+        "longitude": -77.1945
+      },
+      "Michigan": {
+        "latitude": 45.021203,
+        "longitude": -84.762273
+      },
+      "Suez": {
+        "latitude": 29.974498,
+        "longitude": 32.537086
+      },
+      "Myanmar": {
+        "latitude": 20.600856,
+        "longitude": 96.287616
+      },
+      "New Mexico": {
+        "latitude": 34.5199,
+        "longitude": -105.8701
+      },
+      "Oregon": {
+        "latitude": 43.8041,
+        "longitude": -120.5542
+      },
+      "Kanagawa": {
+        "latitude": 35.403801,
+        "longitude": 139.294288
+      },
+      "Switzerland": {
+        "latitude": 46.8182,
+        "longitude": 8.2275
+      },
+      "Malaysia": {
+        "latitude": 2.3923759,
+        "longitude": 112.8471939
+      },
+      "New Zealand": {
+        "latitude": -41.500083,
+        "longitude": 172.8344077
+      },
+      "Thurgau": {
+        "latitude": 47.576816,
+        "longitude": 9.072051
+      },
+      "Poland": {
+        "latitude": 52.0977181,
+        "longitude": 19.0258159
+      },
+      "Nordjylland": {
+        "latitude": 56.8152793,
+        "longitude": 9.727330772696376
+      },
+      "Massachusetts": {
+        "latitude": 42.340741,
+        "longitude": -71.998513
+      },
+      "Finland": {
+        "latitude": 61.751734,
+        "longitude": 26.186437
+      },
+      "Idaho": {
+        "latitude": 43.810421,
+        "longitude": -114.351215
+      },
+      "Nevada": {
+        "latitude": 38.8026,
+        "longitude": -116.4194
+      },
+      "South Carolina": {
+        "latitude": 33.8361,
+        "longitude": -81.1637
+      },
+      "Lesotho": {
+        "latitude": -29.6039267,
+        "longitude": 28.3350193
+      },
+      "Upper Austria": {
+        "latitude": 48.166283,
+        "longitude": 13.869698
+      },
+      "Serbia": {
+        "latitude": 43.745902,
+        "longitude": 20.848918
+      },
+      "Northern Mariana Islands": {
+        "latitude": 14.149020499999999,
+        "longitude": 145.21345248318923
+      },
+      "West Virginia": {
+        "latitude": 38.4758406,
+        "longitude": -80.8408415
+      },
+      "Uganda": {
+        "latitude": 1.3733,
+        "longitude": 32.2903
+      },
+      "Hong Kong": {
+        "latitude": 22.3964,
+        "longitude": 114.1095
+      },
+      "Pakistan": {
+        "latitude": 30.0,
+        "longitude": 70.0
+      },
+      "Victoria": {
+        "latitude": -37.121673,
+        "longitude": 144.106178
+      },
+      "Benin": {
+        "latitude": 9.2231105,
+        "longitude": 2.31006719638123
+      },
+      "Ghana": {
+        "latitude": 8.0300284,
+        "longitude": -1.080027
+      },
+      "Paran\u00e1": {
+        "latitude": -25.2521,
+        "longitude": -52.0215
+      },
+      "Baden-Wuerttemberg": {
+        "latitude": 48.712618,
+        "longitude": 9.13403
+      },
+      "Ticino": {
+        "latitude": 46.345334,
+        "longitude": 8.774813
+      },
+      "Schaan": {
+        "latitude": 47.1663397,
+        "longitude": 9.510312
+      },
+      "Schaffhausen": {
+        "latitude": 47.712,
+        "longitude": 8.638976
+      },
+      "Connecticut": {
+        "latitude": 41.678117,
+        "longitude": -72.669773
+      },
+      "Aargau": {
+        "latitude": 47.420629,
+        "longitude": 8.172097
+      },
+      "Virginia": {
+        "latitude": 37.926868,
+        "longitude": -78.024902
+      },
+      "Basel-Land": {
+        "latitude": 47.493316,
+        "longitude": 7.714938
+      },
+      "Spain": {
+        "latitude": 40.4637,
+        "longitude": -3.7492
+      },
+      "Solothurn": {
+        "latitude": 47.207025,
+        "longitude": 7.528326
+      },
+      "Coimbra": {
+        "latitude": 40.2033,
+        "longitude": -8.4103
+      },
+      "North Brabant": {
+        "latitude": 51.4827,
+        "longitude": 5.2322
+      },
+      "Eschen": {
+        "latitude": 47.2126274,
+        "longitude": 9.5233202
+      },
+      "Alaska": {
+        "latitude": 65.797699,
+        "longitude": -152.214189
+      },
+      "Gabon": {
+        "latitude": -0.8999695,
+        "longitude": 11.6899699
+      },
+      "Venezuela": {
+        "latitude": 7.838891,
+        "longitude": -65.916409
+      },
+      "Kanto": {
+        "latitude": 36.167777,
+        "longitude": 139.170466
+      },
+      "Basel-Stadt": {
+        "latitude": 47.557238,
+        "longitude": 7.595666
+      },
+      "Peru": {
+        "latitude": -10.0,
+        "longitude": -75.25
+      },
+      "North Rhine Westphalia": {
+        "latitude": 51.44,
+        "longitude": 7.705
+      },
+      "Mauren": {
+        "latitude": 47.2196512,
+        "longitude": 9.5418065
+      },
+      "North Dakota": {
+        "latitude": 47.6201461,
+        "longitude": -100.540737
+      },
+      "Iran": {
+        "latitude": 34.5732,
+        "longitude": 51.876
+      },
+      "Rhode Island": {
+        "latitude": 41.5801,
+        "longitude": -71.4774
+      },
+      "Sikasso Region": {
+        "latitude": 11.3164979,
+        "longitude": -5.6777499
+      },
+      "Valais": {
+        "latitude": 46.166982,
+        "longitude": 7.563441
+      },
+      "Indonesia": {
+        "latitude": 0.240253,
+        "longitude": 114.878847
+      },
+      "Wellington": {
+        "latitude": -41.273449,
+        "longitude": 174.857634
+      },
+      "Madinah": {
+        "latitude": 24.5247,
+        "longitude": 39.5692
+      },
+      "Hiroshima": {
+        "latitude": 34.3916058,
+        "longitude": 132.4518156
+      },
+      "Western Cape Province": {
+        "latitude": -33.493715,
+        "longitude": 20.219852
+      },
+      "Lazio": {
+        "latitude": 41.994328,
+        "longitude": 12.622686
+      },
+      "Tasmania": {
+        "latitude": -42.14220555,
+        "longitude": 146.6723517878467
+      },
+      "Kamphaeng Phet": {
+        "latitude": 16.4183581,
+        "longitude": 99.6111616
+      },
+      "Ohio": {
+        "latitude": 40.199215,
+        "longitude": -82.825637
+      },
+      "Bremen": {
+        "latitude": 53.0758196,
+        "longitude": 8.8071646
+      },
+      "Wyoming": {
+        "latitude": 43.076,
+        "longitude": -107.2903
+      },
+      "Islamabad Capital Territory": {
+        "latitude": 33.63573935,
+        "longitude": 73.20311557158395
+      },
+      "Moscow Oblast": {
+        "latitude": 55.5043158,
+        "longitude": 38.0353929
+      },
+      "Belgium": {
+        "latitude": 50.707735,
+        "longitude": 4.677726
+      },
+      "Missouri": {
+        "latitude": 37.9643,
+        "longitude": -91.8318
+      },
+      "Bavaria": {
+        "latitude": 48.1382614,
+        "longitude": 11.5845093
+      },
+      "Egypt": {
+        "latitude": 26.2540493,
+        "longitude": 29.2675469
+      },
+      "Baja California": {
+        "latitude": 30.0338923,
+        "longitude": -115.1425107
+      },
+      "Jamaica": {
+        "latitude": 18.1096,
+        "longitude": -77.2975
+      },
+      "Guinea": {
+        "latitude": 10.7226226,
+        "longitude": -10.7083587
+      },
+      "South Korea": {
+        "latitude": 36.609249,
+        "longitude": 127.917932
+      },
+      "Arkansas": {
+        "latitude": 35.201,
+        "longitude": -91.8318
+      },
+      "Iraq": {
+        "latitude": 33.0955793,
+        "longitude": 44.1749775
+      },
+      "Schleswig-Holstein": {
+        "latitude": 54.1853998,
+        "longitude": 9.8220089
+      },
+      "Comunitat Valenciana": {
+        "latitude": 39.337,
+        "longitude": -0.354
+      },
+      "Togo": {
+        "latitude": 8.88625,
+        "longitude": 1.069709
+      },
+      "Saxony-Anhalt": {
+        "latitude": 52.0089065,
+        "longitude": 11.7003344
+      },
+      "China": {
+        "latitude": 33.394333,
+        "longitude": 104.689839
+      },
+      "Athens": {
+        "latitude": 37.987832,
+        "longitude": 23.726319
+      },
+      "Texas": {
+        "latitude": 31.146868,
+        "longitude": -99.188758
+      },
+      "Sweden": {
+        "latitude": 59.6749712,
+        "longitude": 14.5208584
+      },
+      "Primorsky": {
+        "latitude": 45.0526,
+        "longitude": 135.0
+      },
+      "Saratov": {
+        "latitude": 51.530018,
+        "longitude": 46.034683
+      },
+      "Canterbury": {
+        "latitude": -43.346635,
+        "longitude": 172.190743
+      },
+      "Bangladesh": {
+        "latitude": 24.506442,
+        "longitude": 90.041454
+      },
+      "Djibouti": {
+        "latitude": 11.85677545,
+        "longitude": 42.757784519943655
+      },
+      "Germany": {
+        "latitude": 51.1657,
+        "longitude": 10.4515
+      },
+      "Iceland": {
+        "latitude": 64.9841821,
+        "longitude": -18.1059012
+      },
+      "Delhi": {
+        "latitude": 28.7041,
+        "longitude": 77.1025
+      },
+      "Manila": {
+        "latitude": 14.652678,
+        "longitude": 121.043936
+      },
+      "Waikato": {
+        "latitude": -37.777199,
+        "longitude": 175.528928
+      },
+      "Z\u00fcrich": {
+        "latitude": 47.441242,
+        "longitude": 8.641154
+      },
+      "Capital And Coast": {
+        "latitude": -41.271456689211895,
+        "longitude": 174.7000050015941
+      },
+      "Arizona": {
+        "latitude": 34.220707,
+        "longitude": -111.657462
+      },
+      "Maryland": {
+        "latitude": 39.0458,
+        "longitude": -76.6413
+      },
+      "Riyadh": {
+        "latitude": 23.197563,
+        "longitude": 45.243845
+      },
+      "India": {
+        "latitude": 21.077353,
+        "longitude": 78.723951
+      },
+      "Argentina": {
+        "latitude": -34.0,
+        "longitude": -64.0
+      },
+      "New York": {
+        "latitude": 40.703395,
+        "longitude": -73.904193
+      },
+      "Minnesota": {
+        "latitude": 46.126042,
+        "longitude": -94.619581
+      },
+      "American Samoa": {
+        "latitude": -14.289304,
+        "longitude": -170.692511
+      },
+      "Sindh": {
+        "latitude": 25.5,
+        "longitude": 69.0
+      },
+      "Taranaki": {
+        "latitude": -39.2711067,
+        "longitude": 174.154795
+      },
+      "Brazil": {
+        "latitude": -10.3333332,
+        "longitude": -53.1999999
+      },
+      "Beijing": {
+        "latitude": 40.07132,
+        "longitude": 116.406908
+      },
+      "Wisconsin": {
+        "latitude": 44.535145,
+        "longitude": -89.527762
+      },
+      "Lebanon": {
+        "latitude": 33.8750629,
+        "longitude": 35.843409
+      },
+      "Ecuador": {
+        "latitude": -1.3397667,
+        "longitude": -79.3666964
+      },
+      "Turkey": {
+        "latitude": 39.0,
+        "longitude": 35.0
+      },
+      "Auckland": {
+        "latitude": -36.837842,
+        "longitude": 174.800853
+      },
+      "Thailand": {
+        "latitude": 14.8971921,
+        "longitude": 100.83273
+      },
+      "Colombia": {
+        "latitude": 2.893108,
+        "longitude": -73.7845142
+      },
+      "Morocco": {
+        "latitude": 32.525925,
+        "longitude": -5.843761
+      },
+      "Kansas": {
+        "latitude": 39.0119,
+        "longitude": -98.4842
+      },
+      "Czech Republic": {
+        "latitude": 49.8175,
+        "longitude": 15.473
+      },
+      "Mato Grosso": {
+        "latitude": -12.6819,
+        "longitude": -56.9211
+      },
+      "Wales": {
+        "latitude": 52.306085,
+        "longitude": -3.621944
+      },
+      "Georgia (Asia)": {
+        "latitude": 42.013868,
+        "longitude": 43.575124
+      },
+      "Georgia": {
+        "latitude": 32.1656,
+        "longitude": -82.9001
+      },
+      "Limburg BE": {
+        "latitude": 51.018966,
+        "longitude": 5.426288
+      },
+      "Sjaelland": {
+        "latitude": 55.545959550000006,
+        "longitude": 11.697905825948633
+      },
+      "Taiwan": {
+        "latitude": 23.8169,
+        "longitude": 121.031365
+      },
+      "Northern Cape": {
+        "latitude": -29.573402,
+        "longitude": 21.2051361
+      },
+      "Hubei": {
+        "latitude": 31.095477,
+        "longitude": 112.676644
+      },
+      "Gujarat": {
+        "latitude": 22.2587,
+        "longitude": 71.1924
+      },
+      "Vaduz": {
+        "latitude": 47.1392862,
+        "longitude": 9.5227962
+      },
+      "Russia": {
+        "latitude": 64.6863136,
+        "longitude": 97.7453061
+      },
+      "Gambia": {
+        "latitude": 13.5,
+        "longitude": -15.5
+      },
+      "Canada": {
+        "latitude": 61.0666922,
+        "longitude": -107.991707
+      },
+      "Jerusalem": {
+        "latitude": 32.1142635,
+        "longitude": 35.0344905
+      },
+      "Hawaii": {
+        "latitude": 19.8968,
+        "longitude": -155.5828
+      },
+      "Indiana": {
+        "latitude": 40.2672,
+        "longitude": -86.1349
+      },
+      "Phnom Penh": {
+        "latitude": 11.568271,
+        "longitude": 104.9224426
+      },
+      "Southland": {
+        "latitude": -45.7255555,
+        "longitude": 168.2936808
+      },
+      "Florida": {
+        "latitude": 27.6648,
+        "longitude": -81.5158
+      },
+      "Romania": {
+        "latitude": 45.9852129,
+        "longitude": 24.6859225
+      },
+      "Malawi": {
+        "latitude": -13.2687204,
+        "longitude": 33.9301963
+      },
+      "Slaskie": {
+        "latitude": 50.5687422,
+        "longitude": 19.2343995
+      },
+      "Sankt Gallen": {
+        "latitude": 47.419862,
+        "longitude": 9.374697
+      },
+      "Tunisia": {
+        "latitude": 33.654143,
+        "longitude": 9.065134
+      },
+      "Illinois": {
+        "latitude": 40.088552,
+        "longitude": -89.301876
+      },
+      "Colorado": {
+        "latitude": 39.5501,
+        "longitude": -105.7821
+      },
+      "Oklahoma": {
+        "latitude": 35.370608,
+        "longitude": -97.1862
+      },
+      "Jeddah": {
+        "latitude": 21.4858,
+        "longitude": 39.1925
+      },
+      "Chattogram": {
+        "latitude": 22.3569,
+        "longitude": 91.7832
+      },
+      "Tennessee": {
+        "latitude": 35.5175,
+        "longitude": -86.5804
+      },
+      "Puerto Rico": {
+        "latitude": 18.2208,
+        "longitude": -66.5901
+      },
+      "Maine": {
+        "latitude": 45.709097,
+        "longitude": -68.8590201
+      },
+      "Montana": {
+        "latitude": 46.974704,
+        "longitude": -110.87253
+      },
+      "Antioquia": {
+        "latitude": 6.709191,
+        "longitude": -75.484721
+      },
+      "Sonora": {
+        "latitude": 29.3333331,
+        "longitude": -110.6666671
+      },
+      "Kenya": {
+        "latitude": 0.0236,
+        "longitude": 37.9062
+      },
+      "Tuscany": {
+        "latitude": 43.4586541,
+        "longitude": 11.1389204
+      },
+      "Geneva": {
+        "latitude": 46.216038,
+        "longitude": 6.136984
+      },
+      "Mitrovica": {
+        "latitude": 42.8790424,
+        "longitude": 20.8657862
+      },
+      "Utah": {
+        "latitude": 39.4225192,
+        "longitude": -111.7143583
+      },
+      "Mexico": {
+        "latitude": 19.4325301,
+        "longitude": -99.1332101
+      },
+      "Addis Ababa": {
+        "latitude": 9.0107934,
+        "longitude": 38.7612525
+      },
+      "Palau": {
+        "latitude": 5.3783537,
+        "longitude": 132.9102573
+      },
+      "California": {
+        "latitude": 36.357039,
+        "longitude": -119.690182
+      },
+      "Syddanmark": {
+        "latitude": 55.3784583,
+        "longitude": 9.13192766793894
+      },
+      "Graub\u00fcnden": {
+        "latitude": 46.709551,
+        "longitude": 9.606903
+      },
+      "New Jersey": {
+        "latitude": 40.0583,
+        "longitude": -74.4057
+      },
+      "Bangkok": {
+        "latitude": 13.798471,
+        "longitude": 100.590834
+      },
+      "Virgin Islands": {
+        "latitude": 18.3358,
+        "longitude": -64.8963
+      },
+      "Hesse": {
+        "latitude": 50.6118537,
+        "longitude": 9.1909725
+      },
+      "South Canterbury": {
+        "latitude": -43.49417615,
+        "longitude": 171.8098447584145
+      },
+      "Lucerne": {
+        "latitude": 47.0502,
+        "longitude": 8.3093
+      },
+      "Schwyz": {
+        "latitude": 47.055398,
+        "longitude": 8.73645
+      },
+      "Saskatchewan": {
+        "latitude": 53.934278,
+        "longitude": -106.16006
+      },
+      "Ethiopia": {
+        "latitude": 9.145,
+        "longitude": 40.4897
+      },
+      "Vermont": {
+        "latitude": 44.5588,
+        "longitude": -72.5778
+      },
+      "Guam": {
+        "latitude": 13.464887,
+        "longitude": 144.792016
+      },
+      "Zimbabwe": {
+        "latitude": -18.4554963,
+        "longitude": 29.7468414
+      },
+      "Camp Lemonnier": {
+        "latitude": 11.54254665,
+        "longitude": 43.15624732653296
+      },
+      "Northern Territory": {
+        "latitude": -19.4914,
+        "longitude": 132.551
+      },
+      "Shizuoka": {
+        "latitude": 34.979149,
+        "longitude": 138.38299
+      },
+      "Provence-Alpes-C\u00f4te d'Azur": {
+        "latitude": 44.0580563,
+        "longitude": 6.0638506
+      },
+      "Wielkopolskie": {
+        "latitude": 52.28,
+        "longitude": 17.3523
+      },
+      "Japan": {
+        "latitude": 35.68536,
+        "longitude": 139.75309
+      },
+      "Saudi Arabia": {
+        "latitude": 25.0,
+        "longitude": 45.0
+      },
+      "Ontario": {
+        "latitude": 44.429,
+        "longitude": -79.377
+      },
+      "Oyo State": {
+        "latitude": 8.154414,
+        "longitude": 3.632978
+      },
+      "Bern": {
+        "latitude": 46.855135,
+        "longitude": 7.570549
+      },
+      "Loreto": {
+        "latitude": -5.0,
+        "longitude": -75.0
+      },
+      "Philippines": {
+        "latitude": 12.8797,
+        "longitude": 121.774
+      },
+      "Pahang": {
+        "latitude": 3.8126,
+        "longitude": 103.3256
+      },
+      "Nis": {
+        "latitude": 43.3211301,
+        "longitude": 21.8959232
+      },
+      "Tokyo": {
+        "latitude": 35.683441,
+        "longitude": 139.766131
+      },
+      "United Kingdom": {
+        "latitude": 54.242833,
+        "longitude": -2.088739
+      },
+      "Louisiana": {
+        "latitude": 30.9843,
+        "longitude": -91.9623
+      },
+      "Vaud": {
+        "latitude": 46.619469,
+        "longitude": 6.472479
+      },
+      "France": {
+        "latitude": 46.2276,
+        "longitude": 2.2137
+      },
+      "Dominican Republic": {
+        "latitude": 19.0974031,
+        "longitude": -70.3028026
+      },
+      "Alabama": {
+        "latitude": 32.3182,
+        "longitude": -86.9023
+      },
+      "South Holland": {
+        "latitude": 52.006053,
+        "longitude": 4.485728
+      },
+      "Goi\u00e1s": {
+        "latitude": -15.827,
+        "longitude": -49.8362
+      },
+      "Rajshahi": {
+        "latitude": 24.372633,
+        "longitude": 88.606356
+      },
+      "Nebraska": {
+        "latitude": 41.4925,
+        "longitude": -99.9018
+      },
+      "Washington DC": {
+        "latitude": 38.89565,
+        "longitude": -77.018707
+      },
+      "Ramallah and al-Bireh Governorate": {
+        "latitude": 31.989547412077712,
+        "longitude": 35.19407713569646
+      },
+      "Friuli Venezia Giulia": {
+        "latitude": 46.2259,
+        "longitude": 13.1034
+      },
+      "Seychelles": {
+        "latitude": -4.6574977,
+        "longitude": 55.4540146
+      },
+      "Mississippi": {
+        "latitude": 32.9715645,
+        "longitude": -89.7348497
+      },
+      "Hovedstaden": {
+        "latitude": 55.86170985,
+        "longitude": 12.313743483194546
+      },
+      "South Dakota": {
+        "latitude": 44.6471761,
+        "longitude": -100.348761
+      },
+      "Delaware": {
+        "latitude": 38.6920451,
+        "longitude": -75.4013315
+      },
+      "Israel": {
+        "latitude": 31.5,
+        "longitude": 34.75
+      },
+      "Paraguay": {
+        "latitude": -23.3165935,
+        "longitude": -58.1693445
+      },
+      "Washington": {
+        "latitude": 47.183945,
+        "longitude": -119.950361
+      },
+      "Uruguay": {
+        "latitude": -33.0,
+        "longitude": -56.0
+      },
+      "Ireland": {
+        "latitude": 52.865,
+        "longitude": -7.979
+      },
+      "Australia": {
+        "latitude": -24.7761085,
+        "longitude": 134.755
+      },
+      "Vestland": {
+        "latitude": 60.9291011,
+        "longitude": 6.107886941976156
+      },
+      "Bahrain": {
+        "latitude": 26.0667,
+        "longitude": 50.5577
+      },
+      "England": {
+        "latitude": 52.405994,
+        "longitude": -1.671707
+      },
+      "Denmark": {
+        "latitude": 56.2639,
+        "longitude": 9.5018
+      },
+      "Liechtenstein": {
+        "latitude": 47.1416307,
+        "longitude": 9.5531527
+      },
+      "Cambodia": {
+        "latitude": 13.0,
+        "longitude": 105.0
+      },
+      "Stockholm": {
+        "latitude": 59.33267,
+        "longitude": 18.061849
+      },
+      "Sierra Leone": {
+        "latitude": 8.6400349,
+        "longitude": -11.8400269
+      },
+      "Norway": {
+        "latitude": 64.574131,
+        "longitude": 11.52701029
+      },
+      "Kentucky": {
+        "latitude": 37.64954,
+        "longitude": -85.45019
+      },
+      "Dublin": {
+        "latitude": 53.3431,
+        "longitude": -6.262191
+      },
+      "Dhaka": {
+        "latitude": 23.78937,
+        "longitude": 90.415192
+      },
+      "South Africa": {
+        "latitude": -28.8166235,
+        "longitude": 24.991639
+      },
+      "Belize": {
+        "latitude": 16.8259793,
+        "longitude": -88.7600927
+      },
+      "Scotland": {
+        "latitude": 56.415858,
+        "longitude": -4.090641
+      },
+      "Italy": {
+        "latitude": 43.382775,
+        "longitude": 12.183629
+      },
+      "Mali": {
+        "latitude": 16.3700359,
+        "longitude": -2.2900239
+      },
+      "Iowa": {
+        "latitude": 41.878,
+        "longitude": -93.0977
+      },
+      "West Bank": {
+        "latitude": 32.0254688,
+        "longitude": 35.2888075
+      },
+      "Malta": {
+        "latitude": 35.8885993,
+        "longitude": 14.4476911
+      },
+      "New Hampshire": {
+        "latitude": 43.1939,
+        "longitude": -71.5724
+      },
+      "Khyber Pakhtunkhwa": {
+        "latitude": 33.696621,
+        "longitude": 72.636031
+      },
+      "Lower Saxony": {
+        "latitude": 52.8398531,
+        "longitude": 9.075962
+      },
+      "Chile": {
+        "latitude": -31.7613364,
+        "longitude": -71.3187696
+      },
+      "Netherlands": {
+        "latitude": 52.1326,
+        "longitude": 5.2913
+      },
+      "Bamako": {
+        "latitude": 12.60503275,
+        "longitude": -7.986513673439357
+      },
+      "Midtjylland": {
+        "latitude": 56.23564835,
+        "longitude": 9.234602771636588
+      },
+      "Saxony": {
+        "latitude": 50.9295798,
+        "longitude": 13.4585052
+      }
+    }
+  }
+]

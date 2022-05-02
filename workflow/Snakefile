@@ -629,11 +629,38 @@ rule usher_subtree:
     samples  = "results/{build}/sc2rf.recombinants.txt",
   output:
     subtrees_dir = directory("results/{build}/subtrees"),
-    metadata     = "results/{build}/subtrees_collapse/metadata.tsv",
-    collapse_dir = directory("results/{build}/subtrees_collapse"),
   params:
     k           = lambda wildcards: config["builds"][wildcards.build]["usher_subtree"]["k"],
     base_input  = lambda wildcards: config["builds"][wildcards.build]["base_input"],
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    mkdir -p {output.subtrees_dir}
+    cd {output.subtrees_dir}
+    matUtils extract \
+      -i ../../../{input.pb} \
+      --nearest-k-batch ../../../{input.samples}:{params.k} \
+      -M ../../../{input.metadata} \
+      --threads {resources.cpus} \
+      > ../../../{log} 2>&1;
+    cd - >> ../../../{log}
+    """
+
+
+rule_name = "usher_subtree_collapse"
+rule usher_subtree_collapse:
+  """
+  Collapse duplicate UShER subtrees.
+  """
+  message: "{wildcards.build} | Collapsing duplicate UShER subtrees."
+  input:
+    subtrees_dir = directory("results/{build}/subtrees"),
+  output:
+    collapse_dir = directory("results/{build}/subtrees_collapse"),
+    metadata     = "results/{build}/subtrees_collapse/metadata.tsv",
   threads: 1
   resources:
     cpus = 1,
@@ -643,20 +670,10 @@ rule usher_subtree:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    # Create subtrees
-    mkdir -p {output.subtrees_dir}
-    cd {output.subtrees_dir}
-    matUtils extract \
-      -i ../../../{input.pb} \
-      --nearest-k-batch ../../../{input.samples}:{params.k} \
-      -M ../../../{input.metadata} \
-      > ../../../{log} 2>&1;
-    cd - >> ../../../{log}
-
-    # Collapse subtrees
     mkdir -p {output.collapse_dir};
-    python3 scripts/usher_collapse.py --indir {output.subtrees_dir} --outdir {output.collapse_dir} >> {log} 2>&1;
+    python3 scripts/usher_collapse.py --indir {input.subtrees_dir} --outdir {output.collapse_dir} >> {log} 2>&1;
     """
+
 
 # -----------------------------------------------------------------------------#
 #  STAGE 4: Summarize and Report
