@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import click
 import filecmp
-import shutil
 import os
 import json
 
 NO_DATA_CHAR = "NA"
+GEO_RESOLUTIONS = "defaults/geo_resolutions.json"
 
 
 def json_get_strains(json_tree):
@@ -129,18 +129,42 @@ def main(
 
         # JSONS
         in_path = subtrees_collapse[i]
-        out_path = os.path.join(outdir, "subtree_{}.json".format(i))
-        shutil.copyfile(in_path, out_path)
-
-        # Strain List
-        with open(out_path) as infile:
+        with open(in_path) as infile:
             json_data = json.load(infile)
 
+        # Strain List
         strains_csv = json_get_strains(json_data["tree"])
         strains_text = strains_csv.replace(",", "\n")
         out_path_strains = os.path.join(outdir, "subtree_{}.txt".format(i))
         with open(out_path_strains, "w") as outfile:
             outfile.write(strains_text + "\n")
+
+        # Set Visualization Defaults
+        # Color By: lineage_usher
+        color_col = "lineage_usher"
+        color_col_found = False
+
+        for coloring in json_data["meta"]["colorings"]:
+            if coloring["key"] == color_col:
+                color_col_found = True
+
+        if color_col_found:
+            json_data["meta"]["display_defaults"]["color_by"] = color_col
+
+        # Map
+        with open(GEO_RESOLUTIONS) as infile:
+            geo_json_data = json.load(infile)
+        json_data["meta"]["panels"] = ["tree", "map"]
+        json_data["meta"]["geo_resolutions"] = geo_json_data
+
+        # Repeating map
+        json_data["meta"]["display_defaults"]["map_triplicate"] = True
+
+        # Write Output
+        out_path = os.path.join(outdir, "subtree_{}.json".format(i))
+        with open(out_path, "w") as outfile:
+            # outfile.write(json.dumps(json_data, indent=2))
+            outfile.write(json.dumps(json_data))
 
 
 if __name__ == "__main__":

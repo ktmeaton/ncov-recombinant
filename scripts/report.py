@@ -25,6 +25,9 @@ PANGO_ISSUES_URL = "https://github.com/cov-lineages/pango-designation/issues/"
 
 RECOMBINANT_STATUS = ["designated", "proposed", "unpublished"]
 
+PIPELINE = "ncov-recombinant"
+CLASSIFIER = "UShER"
+
 # Select and rename columns from summary
 LINELIST_COLS = {
     "strain": "strain",
@@ -32,16 +35,21 @@ LINELIST_COLS = {
     "sc2rf_lineage": "lineage_sc2rf",
     "Nextclade_pango": "lineage_nextclade",
     "sc2rf_clades_filter": "parents",
+    "sc2rf_breakpoints_regions_filter": "breakpoints",
+    "usher_subtree": "subtree",
     "sc2rf_clades_regions_filter": "regions",
     "date": "date",
     "country": "country",
-    "sc2rf_breakpoints_regions_filter": "breakpoints",
-    "usher_subtree": "subtree",
+    "ncov-recombinant_version": "pipeline",
+    "usher_version": "classifier",
+    "usher_dataset": "classifier_dataset",
 }
 
 # Select and rename columns from linelist
 RECOMBINANTS_COLS = [
     "status",  # excluded from report.md
+    "lineage",
+    "issue",
     "parents",
     "breakpoints",
     "subtree",
@@ -49,8 +57,6 @@ RECOMBINANTS_COLS = [
     "sequences_int",  # excluded from report.md
     "earliest_date",
     "latest_date",
-    "lineage",
-    "issue",
     "year",  # excluded from report.md
 ]
 
@@ -106,6 +112,18 @@ def main(
     cols_list = list(LINELIST_COLS.keys())
 
     # -------------------------------------------------------------------------
+    # Program Versions
+
+    ver_cols = [col for col in summary_df if "ver" in col or "dataset" in col]
+    ver_cols.sort()
+    ver_vals = list(summary_df[ver_cols].iloc[0].values)
+    ver_dict = {
+        "program": [c.replace("_version", "") for c in ver_cols],
+        "version": ver_vals,
+    }
+    ver_df = pd.DataFrame(ver_dict)
+
+    # -------------------------------------------------------------------------
     # Create the linelist (linelist.tsv)
     # -------------------------------------------------------------------------
 
@@ -117,8 +135,8 @@ def main(
     # Use lineage calls by UShER and sc2rf to classify recombinants status
 
     # Initialize columns
-    linelist_df["issue"] = [NO_DATA_CHAR] * len(linelist_df)
-    linelist_df["status"] = [NO_DATA_CHAR] * len(linelist_df)
+    linelist_df.insert(1, "status", [NO_DATA_CHAR] * len(linelist_df))
+    linelist_df.insert(3, "issue", [NO_DATA_CHAR] * len(linelist_df))
 
     for rec in linelist_df.iterrows():
         lineage = NO_DATA_CHAR
@@ -162,6 +180,16 @@ def main(
             status = "proposed"
         linelist_df.at[rec[0], "status"] = str(status)
 
+    # Edit pipeline versions
+    pipeline_ver = linelist_df["pipeline"].values[0]
+    linelist_df.loc[linelist_df.index, "pipeline"] = "{}-{}".format(
+        PIPELINE, pipeline_ver
+    )
+    classifer_ver = linelist_df["classifier"].values[0]
+    linelist_df.loc[linelist_df.index, "classifier"] = "{}-{}".format(
+        CLASSIFIER, classifer_ver
+    )
+
     # -------------------------------------------------------------------------
     # Identify new samples
 
@@ -186,6 +214,10 @@ def main(
                 new_samples.append("no")
         linelist_df["new"] = new_samples
 
+    # Drop Unnecessary columns
+    linelist_df.drop(columns=["lineage_sc2rf", "lineage_nextclade"], inplace=True)
+    linelist_df.rename(columns={"lineage_usher": "lineage"}, inplace=True)
+
     # -------------------------------------------------------------------------
     # Save to File
 
@@ -200,8 +232,6 @@ def main(
     linelist_df["datetime"] = pd.to_datetime(linelist_df["date"], format="%Y-%m-%d")
     linelist_df["year"] = [d.year for d in linelist_df["datetime"]]
 
-    recombinants_df = pd.DataFrame(columns=RECOMBINANTS_COLS)
-
     # Define a recombinant by the intersection of:
     #   - Breakpoints
     #   - subtree # (Phylogenetic placement)
@@ -212,27 +242,30 @@ def main(
     seen = []
     recombinants_data = {col: [] for col in RECOMBINANTS_COLS}
 
-    for bp, subtree in zip(linelist_df["breakpoints"], linelist_df["subtree"]):
+    for lineage, bp, subtree in zip(
+        linelist_df["lineage"], linelist_df["breakpoints"], linelist_df["subtree"]
+    ):
 
         # Mark the first time we see this recombinant type
-        bp_subtree = "{},{}".format(bp, subtree)
-        if bp_subtree in seen:
+        lin_bp_subtree = "{},{},{}".format(lineage, bp, subtree)
+        if lin_bp_subtree in seen:
             continue
         else:
-            seen.append(bp_subtree)
+            seen.append(lin_bp_subtree)
 
         bp_subtree_df = linelist_df[
-            (linelist_df["breakpoints"] == bp) & (linelist_df["subtree"] == subtree)
+            (linelist_df["breakpoints"] == bp)
+            & (linelist_df["subtree"] == subtree)
+            & (linelist_df["lineage"] == lineage)
         ]
 
-        status = bp_subtree_df["issue"].values[0]
+        status = bp_subtree_df["status"].values[0]
         parents = bp_subtree_df["parents"].values[0]
         sequences_int = len(bp_subtree_df)
         earliest_date = min(bp_subtree_df["datetime"])
         latest_date = max(bp_subtree_df["datetime"])
-        lineage = bp_subtree_df["lineage_usher"].values[0]
         issue = bp_subtree_df["issue"].values[0]
-        year = bp_subtree_df["issue"].values[0]
+        year = bp_subtree_df["year"].values[0]
         growth = "0"
 
         sequences = "{} ({})".format(sequences_int, growth)
@@ -273,268 +306,138 @@ def main(
         recombinants_data["subtree"].append(subtree)
         recombinants_data["year"].append(year)
 
-        break
+    recombinants_df = pd.DataFrame(recombinants_data)
+    recombinants_df.sort_values(by="sequences_int", ascending=False, inplace=True)
+    recombinants_df.drop("sequences_int", axis="columns", inplace=True)
 
-    # Just tmp to make pre-commit happy
-    print(years_list)
-    print(re.sub("a", "b", "ab"))
-    print(recombinants_df)
-    # End tmp
+    outpath = os.path.join(outdir, "recombinants.tsv")
+    recombinants_df.to_csv(outpath, index=False, sep="\t")
 
-    quit()
+    # ---------------------------------------------------------------------------
+    # Create the markdown report
+    # ---------------------------------------------------------------------------
 
-    # outpath = os.path.join(outdir, "recombinants.tsv")
+    report_content = ""
 
-    # # -------------------------------------------------------------------------
-    # # Program Versions
+    # YAML Frontmatter
+    frontmatter = "---\n"
+    frontmatter += "title: SARS-CoV-2 Recombinants\n"
+    frontmatter += "---\n"
+    report_content += frontmatter + "\n"
 
-    # ver_cols = [col for col in summary_df if "ver" in col or "dataset" in col]
-    # ver_cols.sort()
-    # ver_vals = list(summary_df[ver_cols].iloc[0].values)
-    # ver_dict = {
-    #     "program": [c.replace("_version", "") for c in ver_cols],
-    #     "version": ver_vals,
-    # }
-    # ver_df = pd.DataFrame(ver_dict)
+    # Custom css
+    custom_css = ""
+    custom_css += "<style> th { font-size: 12px } td { font-size: 10px } </style>\n"
+    report_content += custom_css + "\n"
 
-    # # -------------------------------------------------------------------------
-    # # Recombinant Types
+    # Preface
+    preface = ""
+    preface += "---\n\n"
+    preface += (
+        "- `subtrees` can be uploaded to <https://auspice.us/> for visualization.\n"
+    )
+    preface += "- `breakpoints-sc2rf` can be visualized in VS Code with [ANSI Colors](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi)."
+    report_content += preface + "\n\n"
 
-    # # Define a recombinant by the intersection of:
-    # #   - Breakpoints
-    # #   - subtree # (Phylogenetic placement)
+    # -------------------------------------------------------------------------
+    # Breakdown By Year
 
-    # # Different recombinant types can have the same breakpoint
-    # # but different placement: ex. XE and XH
+    year_table_note = ""
+    year_table_note += "\*The number in parentheses indicates the growth compared to the previous report.<br>\n"
 
-    # seen = []
-    # data = {col: [] for col in header_cols}
+    for year in years_list:
 
-    # for bp, lineage in zip(report_df["breakpoints"], report_df["lineage"]):
-    #     # for bp, subtree in zip(report_df["breakpoints"], report_df["subtree"]):
+        year_df = recombinants_df[recombinants_df["year"] == year]
 
-    #     # Mark the first time we see this
-    #     bp_lin = "{},{}".format(bp, lineage)
-    #     if bp_lin in seen:
-    #         continue
-    #     else:
-    #         seen.append(bp_lin)
+        num_recombinants = len(year_df)
+        num_sequences = sum([int(s.split(" ")[0]) for s in year_df["sequences"]])
 
-    #     bp_lin_df = report_df[
-    #         (report_df["breakpoints"] == bp) & (report_df["lineage"] == lineage)
-    #     ]
-    #     parents = list(bp_lin_df["parents"])[0]
-    #     sequences = len(bp_lin_df)
-    #     earliest_date = min(bp_lin_df["datetime"])
-    #     latest_date = max(bp_lin_df["datetime"])
-    #     issue = list(bp_lin_df["issue"])[0]
-    #     subtree = list(bp_lin_df["subtree"])[0]
-    #     year = earliest_date.year
+        status_counts = {}
+        for status in RECOMBINANT_STATUS:
+            status_df = year_df[year_df["status"] == status]
+            status_counts[status] = len(status_df)
 
-    #     for clade, rename in CLADES_RENAME.items():
-    #         parents = parents.replace(clade, rename)
+        parents = []
+        for p_csv in set(year_df["parents"]):
+            for p in p_csv.split(","):
+                if p not in parents:
+                    parents.append(p)
+        parents = ", ".join(parents)
 
-    #     parents_uniq = []
-    #     for p in parents.split(","):
-    #         if p not in parents_uniq:
-    #             parents_uniq.append(p)
-    #     parents = ", ".join(parents_uniq)
+        if parents != "":
+            year_header = "## {year} | {parents}\n".format(year=year, parents=parents)
+        else:
+            year_header = "## {year}\n".format(year=year)
+        report_content += year_header + "\n"
 
-    #     # Calculate growth from previous linelist
-    #     growth = 0
-    #     if prev_linelist:
+        year_desc = ""
+        year_desc += (
+            "- There are <u>{num_sequences} recombinant sequences</u>.\n".format(
+                num_sequences=num_sequences
+            )
+        )
+        year_desc += (
+            "- There are <u>{num_recombinants} recombinant types </u>:\n".format(
+                num_recombinants=num_recombinants
+            )
+        )
 
-    #         prev_lineage_col = None
-    #         for col in prev_linelist_df.columns:
-    #             if "lineage" in col:
-    #                 prev_lineage_col = col
-    #                 break
+        # Add notes about count by status
+        for status in RECOMBINANT_STATUS:
 
-    #         # Try to match on both breakpoint and lineage
-    #         match = prev_linelist_df[
-    #             (prev_linelist_df["breakpoints"] == bp)
-    #             & (prev_linelist_df[prev_lineage_col] == lineage)
-    #         ]
+            year_desc += "\t- {num} type(s) are {status} (X*).\n".format(
+                num=status_counts[status],
+                status=status,
+            )
 
-    #         sequences_prev = len(match)
-    #         growth = sequences - sequences_prev
-    #         if growth <= 0:
-    #             growth = str(growth)
-    #         else:
-    #             growth = "+{}".format(growth)
+        report_content += year_desc + "\n"
 
-    #     sequences_int = sequences
-    #     sequences = "{} ({})".format(sequences, growth)
+        year_df = year_df.drop("year", axis="columns")
 
-    #     # issues will be a csv if there was a single breakpoint
-    #     # and if sc2rf found "proposed" lineages
-    #     if "," in issue:
-    #         issues_urls = [
-    #             "[{issue}]({url})".format(issue=i, url=PANGO_ISSUES_URL + i)
-    #             for i in issue.split(",")
-    #         ]
-    #         issue = ",".join(issues_urls)
+        # Add footnote columns
+        year_df = year_df.rename({"sequences": "sequences*"}, axis="columns")
+        year_table = year_df.to_markdown(index=False, tablefmt="github")
+        # Hack fix for dates
+        year_table = year_table.replace(" 00:00:00", " " * 9)
+        # Hack fix for <br> breakpoints
+        year_table = re.sub("([0-9]),([0-9])", "\\1<br>\\2", year_table)
+        # Hack fix for <br> parents
+        year_table = re.sub("([A-Z]),([A-Z])", "\\1<br>\\2", year_table)
 
-    #     elif issue != NO_DATA_CHAR:
-    #         issue_url = PANGO_ISSUES_URL + str(issue)
-    #         issue = "[{}]({})".format(issue, issue_url)
+        report_content += year_table + "\n\n"
+        report_content += year_table_note + "\n\n"
 
-    #     # Get status
-    #     if lineage.startswith("X"):
-    #         status = "designated"
-    #     elif lineage.startswith("proposed"):
-    #         status = "proposed"
-    #     else:
-    #         status = "unpublished"
+    # Rename Clades/Parents
+    for clade in CLADES_RENAME:
+        report_content = report_content.replace(clade, CLADES_RENAME[clade])
 
-    #     # Update data
-    #     data["status"].append(status)
-    #     data["breakpoints"].append(bp)
-    #     data["parents"].append(parents)
-    #     data["sequences"].append(sequences)
-    #     data["sequences_int"].append(sequences_int)
-    #     data["earliest_date"].append(earliest_date)
-    #     data["latest_date"].append(latest_date)
-    #     data["lineage"].append(lineage)
-    #     data["issue"].append(issue)
-    #     data["subtree"].append(subtree)
-    #     data["year"].append(year)
+    # Versions
+    ver_info = ""
+    # Insert page break
+    ver_info += (
+        '<div style="page-break-after: always; visibility: hidden">\pagebreak</div>\n\n'
+    )
+    ver_info += "## Versions\n\n"
+    ver_info += ver_df.to_markdown(index=False, tablefmt="github")
+    report_content += ver_info + "\n\n"
 
-    # rec_df = pd.DataFrame(data)
+    # Append a changelog
 
-    # rec_df.sort_values(by=["sequences_int"], inplace=True, ascending=False)
-    # rec_df.drop("sequences_int", axis="columns", inplace=True)
-    # rec_df.to_csv(outpath, sep="\t", index=False)
+    if changelog:
 
-    # # ---------------------------------------------------------------------------
-    # # Create the markdown report
-    # # ---------------------------------------------------------------------------
+        changelog_content = ""
+        changelog_content += "## Changelog\n\n"
+        with open(changelog) as infile:
+            changelog_raw = infile.read()
+            # Bump header levels down by 1 (extra #)
+            changelog_bump = re.sub("^#", "##", changelog_raw)
+            changelog_content += changelog_bump
 
-    # report_content = ""
+        report_content += changelog_content + "\n\n"
 
-    # # YAML Frontmatter
-    # frontmatter = "---\n"
-    # frontmatter += "title: SARS-CoV-2 Recombinants\n"
-    # frontmatter += "---\n"
-    # report_content += frontmatter + "\n"
-
-    # # Custom css
-    # custom_css = ""
-    # custom_css += "<style> th { font-size: 12px } td { font-size: 10px } </style>\n"
-    # report_content += custom_css + "\n"
-
-    # # Preface
-    # preface = ""
-    # preface += "---\n\n"
-    # preface += (
-    #     "- `subtrees` can be uploaded to <https://auspice.us/> for visualization.\n"
-    # )
-    # preface += "- `breakpoints-sc2rf` can be visualized in VS Code with [ANSI Colors](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi)."
-    # report_content += preface + "\n\n"
-
-    # # -------------------------------------------------------------------------
-    # # Breakdown By Year
-    # year_table_note = ""
-    # year_table_note += "\*The number in parentheses indicates the growth compared to the previous report.<br>\n"
-
-    # for year in years_list:
-
-    #     year_df = rec_df[rec_df["year"] == year]
-
-    #     # Formatting Parents
-    #     parents = []
-    #     year_parents = list(year_df["parents"])
-    #     for p_csv in year_parents:
-    #         for p in p_csv.split(", "):
-    #             parents.append(p)
-    #     parents = list(set(parents))
-    #     parents.sort()
-    #     parents = ", ".join(parents)
-
-    #     num_recombinants = len(year_df)
-    #     num_sequences = sum([int(s.split(" ")[0]) for s in year_df["sequences"]])
-
-    #     status_counts = {status: 0 for status in RECOMBINANT_STATUS}
-
-    #     designated = year_df[year_df["lineage"].str.startswith("X")]
-    #     proposed = year_df[year_df["lineage"].str.startswith("proposed")]
-
-    #     num_designated = len(designated)
-    #     num_proposed = len(proposed)
-    #     num_unpublished = num_recombinants - num_designated - num_proposed
-
-    #     if len(parents) > 1:
-    #         year_header = "## {year} | {parents}\n".format(year=year, parents=parents)
-    #     else:
-    #         year_header = "## {year}\n".format(year=year)
-    #     report_content += year_header + "\n"
-
-    #     year_desc = ""
-    #     year_desc += (
-    #         "- There are <u>{num_sequences} recombinant sequences</u>.\n".format(
-    #             num_sequences=num_sequences
-    #         )
-    #     )
-    #     year_desc += (
-    #         "- There are <u>{num_recombinants} recombinant types </u>:\n".format(
-    #             num_recombinants=num_recombinants
-    #         )
-    #     )
-
-    #     year_desc += "\t- {num_designated} type(s) are designated (X*).\n".format(
-    #         num_designated=num_designated
-    #     )
-    #     year_desc += "\t- {num_proposed} type(s) are proposed (proposed*).\n".format(
-    #         num_proposed=num_proposed
-    #     )
-    #     year_desc += "\t- {num_unpublished} type(s) are unpublished.\n".format(
-    #         num_unpublished=num_unpublished
-    #     )
-
-    #     report_content += year_desc + "\n"
-
-    #     year_df = year_df.drop("year", axis="columns")
-
-    #     # Add footnote columns
-    #     year_df = year_df.rename({"sequences": "sequences*"}, axis="columns")
-    #     year_table = year_df.to_markdown(index=False, tablefmt="github")
-    #     # Hack fix for dates
-    #     year_table = year_table.replace(" 00:00:00", " " * 9)
-    #     # Hack fix for <br> breakpoints
-    #     year_table = re.sub("([0-9]),([0-9])", "\\1<br>\\2", year_table)
-    #     # Hack fix for <br> parents
-    #     year_table = re.sub("([0-9]), ([A-Z])", "\\1<br>\\2", year_table)
-
-    #     report_content += year_table + "\n\n"
-    #     report_content += year_table_note + "\n\n"
-
-    # # Versions
-    # ver_info = ""
-    # # Insert page break
-    # ver_info += (
-    #     '<div style="page-break-after: always; visibility: hidden">\pagebreak</div>\n\n'
-    # )
-    # ver_info += "## Versions\n\n"
-    # ver_info += ver_df.to_markdown(index=False, tablefmt="github")
-    # report_content += ver_info + "\n\n"
-
-    # # Append a changelog
-
-    # if changelog:
-
-    #     changelog_content = ""
-    #     changelog_content += "## Changelog\n\n"
-    #     with open(changelog) as infile:
-    #         changelog_raw = infile.read()
-    #         # Bump header levels down by 1 (extra #)
-    #         changelog_bump = re.sub("^#", "##", changelog_raw)
-    #         changelog_content += changelog_bump
-
-    #     report_content += changelog_content + "\n\n"
-
-    # outpath = os.path.join(outdir, "report.md")
-    # with open(outpath, "w") as outfile:
-    #     outfile.write(report_content)
+    outpath = os.path.join(outdir, "report.md")
+    with open(outpath, "w") as outfile:
+        outfile.write(report_content)
 
 
 if __name__ == "__main__":
