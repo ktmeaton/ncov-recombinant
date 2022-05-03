@@ -5,7 +5,7 @@ import os
 import json
 
 NO_DATA_CHAR = "NA"
-GEO_RESOLUTIONS = "defaults/geo_resolutions.json"
+GEO_RESOLUTIONS = "resources/geo_resolutions.json"
 
 
 def json_get_strains(json_tree):
