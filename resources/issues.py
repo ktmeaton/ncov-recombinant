@@ -180,7 +180,12 @@ def main(token, breakpoints):
 
     if breakpoints_curated:
         df_breakpoints = pd.read_csv(breakpoints_curated, sep="\t")
-        df.insert(5, "breakpoints_curated", [""] * len(df))
+
+        if "breakpoints" in df_breakpoints.columns:
+            df.insert(5, "breakpoints_curated", [""] * len(df))
+
+        if "parents" in df_breakpoints.columns:
+            df.insert(5, "parents_curated", [""] * len(df))
 
         for rec in df.iterrows():
             issue = rec[1]["issue"]
@@ -191,8 +196,12 @@ def main(token, breakpoints):
 
             match = df_breakpoints[df_breakpoints["issue"] == issue]
             bp = list(match["breakpoints"])[0]
+            parents = list(match["parents"])[0]
+
             if bp != np.nan:
                 df.at[rec[0], "breakpoints_curated"] = bp
+            if parents != np.nan:
+                df.at[rec[0], "parents_curated"] = parents
 
     # -------------------------------------------------------------------------
     # Sort the final dataframe
