@@ -17,13 +17,18 @@ CLADES_RENAME = {
     "Omicron/BA.1/21K": "BA.1",
     "Omicron/BA.2/21L": "BA.2",
 }
+
 PANGO_ISSUES_URL = "https://github.com/cov-lineages/pango-designation/issues/"
 
 # designated: X*
 # proposed: proposed* or associated issue
 # unpublished: not designated or proposed
 
-RECOMBINANT_STATUS = ["designated", "proposed", "unpublished"]
+RECOMBINANT_STATUS = {
+    "designated": "X*",
+    "proposed": "proposed*",
+    "unpublished": "misc*",
+}
 
 PIPELINE = "ncov-recombinant"
 CLASSIFIER = "UShER"
@@ -40,18 +45,18 @@ LINELIST_COLS = {
     "sc2rf_clades_regions_filter": "regions",
     "date": "date",
     "country": "country",
-    "ncov-recombinant_version": "pipeline",
-    "usher_version": "classifier",
-    "usher_dataset": "classifier_dataset",
+    "ncov-recombinant_version": "recombinant_pipeline",
+    "usher_version": "recombinant_classifier",
+    "usher_dataset": "recombinant_classifier_dataset",
 }
 
 # Select and rename columns from linelist
 RECOMBINANTS_COLS = [
     "status",  # excluded from report.md
     "lineage",
-    "issue",
     "parents",
     "breakpoints",
+    "issue",
     "subtree",
     "sequences",
     "sequences_int",  # excluded from report.md
@@ -181,14 +186,25 @@ def main(
         linelist_df.at[rec[0], "status"] = str(status)
 
     # Edit pipeline versions
-    pipeline_ver = linelist_df["pipeline"].values[0]
-    linelist_df.loc[linelist_df.index, "pipeline"] = "{}-{}".format(
+    pipeline_ver = linelist_df["recombinant_pipeline"].values[0]
+    linelist_df.loc[linelist_df.index, "recombinant_pipeline"] = "{}-{}".format(
         PIPELINE, pipeline_ver
     )
-    classifer_ver = linelist_df["classifier"].values[0]
-    linelist_df.loc[linelist_df.index, "classifier"] = "{}-{}".format(
+    classifer_ver = linelist_df["recombinant_classifier"].values[0]
+    linelist_df.loc[linelist_df.index, "recombinant_classifier"] = "{}-{}".format(
         CLASSIFIER, classifer_ver
     )
+    # Edit recombinant lineage
+    recombinant_lineage = []
+    for lineage, status in zip(linelist_df["lineage_usher"], linelist_df["status"]):
+        if status == "designated":
+            recombinant_lineage.append(lineage)
+        elif status == "proposed":
+            recombinant_lineage.append("proposed_recombinant")
+        else:
+            recombinant_lineage.append("unpublished_recombinant")
+
+    linelist_df["recombinant_lineage_curated"] = recombinant_lineage
 
     # -------------------------------------------------------------------------
     # Identify new samples
@@ -232,9 +248,10 @@ def main(
     linelist_df["datetime"] = pd.to_datetime(linelist_df["date"], format="%Y-%m-%d")
     linelist_df["year"] = [d.year for d in linelist_df["datetime"]]
 
-    # Define a recombinant by the intersection of:
+    # Define a recombinant by:
     #   - Breakpoints
-    #   - subtree # (Phylogenetic placement)
+    #   - Parents
+    #   - Phylogenetic placement: lineage or subtree?
 
     # Different recombinant types can have the same breakpoint
     # but different placement: ex. XE and XH
@@ -242,43 +259,42 @@ def main(
     seen = []
     recombinants_data = {col: [] for col in RECOMBINANTS_COLS}
 
-    for lineage, bp, subtree in zip(
-        linelist_df["lineage"], linelist_df["breakpoints"], linelist_df["subtree"]
+    for bp, parents, lineage in zip(
+        linelist_df["breakpoints"],
+        linelist_df["parents"],
+        linelist_df["lineage"],
     ):
 
         # Mark the first time we see this recombinant type
-        lin_bp_subtree = "{},{},{}".format(lineage, bp, subtree)
-        if lin_bp_subtree in seen:
+        rec_type = "{},{},{}".format(bp, parents, lineage)
+        if rec_type in seen:
             continue
         else:
-            seen.append(lin_bp_subtree)
+            seen.append(rec_type)
 
-        bp_subtree_df = linelist_df[
+        rec_type_df = linelist_df[
             (linelist_df["breakpoints"] == bp)
-            & (linelist_df["subtree"] == subtree)
+            & (linelist_df["parents"] == parents)
             & (linelist_df["lineage"] == lineage)
         ]
 
-        status = bp_subtree_df["status"].values[0]
-        parents = bp_subtree_df["parents"].values[0]
-        sequences_int = len(bp_subtree_df)
-        earliest_date = min(bp_subtree_df["datetime"])
-        latest_date = max(bp_subtree_df["datetime"])
-        issue = bp_subtree_df["issue"].values[0]
-        year = bp_subtree_df["year"].values[0]
+        status = rec_type_df["status"].values[0]
+        parents = rec_type_df["parents"].values[0]
+        sequences_int = len(rec_type_df)
+        earliest_date = min(rec_type_df["datetime"])
+        latest_date = max(rec_type_df["datetime"])
+        issue = rec_type_df["issue"].values[0]
+        year = rec_type_df["year"].values[0]
+        subtree = rec_type_df["subtree"].values[0]
         growth = "0"
-
-        sequences = "{} ({})".format(sequences_int, growth)
 
         # Calculate sequences growth from previous linelist
         growth = 0
         if prev_linelist:
 
-            prev_lineage_col = None
-            for col in prev_linelist_df.columns:
-                if "lineage" in col:
-                    prev_lineage_col = col
-                    break
+            prev_lineage_col = "lineage_usher"
+            if "lineage" in prev_linelist_df.columns:
+                prev_lineage_col = "lineage"
 
             # Try to match on both breakpoint and lineage
             match = prev_linelist_df[
@@ -287,11 +303,13 @@ def main(
             ]
 
             sequences_prev = len(match)
-            growth = sequences - sequences_prev
+            growth = sequences_int - sequences_prev
             if growth <= 0:
                 growth = str(growth)
             else:
                 growth = "+{}".format(growth)
+
+        sequences = "{} ({})".format(sequences_int, growth)
 
         # Update data
         recombinants_data["status"].append(status)
@@ -376,18 +394,17 @@ def main(
                 num_sequences=num_sequences
             )
         )
-        year_desc += (
-            "- There are <u>{num_recombinants} recombinant types </u>:\n".format(
-                num_recombinants=num_recombinants
-            )
+        year_desc += "- There are <u>{num_recombinants} recombinant types </u>, defined by `lineage`, `breakpoints`, and `parents`:\n".format(
+            num_recombinants=num_recombinants
         )
 
         # Add notes about count by status
         for status in RECOMBINANT_STATUS:
 
-            year_desc += "\t- {num} type(s) are {status} (X*).\n".format(
+            year_desc += "\t- {num} type(s) are {status} ({lineage}).<br>\n".format(
                 num=status_counts[status],
                 status=status,
+                lineage=RECOMBINANT_STATUS[status],
             )
 
         report_content += year_desc + "\n"
@@ -396,13 +413,22 @@ def main(
 
         # Add footnote columns
         year_df = year_df.rename({"sequences": "sequences*"}, axis="columns")
+        # Make issue's URLs
+        # issues_list = list(year_df["issue"])
+        # issues_urls = [
+        #    "[{issue}]({url})".format(issue=i, url=PANGO_ISSUES_URL + i)
+        #    for i in issues_list
+        # ]
+        # year_df.loc[year_df.index, "issue"] = issues_urls
+        # Drop Status columns
+        year_df.drop(columns="status", inplace=True)
         year_table = year_df.to_markdown(index=False, tablefmt="github")
         # Hack fix for dates
         year_table = year_table.replace(" 00:00:00", " " * 9)
         # Hack fix for <br> breakpoints
         year_table = re.sub("([0-9]),([0-9])", "\\1<br>\\2", year_table)
         # Hack fix for <br> parents
-        year_table = re.sub("([A-Z]),([A-Z])", "\\1<br>\\2", year_table)
+        # year_table = re.sub("([A-Z]),([A-Z])", "\\1<br>\\2", year_table)
 
         report_content += year_table + "\n\n"
         report_content += year_table_note + "\n\n"
