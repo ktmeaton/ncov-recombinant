@@ -43,13 +43,17 @@ def main(
 
     # breakpoint
     breakpoint_col = "breakpoints_curated"
+    parents_col = "parents_curated"
     breakpoint_df = pd.read_csv(issues, sep="\t")
     breakpoint_df.fillna(NO_DATA_CHAR, inplace=True)
     drop_rows = breakpoint_df[breakpoint_df[breakpoint_col] == NO_DATA_CHAR].index
     breakpoint_df.drop(drop_rows, inplace=True)
+
+    # Convert CSV to lists
     breakpoint_df[breakpoint_col] = [
         bp.split(",") for bp in breakpoint_df[breakpoint_col]
     ]
+    breakpoint_df[parents_col] = [p.split(",") for p in breakpoint_df[parents_col]]
 
     # A breakpoint match if within 10 base pairs
     breakpoint_approx_bp = 10
@@ -57,6 +61,7 @@ def main(
     drop_strains = {}
 
     for rec in df.iterrows():
+
         regions_str = rec[1]["sc2rf_clades_regions"]
         regions_split = regions_str.split(",")
 
@@ -134,7 +139,7 @@ def main(
             for s in regions_filter
         ]
 
-        # Identify lineage based on breakpoint
+        # Identify lineage based on breakpoint and parents!
         sc2rf_lineage = ""
         sc2rf_lineages = {bp_s: [] for bp_s in breakpoints_filter}
 
@@ -143,8 +148,16 @@ def main(
             end_s = int(bp_s.split(":")[1])
 
             match_found = False
+
             for bp_rec in breakpoint_df.iterrows():
+
+                # Skip over this potential lineage if parents are wrong
+                bp_parents = bp_rec[1][parents_col]
+                if bp_parents != clades_filter:
+                    continue
+
                 for bp_i in bp_rec[1][breakpoint_col]:
+
                     start_i = int(bp_i.split(":")[0])
                     end_i = int(bp_i.split(":")[1])
                     start_diff = abs(start_s - start_i)
