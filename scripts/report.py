@@ -65,6 +65,9 @@ RECOMBINANTS_COLS = [
     "year",  # excluded from report.md
 ]
 
+# Resize the markdown table columns to fit this char limit
+MD_COL_WIDTH = 20
+
 
 @click.command()
 @click.option("--summary", help="Summary (tsv).", required=True)
@@ -351,6 +354,7 @@ def main(
     # Preface
     preface = ""
     preface += "---\n\n"
+    preface += "- See the **Definitions** section for more info.\n"
     preface += (
         "- `subtrees` can be uploaded to <https://auspice.us/> for visualization.\n"
     )
@@ -394,17 +398,18 @@ def main(
                 num_sequences=num_sequences
             )
         )
-        year_desc += "- There are <u>{num_recombinants} recombinant types </u>, defined by `lineage`, `breakpoints`, and `parents`:\n".format(
-            num_recombinants=num_recombinants
+        year_desc += (
+            "- There are <u>{num_recombinants} recombinant types </u>:\n".format(
+                num_recombinants=num_recombinants
+            )
         )
 
         # Add notes about count by status
         for status in RECOMBINANT_STATUS:
 
-            year_desc += "\t- {num} type(s) are {status} ({lineage}).<br>\n".format(
+            year_desc += "\t- {num} type(s) are {status}.<br>\n".format(
                 num=status_counts[status],
                 status=status,
-                lineage=RECOMBINANT_STATUS[status],
             )
 
         report_content += year_desc + "\n"
@@ -437,12 +442,39 @@ def main(
     for clade in CLADES_RENAME:
         report_content = report_content.replace(clade, CLADES_RENAME[clade])
 
-    # Versions
-    ver_info = ""
+    # Resize Table Columns
+    num_columns = len(year_df.columns)
+    line_replace = ""
+    for _i in range(0, num_columns):
+        line_replace += "|:" + "-" * MD_COL_WIDTH + ":"
+    line_replace += "|"
+
+    report_content = re.sub("\|-.*", line_replace, report_content)
+
+    # -------------------------------------------------------------------------
+    # Definitions
+
+    defs = ""
     # Insert page break
-    ver_info += (
+    defs += (
         '<div style="page-break-after: always; visibility: hidden">\pagebreak</div>\n\n'
     )
+    defs += "## Definitions\n\n"
+    defs += " - **Breakpoints**: Intervals in which a breakpoint occurs according to [sc2rf](https://github.com/lenaschimmel/sc2rf).\n"
+    defs += " - **Designated**: Formally designated as X\* in [pango-designation](https://github.com/cov-lineages/pango-designation).\n"
+    defs += " - **Issue**: The issue number in [pango-designation issues](https://github.com/cov-lineages/pango-designation/issues).\n"
+    defs += " - **Lineage**: Lineage assignment according to [UShER](https://github.com/yatisht/usher).\n"
+    defs += " - **Parents**: Parental clades according to [sc2rf](https://github.com/lenaschimmel/sc2rf).\n"
+    defs += " - **Proposed**: Parents and breakpoints <u>match</u> a [pango-designation issue](https://github.com/cov-lineages/pango-designation/issues).\n"
+    defs += " - **Recombinant Type**: Sequences with the same `lineage`, `breakpoints`, and `parents`.\n"
+    defs += " - **Subtree**: A tree of the 500 closest related sequences, extracted from UShER.\n"
+    defs += " - **Unpublished**: Parents and breakpoints <u>do not match</u> a [pango-designation issues](https://github.com/cov-lineages/pango-designation/issues).\n"
+
+    report_content += defs + "\n\n"
+
+    # -------------------------------------------------------------------------
+    # Versions
+    ver_info = ""
     ver_info += "## Versions\n\n"
     ver_info += ver_df.to_markdown(index=False, tablefmt="github")
     report_content += ver_info + "\n\n"
