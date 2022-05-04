@@ -39,19 +39,19 @@
 1. Split `usher_subtree` and `usher_subtree_collapse` into separate rules.
 
     - This speeds up testing for collapsing trees and styling the Auspice JSON.
+1. Add optional columns to report.
+1. Added a Definitions section to the markdown/pdf report.
+1. Clarify what "breakpoints" mean in terms of coordinates.
+1. Add doc about what "subtree" means in report.
+1. Add doc about how a recombinant type is defined.
+1. Use parent order for breakpoint matching, as we see same breakpoint different parents.
+1. Fixed growth calculations in report.
 
 ## To DO
 
 ### Priority
 
-1. Add optional columns to report.
-1. Clarify what "breakpoints" mean in terms of coordinates.
-1. Sort report table by category (designated, proposed, unpublished)
-1. Add doc about what "subtree" means in report.
-1. Add doc about how a recombinant type is defined.
-1. Split `recombinants.tsv` by subtree as well.
-1. Use parent order for breakpoint matching, as we see same breakpoint different parents.
-1. Growth calculations is currently broken for report.
+1. Add the number of usher placements to the summary (and linelist?).
 
 ### Misc
 
