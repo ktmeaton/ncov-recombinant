@@ -351,13 +351,12 @@ rule sc2rf:
     debug_csv = "results/{build}/sc2rf_debug.csv",
     debug_tsv = "results/{build}/sc2rf_debug.tsv",
   params:
-    clades     = lambda wildcards: " ".join(config["builds"][wildcards.build]["sc2rf"]["clades"]),
-    primers    = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["primers"],
-    primers_name = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["primers_name"],
-    sc2rf_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"],
-    debug_args = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["debug_args"],
+    clades          = lambda wildcards: " ".join(config["builds"][wildcards.build]["sc2rf"]["clades"]),
+    mutation_threshold   = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["mutation_threshold"],
+    sc2rf_args      = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"],
+    debug_args      = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["debug_args"],
     max_name_length = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["max_name_length"],
-    outdir = lambda wildcards: "results/{build}".format(build=wildcards.build),
+    outdir          = lambda wildcards: "results/{build}".format(build=wildcards.build),
   threads: 1
   resources:
     cpus = 1,
@@ -368,12 +367,6 @@ rule sc2rf:
     debug   = "logs/{rule}/{{build}}_debug_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    # Check if we're using primers
-    primers_flag=""
-    if [[ "{params.primers}" ]]; then
-      primers_flag="--primers {params.primers} --primers-name {params.primers_name}"
-    fi
-
     # Regular Parameters
     bash scripts/sc2rf.sh \
       --aligned {input.aligned} \
@@ -382,7 +375,7 @@ rule sc2rf:
       --log {log.regular} \
       --max-name-length {params.max_name_length} \
       --clades "{params.clades}" \
-      ${{primers_flag}} \
+      --mutation-threshold {params.mutation_threshold} \
       {params.sc2rf_args};
 
     # Debugging Parameters
@@ -393,7 +386,7 @@ rule sc2rf:
       --log {log.debug} \
       --max-name-length {params.max_name_length} \
       --clades "{params.clades}" \
-      ${{primers_flag}} \
+      --mutation-threshold {params.mutation_threshold} \
       {params.debug_args};
     """
 
@@ -686,13 +679,14 @@ rule summary:
   """
   message: "{wildcards.build} | Summarizing results from various tools."
   input:
-    nextclade = "results/{build}/nextclade.metadata.tsv",
-    sc2rf     = "results/{build}/sc2rf.recombinants.tsv",
-    usher     = "results/{build}/usher.clades.tsv",
-    subtrees  = "results/{build}/subtrees_collapse/metadata.tsv",
-    usher_ver = lambda wildcards: "data/{base_input}/version.txt".format(
-            base_input=config["builds"][wildcards.build]["base_input"]
-          ),
+    nextclade        = "results/{build}/nextclade.metadata.tsv",
+    sc2rf            = "results/{build}/sc2rf.recombinants.tsv",
+    usher_clades     = "results/{build}/usher.clades.tsv",
+    usher_placements = "results/{build}/usher.placement_stats.tsv",
+    subtrees         = "results/{build}/subtrees_collapse/metadata.tsv",
+    usher_ver        = lambda wildcards: "data/{base_input}/version.txt".format(
+                        base_input=config["builds"][wildcards.build]["base_input"]
+                      ),
 
   output:
     summary = "results/{build}/summary.tsv",
@@ -712,7 +706,8 @@ rule summary:
     bash scripts/summary.sh \
       --nextclade {input.nextclade} \
       --sc2rf {input.sc2rf} \
-      --usher {input.usher} \
+      --usher-clades {input.usher_clades} \
+      --usher-placements {input.usher_placements} \
       --usher-dataset {input.usher_ver} \
       --subtrees {input.subtrees} \
       --cols {params.cols} \
