@@ -20,8 +20,13 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    --usher)
-      usher=$2
+    --usher-clades)
+      usher_clades=$2
+      shift # past argument
+      shift # past value
+      ;;
+    --usher-placements)
+      usher_placements=$2
       shift # past argument
       shift # past value
       ;;
@@ -76,7 +81,8 @@ sort_col="usher_subtree"
 csvtk cut -t -f "strain,${cols},clade,Nextclade_pango" ${nextclade} \
   | csvtk rename -t -f "clade" -n "Nextclade_clade" \
   | csvtk merge -t --na "NA" -f "strain" - ${sc2rf} \
-  | csvtk merge -t -k --na "NA" -f "strain" - ${usher} \
+  | csvtk merge -t -k --na "NA" -f "strain" - ${usher_clades} \
+  | csvtk merge -t -k --na "NA" -f "strain" - ${usher_placements} \
   | csvtk merge -t -k --na "NA" -f "strain" - ${subtrees} \
   | csvtk sort -t -k "$sort_col" \
   | csvtk mutate2 -t -n "ncov-recombinant_version" -e "\"$ncov_recombinant_ver\"" \
