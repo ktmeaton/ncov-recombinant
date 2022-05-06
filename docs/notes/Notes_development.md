@@ -8,6 +8,7 @@
 ## Params
 
 1. Bump up the `min_len` of `sc2rf_recombinants` to 1000 bp.
+
 1. Add param `mutation_threshold` to `sc2rf`.
 1. Reduce default `mutation_threshold` to 0.25 to catch [Issue #591](https://github.com/cov-lineages/pango-designation/issues/591_.
 1. Bump up subtree size from 100 sequences to 500 sequences.
@@ -15,6 +16,8 @@
     - Trying to future proof against XE growth (200+ sequences)
 
 1. Discovered that `--primers` interferes with breakpoint detection, use only for debugging.
+1. Only `--enable-deletions` in `sc2rf` for debug mode. Otherwise it changes breakpoints.
+1. Add `--private-mutations` to `sc2rf` and breakpoints.tsv
 
 ## Report
 
@@ -67,6 +70,7 @@
 
 ### Priority
 
+1. Should deletions be used to define recombinants and breakpoints?
 1. Add the number of usher placements to the summary (and linelist?).
 1. Troubleshoot `sc2rf` update to `bd2a4009` which drops all deltacrons.
 
