@@ -80,35 +80,52 @@ def main(
             end_coord = int(coords.split(":")[1])
             region_len = (end_coord - start_coord) + 1
 
-            if region_len >= min_len:
+            # Just ignore singletons, no calculation necessary
+            if region_len == 1:
+                continue
 
-                # Is this the first region?
-                if not prev_clade:
-                    regions_filter[start_coord] = {"clade": clade, "end": end_coord}
-                    prev_start_coord = start_coord
+            # Is this the first region?
+            if not prev_clade:
+                regions_filter[start_coord] = {"clade": clade, "end": end_coord}
+                prev_start_coord = start_coord
 
-                # Is this a continuation of the previous clade's region?
-                elif prev_clade and clade == prev_clade:
-                    # Update the end coord of the previous region
-                    regions_filter[prev_start_coord]["end"] = end_coord
+            # Is this a continuation of the previous clade's region?
+            elif prev_clade and clade == prev_clade:
+                # Update the end coord of the previous region
+                regions_filter[prev_start_coord]["end"] = end_coord
 
-                # This is not a continuation
-                elif prev_clade and clade != prev_clade:
-                    # Create a new region
-                    regions_filter[start_coord] = {"clade": clade, "end": end_coord}
+            # This is not a continuation
+            elif prev_clade and clade != prev_clade:
 
-                    # Construct the breakpoint interval
-                    breakpoint_start = prev_end_coord + 1
-                    breakpoint_end = start_coord - 1
-                    breakpoint = "{}:{}".format(breakpoint_start, breakpoint_end)
-                    breakpoints_filter.append(breakpoint)
+                # Check if the previous region was too small, and delete it
+                prev_region_len = (
+                    regions_filter[prev_start_coord]["end"] - prev_start_coord
+                )
+                if prev_region_len < min_len:
+                    # Delete this region from the dictionary
+                    del regions_filter["prev_start_coord"]
+                    # Update the prev_end_coord and clade
+                    for coord in regions_filter:
+                        if coord == start_coord:
+                            break
+                        prev_end_coord = regions_filter[coord]["end"]
+                        prev_clade = regions_filter[coord]["clade"]
 
-                    # Update prev start coord
-                    prev_start_coord = start_coord
+                # Construct the breakpoint interval
+                breakpoint_start = prev_end_coord + 1
+                breakpoint_end = start_coord - 1
+                breakpoint = "{}:{}".format(breakpoint_start, breakpoint_end)
+                breakpoints_filter.append(breakpoint)
 
-                # These get updated regardless of condition
-                prev_clade = clade
-                prev_end_coord = end_coord
+                # Create a new region (current record)
+                regions_filter[start_coord] = {"clade": clade, "end": end_coord}
+
+                # Update prev start coord
+                prev_start_coord = start_coord
+
+            # These get updated regardless of condition
+            prev_clade = clade
+            prev_end_coord = end_coord
 
         # Check if all the regions were collapsed
         if len(regions_filter) < 2:

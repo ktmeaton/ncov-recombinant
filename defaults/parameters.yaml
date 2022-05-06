@@ -97,8 +97,8 @@ rule_params:
       - "BA.4" # Omicron
       - "BA.5" # Omicron
     mutation_threshold: 0.25
-    sc2rf_args: "--ansi --parents 2-4 --breakpoints 1-4 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
-    debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999"
+    sc2rf_args: "--ansi --parents 2-4 --breakpoints 1-4 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared --show-private-mutations"
+    debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --enable-deletions --show-private-mutations"
 
   # min_len     : Ignore recombinants regions shorter than this
   # max_parents : Exlude samples with greater than this number of parents
