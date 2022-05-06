@@ -33,8 +33,16 @@ def main(lat_longs):
             demes_dict[name]["latitude"] = rec[1]["latitude"]
             demes_dict[name]["longitude"] = rec[1]["longitude"]
 
+        # Manual edits
+        if res == "country":
+            demes_dict["England"] = {}
+            demes_dict["England"]["latitude"] = 52.405994
+            demes_dict["England"]["longitude"] = -1.671707
+
         res_dict = {"key": res, "demes": demes_dict}
         geo_resolutions.append(res_dict)
+
+    # Manual edits
 
     geo_resolutions_json = json.dumps(geo_resolutions, indent=2)
 
