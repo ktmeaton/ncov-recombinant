@@ -403,6 +403,7 @@ rule sc2rf_recombinants:
     ansi    = "results/{build}/sc2rf.ansi.txt",
     tsv     = "results/{build}/sc2rf.tsv",
     aligned = "results/{build}/nextclade.aligned.fasta",
+    qc      = "results/{build}/nextclade.qc.tsv",
     issues  = "resources/issues.tsv",
   output:
     strains = "results/{build}/sc2rf.recombinants.txt",
@@ -432,6 +433,7 @@ rule sc2rf_recombinants:
       --aligned {input.aligned} \
       --custom-ref "{params.custom_ref}" \
       --issues {input.issues} \
+      --qc {input.qc} \
       2> {log};
     """
 
@@ -548,8 +550,9 @@ rule usher:
     echo -e "strain\\tusher_best_set_difference\\tusher_num_best" > {output.placement_stats};
     sed 's/[[:space:]]*$//' {params.outdir}/placement_stats.tsv >> {output.placement_stats};
 
-    echo -e "strain\\tusher_clade\\tusher_pango_lineage" > {output.clades};
+    echo -e "strain\\tusher_clade\\tusher_extra\\tusher_pango_lineage" > {output.clades};
     cat {params.outdir}/clades.txt >> {output.clades};
+
     csvtk mutate -t -f "usher_pango_lineage" -n "usher_pango_lineage_map" {output.clades} \
       | csvtk replace -t -f "usher_pango_lineage_map" -p "proposed([0-9]+)" -k {input.issue_to_lineage} -r "{{kv}}" \
       > {output.clades}.tmp;
