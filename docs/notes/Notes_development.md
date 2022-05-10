@@ -7,7 +7,8 @@
 
 ## Params
 
-1. Bump up the `min_len` of `sc2rf_recombinants` to 1000 bp.
+1. Allow `--breakpoints 0-4`, for XN. We'll determine the breakpoints in post-processing.
+1. Bump up the `min_len` of `sc2rf_recombinants` to 500 bp.
 
 1. Add param `mutation_threshold` to `sc2rf`.
 1. Reduce default `mutation_threshold` to 0.25 to catch [Issue #591](https://github.com/cov-lineages/pango-designation/issues/591_.
@@ -34,6 +35,7 @@
     - Unpublished
 
 1. Add column `status` to recombinants.
+1. Add column `usher_extra` to `usher_metadata` for 2022-05-06 tree.
 1. Separate out columns lineage and issue in `report`.
 1. Add optional columns to report.
 1. Fixed growth calculations in report.
@@ -60,11 +62,18 @@
     - (N=2) Proposed Recombinants (issues, UCSC)
     - (N=2) Unpublished Recombinants
 
+1. Add XL to `controls`.
+1. Add XN to `controls`.
+1. Add XR to `controls`.
+1. Add XP to `controls`.
+
 ## Workflow
 
 1. Split `usher_subtree` and `usher_subtree_collapse` into separate rules.
 
     - This speeds up testing for collapsing trees and styling the Auspice JSON.
+
+1. Force include `Nextclade` recombinants (auto-pass through `sc2rf`).
 
 ## To Do
 
@@ -91,9 +100,5 @@
     - XB | Conflicting designation [issue](https://github.com/summercms/covid19-pango-designation/commit/26b7359e34a0b2f122215332b6495fea97ff3fe7)
     - XC | Alpha recombinant (poor lineage accuracy)
     - XK | No public genomes
-    - XL | No public genomes
-    - XN
-    - XP
-    - XR
-    - XT  
-    - XU
+    - XT | No public genomes, South Africa
+    - XU | No public genomes, India, Japan, Australis

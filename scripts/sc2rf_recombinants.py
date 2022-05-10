@@ -19,6 +19,7 @@ NO_DATA_CHAR = "NA"
 @click.option(
     "--issues", help="Issues TSV metadata from pango-designation", required=True
 )
+@click.option("--qc", help="Nextclade QC Output TSV", required=True)
 def main(
     tsv,
     min_len,
@@ -27,6 +28,7 @@ def main(
     custom_ref,
     max_parents,
     issues,
+    qc,
 ):
     """Detect recombinant seqences from sc2rf."""
 
@@ -40,6 +42,9 @@ def main(
     df["sc2rf_clades_regions_filter"] = [NO_DATA_CHAR] * len(df)
     df["sc2rf_breakpoints_regions_filter"] = [NO_DATA_CHAR] * len(df)
     df["sc2rf_lineage"] = [NO_DATA_CHAR] * len(df)
+
+    # nextclade qc
+    qc_df = pd.read_csv(qc, sep="\t", index_col=0, low_memory=False)
 
     # breakpoint
     breakpoint_col = "breakpoints_curated"
@@ -103,7 +108,8 @@ def main(
                 )
                 if prev_region_len < min_len:
                     # Delete this region from the dictionary
-                    del regions_filter["prev_start_coord"]
+                    if "prev_start_coord" in regions_filter:
+                        del regions_filter["prev_start_coord"]
                     # Update the prev_end_coord and clade
                     for coord in regions_filter:
                         if coord == start_coord:
@@ -133,10 +139,11 @@ def main(
 
         # check if the number of breakpoints changed
         # the filtered breakpoints should only ever be equal or less
+        # Except! If the breakpoints were initially 0
         num_breakpoints = df["sc2rf_breakpoints"][rec[0]]
         num_breakpoints_filter = len(breakpoints_filter)
 
-        if num_breakpoints_filter > num_breakpoints:
+        if (num_breakpoints > 0) and (num_breakpoints_filter > num_breakpoints):
             drop_strains[rec[0]] = "{} filtered breakpoints > {}".format(
                 num_breakpoints_filter, num_breakpoints
             )
@@ -248,16 +255,30 @@ def main(
     drop_strains = set(drop_strains.keys())
     df.drop(drop_strains, inplace=True)
 
+    # -------------------------------------------------------------------------
+    # force include nextclade recombinants
+    for rec in qc_df.iterrows():
+        strain = rec[0]
+        if strain in df.index:
+            continue
+        if rec[1]["clade"] != "recombinant":
+            continue
+        df.loc[strain] = NO_DATA_CHAR
+
+    # -------------------------------------------------------------------------
     # write output table
     outpath_rec = os.path.join(outdir, "sc2rf.recombinants.tsv")
     df.to_csv(outpath_rec, sep="\t")
 
+    # -------------------------------------------------------------------------
     # write output strains
     outpath_strains = os.path.join(outdir, "sc2rf.recombinants.txt")
-    strains = "\n".join(list(df.index))
+    strains = list(df.index)
+    strains_txt = "\n".join(strains)
     with open(outpath_strains, "w") as outfile:
-        outfile.write(strains + "\n")
+        outfile.write(strains_txt + "\n")
 
+    # -------------------------------------------------------------------------
     # filter the ansi output
     inpath_ansi = os.path.join(outdir, "sc2rf.ansi.txt")
     outpath_ansi = os.path.join(outdir, "sc2rf.recombinants.ansi.txt")
@@ -274,6 +295,7 @@ def main(
         )
     os.system(cmd)
 
+    # -------------------------------------------------------------------------
     # write alignment
     outpath_fasta = os.path.join(outdir, "sc2rf.recombinants.fasta")
 

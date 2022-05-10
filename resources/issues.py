@@ -7,6 +7,7 @@ import numpy as np
 import sys
 from datetime import datetime
 
+NO_DATA_CHAR = "NA"
 rate_limit_url = "https://api.github.com/rate_limit"
 base_url = "https://api.github.com/repos/cov-lineages/pango-designation/issues"
 params = "?state=all&per_page=100&page={page_num}"
@@ -132,8 +133,8 @@ def main(token, breakpoints):
 
             # Try to extract info from the body
             body = issue["body"]
-            breakpoints = ""
-            countries = ""
+            breakpoints = []
+            countries = []
 
             for line in body.split("\n"):
 
@@ -141,19 +142,25 @@ def main(token, breakpoints):
 
                 # Breakpoints
                 if "breakpoint:" in line.lower():
-                    breakpoints = line
-                    break
+                    breakpoints.append(line)
                 elif "breakpoint" in line.lower():
-                    breakpoints = line
+                    breakpoints.append(line)
 
                 # Countries (nicely structures)
                 if "countries circulating" in line.lower():
-                    countries = line.replace("Countries circulating:", "")
+                    line = line.replace("Countries circulating:", "")
+                    countries.append(line)
+
+            breakpoints = ";".join(breakpoints)
+            countries = ";".join(countries)
 
             # Dates
             date_created = issue["created_at"]
             date_updated = issue["updated_at"]
             date_closed = issue["closed_at"]
+
+            if not date_closed:
+                date_closed = NO_DATA_CHAR
 
             # Create the output data
             data = {col: "" for col in header_cols}
