@@ -154,6 +154,7 @@ def main(
         # can have the same breakpoint
         lineages_sc2rf = rec[1]["lineage_sc2rf"].split(",")
         lineage_usher = rec[1]["lineage_usher"]
+        bp = rec[1]["breakpoints"]
 
         # Use UShER
         lineage = lineage_usher
@@ -163,6 +164,15 @@ def main(
         if lineage in list(issues_df["lineage"]):
             match = issues_df[issues_df["lineage"] == lineage]
             issue = match["issue"].values[0]
+
+            # if there are no breakpoints, this was a nextclade recombinant
+            # that auto-passed sc2rf. Use breakpoints in issues table
+            if bp == NO_DATA_CHAR:
+                bp = match["breakpoints_curated"].values[0]
+                linelist_df.at[rec[0], "breakpoints"] = bp
+                parents = match["parents_curated"].values[0]
+                linelist_df.at[rec[0], "parents"] = parents
+                # TBD: regions if desired
 
         # Alternatively, try to find related pango-designation issues by breakpoint
         # Multiple matches are possible here

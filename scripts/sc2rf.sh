@@ -102,8 +102,6 @@ if [[ -s ${outdir}/${prefix}.csv ]]; then
     | csvtk rename -f "regions" -n "sc2rf_clades_regions" \
     | csvtk rename -f "intermissions" -n "sc2rf_intermissions" \
     | csvtk rename -f "breakpoints" -n "sc2rf_breakpoints" \
-    | csvtk mutate2 -n "sc2rf_breakpoints_regions" -e '""' \
-    | csvtk mutate2 -n "sc2rf_intermissions_regions" -e '""' \
     | csvtk csv2tab \
     > ${outdir}/${prefix}.tsv
 
