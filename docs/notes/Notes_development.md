@@ -48,6 +48,8 @@
 
     - Pull subtree sample names from json instead
 
+1. Output `linelist.exclude.tsv` of false-positive recombinants.
+
 ## Programs
 
 1. Update `nextclade_dataset` to 2022-04-28.
