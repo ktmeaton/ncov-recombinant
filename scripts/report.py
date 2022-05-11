@@ -14,8 +14,8 @@ CLADES_RENAME = {
     "Alpha/B.1.1.7/20I": "Alpha (20I)",
     "Delta/21I": "Delta (21I)",
     "Delta/21J": "Delta (21J)",
-    "Omicron/21K": "Omicron (21K)",
-    "Omicron/21L": "Omicron (21L)",
+    "Omicron/21K": "BA.1",
+    "Omicron/21L": "BA.2",
 }
 
 PANGO_ISSUES_URL = "https://github.com/cov-lineages/pango-designation/issues/"
@@ -149,17 +149,25 @@ def main(
     for rec in linelist_df.iterrows():
         lineage = NO_DATA_CHAR
         issue = NO_DATA_CHAR
+        is_recombinant = False
 
         # sc2rf can have multiple lineages, because different lineages
         # can have the same breakpoint
         lineages_sc2rf = rec[1]["lineage_sc2rf"].split(",")
+        breakpoints = rec[1]["breakpoints"]
         lineage_usher = rec[1]["lineage_usher"]
         bp = rec[1]["breakpoints"]
-        # lineage_vote = {
-        #     "nextclade": False,
-        #     "sc2rf": False,
-        #     "usher": False,
-        # }
+
+        # Check if sc2rf or UShER thinks its a recombinant
+        if breakpoints != NO_DATA_CHAR:
+            is_recombinant = True
+
+        if (
+            lineage_usher.startswith("X")
+            or lineage_usher.startswith("proposed")
+            or lineage_usher.startswith("misc")
+        ):
+            is_recombinant = True
 
         # Use UShER
         lineage = lineage_usher
@@ -199,6 +207,8 @@ def main(
         status = "unpublished"
         if lineage.startswith("X"):
             status = "designated"
+        elif not is_recombinant:
+            status = "false_positive"
         elif issue != NO_DATA_CHAR:
             status = "proposed"
         linelist_df.at[rec[0], "status"] = str(status)
@@ -219,6 +229,8 @@ def main(
             recombinant_lineage.append(lineage)
         elif status == "proposed":
             recombinant_lineage.append("proposed_recombinant")
+        elif status == "false_positive":
+            recombinant_lineage.append("false_positive_recombinant")
         else:
             recombinant_lineage.append("unpublished_recombinant")
 
@@ -232,26 +244,12 @@ def main(
         # Read in the old linelist
         prev_linelist_df = pd.read_csv(prev_linelist, sep="\t")
 
-        # Use first column as the ID column to match up records
-        prev_id_col = prev_linelist_df.columns[0]
-        id_col = linelist_df.columns[0]
-
-        prev_samples = list(prev_linelist_df[prev_id_col])
-        current_samples = list(linelist_df[id_col])
-
-        # Add "new" column
-        new_samples = []
-        for s in current_samples:
-            if s not in prev_samples:
-                new_samples.append("yes")
-            else:
-                new_samples.append("no")
-        linelist_df["new"] = new_samples
-
     # Drop Unnecessary columns
     linelist_df.drop(columns=["lineage_sc2rf", "lineage_nextclade"], inplace=True)
     linelist_df.rename(columns={"lineage_usher": "lineage"}, inplace=True)
 
+    # Recode NA
+    linelist_df.fillna(NO_DATA_CHAR, inplace=True)
     # -------------------------------------------------------------------------
     # Save to File
 
@@ -384,7 +382,10 @@ def main(
 
     for year in years_list:
 
-        year_df = recombinants_df[recombinants_df["year"] == year]
+        year_df = recombinants_df[
+            (recombinants_df["year"] == year)
+            & (recombinants_df["status"] != "false_positive")
+        ]
 
         num_recombinants = len(year_df)
         num_sequences = sum([int(s.split(" ")[0]) for s in year_df["sequences"]])
@@ -397,9 +398,27 @@ def main(
         parents = []
         for p_csv in set(year_df["parents"]):
             for p in p_csv.split(","):
-                if p not in parents:
+                if p not in parents and p != NO_DATA_CHAR:
                     parents.append(p)
         parents = ", ".join(parents)
+
+        # Drop singleton recombinants that are undesignated
+        drop_recombinants = []
+        drop_seq_num = 0
+
+        for rec in year_df.iterrows():
+            i = rec[0]
+            status = rec[1]["status"]
+            sequences = rec[1]["sequences"]
+            sequences_int = int(sequences.split(" ")[0])
+
+            if sequences_int == 1 and status != "designated":
+                drop_recombinants.append(i)
+                drop_seq_num += sequences_int
+
+        year_df.drop(drop_recombinants, inplace=True)
+
+        # drop_num = len(drop_recombinants)
 
         if parents != "":
             year_header = "## {year} | {parents}\n".format(year=year, parents=parents)
@@ -426,6 +445,7 @@ def main(
                 num=status_counts[status],
                 status=status,
             )
+        year_desc += "- Undesignated, singleton recombinants (N=1) are not shown in the following table. \n"
 
         report_content += year_desc + "\n"
 
@@ -453,6 +473,9 @@ def main(
         report_content += year_table + "\n\n"
         report_content += year_table_note + "\n\n"
 
+        # Insert page break
+        report_content += '<div style="page-break-after: always; visibility: hidden">\pagebreak</div>\n\n'
+
     # Rename Clades/Parents
     for clade in CLADES_RENAME:
         report_content = report_content.replace(clade, CLADES_RENAME[clade])
@@ -471,15 +494,7 @@ def main(
 
     defs = ""
     # Insert page break
-    defs += (
-        '<div style="page-break-after: always; visibility: hidden">\pagebreak</div>\n\n'
-    )
     defs += "## Definitions\n\n"
-    defs += " - **21K**: Omicron BA.1\n"
-    defs += " - **21J**: Omicron BA.2,BA.3\n"
-    defs += " - **22A**: Omicron BA.4 (Not Implemented)\n"
-    defs += " - **22B**: Omicron BA.5 (Not Implemented)\n"
-    defs += " - **22C**: Omicron BA.2.12.1 (Not Implemented)\n"
     defs += " - **Breakpoints**: Intervals in which a breakpoint occurs according to [sc2rf](https://github.com/lenaschimmel/sc2rf).\n"
     defs += " - **Designated**: Formally designated as X\* in [pango-designation](https://github.com/cov-lineages/pango-designation).\n"
     defs += " - **Issue**: The issue number in [pango-designation issues](https://github.com/cov-lineages/pango-designation/issues).\n"
