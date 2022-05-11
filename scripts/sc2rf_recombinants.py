@@ -20,6 +20,12 @@ NO_DATA_CHAR = "NA"
     "--issues", help="Issues TSV metadata from pango-designation", required=True
 )
 @click.option("--qc", help="Nextclade QC Output TSV", required=True)
+@click.option(
+    "--max-breakpoints",
+    help="The maximum number of breakpoints",
+    required=False,
+    default=10,
+)
 def main(
     tsv,
     min_len,
@@ -29,6 +35,7 @@ def main(
     max_parents,
     issues,
     qc,
+    max_breakpoints,
 ):
     """Detect recombinant seqences from sc2rf."""
 
@@ -42,9 +49,6 @@ def main(
     df["sc2rf_clades_regions_filter"] = [NO_DATA_CHAR] * len(df)
     df["sc2rf_breakpoints_regions_filter"] = [NO_DATA_CHAR] * len(df)
     df["sc2rf_lineage"] = [NO_DATA_CHAR] * len(df)
-
-    # nextclade qc
-    qc_df = pd.read_csv(qc, sep="\t", index_col=0, low_memory=False)
 
     # breakpoint
     breakpoint_col = "breakpoints_curated"
@@ -84,6 +88,11 @@ def main(
             start_coord = int(coords.split(":")[0])
             end_coord = int(coords.split(":")[1])
             region_len = (end_coord - start_coord) + 1
+            coord_list = list(regions_filter)
+            coord_list.reverse()
+
+            # -----------------------------------------------------------------
+            # FIRST PASS
 
             # Just ignore singletons, no calculation necessary
             if region_len == 1:
@@ -94,48 +103,63 @@ def main(
                 regions_filter[start_coord] = {"clade": clade, "end": end_coord}
                 prev_start_coord = start_coord
 
-            # Is this a continuation of the previous clade's region?
-            elif prev_clade and clade == prev_clade:
-                # Update the end coord of the previous region
-                regions_filter[prev_start_coord]["end"] = end_coord
+            # -----------------------------------------------------------------
+            # SECOND PASS: REVERSE ITER COLLAPSE
 
-            # This is not a continuation
-            elif prev_clade and clade != prev_clade:
+            for coord in coord_list:
+                prev_start_coord = coord
+                prev_end_coord = regions_filter[prev_start_coord]["end"]
+                prev_region_len = (prev_end_coord - prev_start_coord) + 1
+                prev_clade = regions_filter[coord]["clade"]
 
-                # Check if the previous region was too small, and delete it
-                prev_region_len = (
-                    regions_filter[prev_start_coord]["end"] - prev_start_coord
-                )
-                if prev_region_len < min_len:
-                    # Delete this region from the dictionary
-                    if "prev_start_coord" in regions_filter:
-                        del regions_filter["prev_start_coord"]
-                    # Update the prev_end_coord and clade
-                    for coord in regions_filter:
-                        if coord == start_coord:
-                            break
-                        prev_end_coord = regions_filter[coord]["end"]
-                        prev_clade = regions_filter[coord]["clade"]
+                # If the previous region was too short AND from a different clade
+                # Delete that previous region, it's an intermission
+                if prev_region_len < min_len and clade != prev_clade:
+                    del regions_filter[prev_start_coord]
 
-                # Construct the breakpoint interval
-                breakpoint_start = prev_end_coord + 1
-                breakpoint_end = start_coord - 1
-                breakpoint = "{}:{}".format(breakpoint_start, breakpoint_end)
-                breakpoints_filter.append(breakpoint)
+                # Collapse the current region into the previous one
+                elif clade == prev_clade:
+                    regions_filter[prev_start_coord]["end"] = end_coord
+                    break
 
-                # Create a new region (current record)
-                regions_filter[start_coord] = {"clade": clade, "end": end_coord}
-
-                # Update prev start coord
-                prev_start_coord = start_coord
+                # Otherwise, clades differ and this is the start of a new region
+                else:
+                    regions_filter[start_coord] = {"clade": clade, "end": end_coord}
+                    break
 
             # These get updated regardless of condition
             prev_clade = clade
             prev_end_coord = end_coord
 
+        # Check the last region for length
+        if len(regions_filter) > 1:
+            start_coord = list(regions_filter)[-1]
+            end_coord = regions_filter[start_coord]["end"]
+            region_len = end_coord - start_coord
+            if region_len < min_len:
+                del regions_filter[start_coord]
+
         # Check if all the regions were collapsed
         if len(regions_filter) < 2:
             drop_strains[rec[0]] = "all regions collapsed"
+
+        # -----------------------------------------------------------------
+        # THIRD PASS: BREAKPOINT DETECTION
+
+        prev_start_coord = None
+        for start_coord in regions_filter:
+
+            end_coord = regions_filter[start_coord]["end"]
+
+            # Skip the first record for breakpoints
+            if prev_start_coord:
+                breakpoint_start = prev_end_coord + 1
+                breakpoint_end = start_coord - 1
+                breakpoint = "{}:{}".format(breakpoint_start, breakpoint_end)
+                breakpoints_filter.append(breakpoint)
+
+            prev_start_coord = start_coord
+            prev_end_coord = end_coord
 
         # check if the number of breakpoints changed
         # the filtered breakpoints should only ever be equal or less
@@ -144,8 +168,17 @@ def main(
         num_breakpoints_filter = len(breakpoints_filter)
 
         if (num_breakpoints > 0) and (num_breakpoints_filter > num_breakpoints):
-            drop_strains[rec[0]] = "{} filtered breakpoints > {}".format(
+            drop_strains[
+                rec[0]
+            ] = "{} filtered breakpoints > {} raw breakpoints".format(
                 num_breakpoints_filter, num_breakpoints
+            )
+
+        # Check for too many breakpoints
+        if num_breakpoints > max_breakpoints:
+            drop_strains[rec[0]] = "{} breakpoints > {} max breakpoints".format(
+                num_breakpoints,
+                max_breakpoints,
             )
 
         # Identify the new filtered clades
@@ -198,9 +231,6 @@ def main(
             if not match_found:
                 sc2rf_lineages[bp_s].append(NO_DATA_CHAR)
 
-            # Collapse any duplicate lineages (ex. XF)
-            # sc2rf_lineages[bp_s] = list(set(sc2rf_lineages[bp_s]))
-
         # if len(sc2rf_lineages) == num_breakpoints_filter:
         collapse_lineages = []
         for bp in sc2rf_lineages.values():
@@ -236,9 +266,6 @@ def main(
         df.at[rec[0], "sc2rf_clades_regions_filter"] = ",".join(regions_filter)
         df.at[rec[0], "sc2rf_clades_regions_length"] = ",".join(regions_length)
         df.at[rec[0], "sc2rf_breakpoints_regions_filter"] = ",".join(breakpoints_filter)
-        # df.at[rec[0], "sc2rf_breakpoints_regions_lineages"] = ",".join(
-        #    breakpoints_filter
-        # )
         df.at[rec[0], "sc2rf_lineage"] = sc2rf_lineage
 
     # write exclude strains
@@ -257,6 +284,8 @@ def main(
 
     # -------------------------------------------------------------------------
     # force include nextclade recombinants
+    qc_df = pd.read_csv(qc, sep="\t", index_col=0, low_memory=False)
+
     for rec in qc_df.iterrows():
         strain = rec[0]
         if strain in df.index:

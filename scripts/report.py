@@ -11,11 +11,11 @@ NO_DATA_CHAR = "NA"
 
 # Concise names for report.md
 CLADES_RENAME = {
-    "Alpha/B.1.1.7/20I": "Alpha",
+    "Alpha/B.1.1.7/20I": "Alpha (20I)",
     "Delta/21I": "Delta (21I)",
     "Delta/21J": "Delta (21J)",
-    "Omicron/BA.1/21K": "BA.1",
-    "Omicron/BA.2/21L": "BA.2",
+    "Omicron/21K": "Omicron (21K)",
+    "Omicron/21L": "Omicron (21L)",
 }
 
 PANGO_ISSUES_URL = "https://github.com/cov-lineages/pango-designation/issues/"
@@ -155,6 +155,11 @@ def main(
         lineages_sc2rf = rec[1]["lineage_sc2rf"].split(",")
         lineage_usher = rec[1]["lineage_usher"]
         bp = rec[1]["breakpoints"]
+        # lineage_vote = {
+        #     "nextclade": False,
+        #     "sc2rf": False,
+        #     "usher": False,
+        # }
 
         # Use UShER
         lineage = lineage_usher
@@ -470,6 +475,11 @@ def main(
         '<div style="page-break-after: always; visibility: hidden">\pagebreak</div>\n\n'
     )
     defs += "## Definitions\n\n"
+    defs += " - **21K**: Omicron BA.1\n"
+    defs += " - **21J**: Omicron BA.2,BA.3\n"
+    defs += " - **22A**: Omicron BA.4 (Not Implemented)\n"
+    defs += " - **22B**: Omicron BA.5 (Not Implemented)\n"
+    defs += " - **22C**: Omicron BA.2.12.1 (Not Implemented)\n"
     defs += " - **Breakpoints**: Intervals in which a breakpoint occurs according to [sc2rf](https://github.com/lenaschimmel/sc2rf).\n"
     defs += " - **Designated**: Formally designated as X\* in [pango-designation](https://github.com/cov-lineages/pango-designation).\n"
     defs += " - **Issue**: The issue number in [pango-designation issues](https://github.com/cov-lineages/pango-designation/issues).\n"

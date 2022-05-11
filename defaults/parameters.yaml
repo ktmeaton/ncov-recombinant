@@ -86,25 +86,22 @@ rule_params:
   - name: sc2rf
     max_name_length: 50
     clades:
-      #- "20I" # Alpha
-      #- "20H" # Beta
-      #- "20J" # Gamma
       - "21I" # Delta
       - "21J" # Delta
-      - "BA.1" # Omicron
-      - "BA.2" # Omicron
-      - "BA.3" # Omicron
-      - "BA.4" # Omicron
-      - "BA.5" # Omicron
+      - "21K" # Omicron
+      - "21L" # Omicron
+
     mutation_threshold: 0.25
     sc2rf_args: "--ansi --parents 2-4 --breakpoints 0-4 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
     debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --enable-deletions --show-private-mutations"
 
   # min_len     : Ignore recombinants regions shorter than this
   # max_parents : Exlude samples with greater than this number of parents
+  # max_parents : Exlude samples with greater than this number of breakpoints
   - name: sc2rf_recombinants
-    min_len: 500
+    min_len: 1000
     max_parents: 2
+    max_breakpoints: 2
 
   # k               : The number of contextual samples to select when extracting subtrees.
   # low_memory_mode : true if the metadata should not be used, false if it should
