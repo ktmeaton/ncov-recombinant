@@ -8,8 +8,7 @@
 ## Params
 
 1. Allow `--breakpoints 0-4`, for XN. We'll determine the breakpoints in post-processing.
-1. Bump up the `min_len` of `sc2rf_recombinants` to 500 bp.
-
+1. Bump up the `min_len` of `sc2rf_recombinants` to 1000 bp.
 1. Add param `mutation_threshold` to `sc2rf`.
 1. Reduce default `mutation_threshold` to 0.25 to catch [Issue #591](https://github.com/cov-lineages/pango-designation/issues/591_.
 1. Bump up subtree size from 100 sequences to 500 sequences.
@@ -17,8 +16,8 @@
     - Trying to future proof against XE growth (200+ sequences)
 
 1. Discovered that `--primers` interferes with breakpoint detection, use only for debugging.
-1. Only `--enable-deletions` in `sc2rf` for debug mode. Otherwise it changes breakpoints.
-1. Add `--private-mutations` to `sc2rf` and breakpoints.tsv
+1. Only use `--enable-deletions` in `sc2rf` for debug mode. Otherwise it changes breakpoints.
+1. Only use `--private-mutations` to `sc2rf` for debug mode. Unreadable output for bulk sample processing.
 
 ## Report
 
@@ -53,6 +52,8 @@
 
 1. Update `nextclade_dataset` to 2022-04-28.
 1. Add `taxoniumtools` and `chronumental` to environment.
+1. Separate nextclade clades and pango lineage allele frequences in `sc2rf`.
+1. Exclude BA.3, BA.4, and BA.5 for now, as their global prevalence is low and they are descendants of BA.2.
 
 ## Profiles
 
