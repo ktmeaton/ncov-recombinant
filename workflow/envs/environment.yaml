@@ -13,7 +13,7 @@ dependencies:
   # Alignmnent and Clade QC
   - bioconda::nextclade=1.11.0
   # Usher
-  - bioconda::usher=0.5.2
+  - bioconda::usher=0.5.3
   - anaconda::protobuf=3.18.1
   # Python
   - anaconda::python=3.9.10
