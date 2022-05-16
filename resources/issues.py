@@ -136,6 +136,10 @@ def main(token, breakpoints):
             breakpoints = []
             countries = []
 
+            # Skip issues without a body
+            if not body:
+                continue
+
             for line in body.split("\n"):
 
                 line = line.strip().replace("*", "")
