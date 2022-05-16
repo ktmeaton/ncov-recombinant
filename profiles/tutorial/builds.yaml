@@ -17,9 +17,9 @@
 inputs:
 
   # An UShER base phylogeny of all publicly available samples (genbank).
-  # The protobuf will be downloaded to: `data/public-latest/usher.pb.gz
-  # The metadata will be downloaded to: `data/public-latest/usher.metadata.tsv
-  - name: public-latest
+  # The protobuf will be downloaded to: `data/public-20220417/usher.pb.gz
+  # The metadata will be downloaded to: `data/public-20220417/usher.metadata.tsv
+  - name: public-20220417
     type:
       - usher
 
@@ -50,7 +50,7 @@ builds:
   # `tutorial` is a custom build, that uses a toy dataset
 
   - name: tutorial
-    base_input: public-latest
+    base_input: public-20220417
 
     # Universal rule parameters can (optionally) be overridden for a specific build.
     usher_metadata:
