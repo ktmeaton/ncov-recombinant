@@ -515,19 +515,17 @@ rule usher:
   Place VCF samples with UShER.
   """
   message: "{wildcards.build} | Placing VCF samples with UShER."
-  wildcard_constraints:
-    mode = "|".join(LOCAL_INPUTS),
   input:
     vcf = "results/{build}/sc2rf.vcf.gz",
     pb  = lambda wildcards: "data/{base_input}/usher.pb.gz".format(
             base_input=config["builds"][wildcards.build]["base_input"]
           ),
-    issue_to_lineage = "resources/issue_to_lineage.tsv",
   output:
     pb              = "results/{build}/usher.pb.gz",
-    placement_stats = "results/{build}/usher.placement_stats.tsv",
-    mut_paths       = "results/{build}/usher.mutation_paths.tsv",
-    clades          = "results/{build}/usher.clades.tsv",
+    final_tree      = "results/{build}/final-tree.nh",
+    placement_stats = "results/{build}/placement_stats.tsv",
+    clades          = "results/{build}/clades.txt",
+    mut_paths       = "results/{build}/mutation-paths.txt",
   params:
     outdir = "results/{build}",
   benchmark:
@@ -543,25 +541,52 @@ rule usher:
       --threads {resources.cpus} \
       --outdir {params.outdir} \
       2> {log};
+    """
 
+# -----------------------------------------------------------------------------
+rule_name = "usher_stats"
+rule usher_stats:
+  """
+  Parse statistics from UShER.
+  """
+  message: "{wildcards.build} | Parsing statistics from UShER."
+  input:
+    placement_stats = "results/{build}/placement_stats.tsv",
+    clades          = "results/{build}/clades.txt",
+    mut_paths       = "results/{build}/mutation-paths.txt",
+    issue_to_lineage = "resources/issue_to_lineage.tsv",
+  output:
+    placement_stats = "results/{build}/usher.placement_stats.tsv",
+    mut_paths       = "results/{build}/usher.mutation_paths.tsv",
+    clades          = "results/{build}/usher.clades.tsv",
+  params:
+    outdir = "results/{build}",
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
     # Rename and reformat output
-    mv {params.outdir}/mutation-paths.txt {output.mut_paths};
+    cp -f {input.mut_paths} {output.mut_paths};
 
     echo -e "strain\\tusher_best_set_difference\\tusher_num_best" > {output.placement_stats};
-    sed 's/[[:space:]]*$//' {params.outdir}/placement_stats.tsv >> {output.placement_stats};
+    sed 's/[[:space:]]*$//' {input.placement_stats} >> {output.placement_stats};
 
-    echo -e "strain\\tusher_clade\\tusher_extra\\tusher_pango_lineage" > {output.clades};
-    cat {params.outdir}/clades.txt >> {output.clades};
+    echo -e "strain\\tusher_clade\\tusher_pango_lineage" > {output.clades};
+
+    # Some UShER trees may have 3 or 4 columns
+    num_clade_cols=$(head -n 1 {input.clades} | tr "\\t" "\\n" | wc -l)
+    if [[ $num_clade_cols -eq 4 ]]; then
+      csvtk cut -t -H -f 1,2,4 {input.clades} >> {output.clades};
+    else
+      cat {input.clades} >> {output.clades};
+    fi
 
     csvtk mutate -t -f "usher_pango_lineage" -n "usher_pango_lineage_map" {output.clades} \
       | csvtk replace -t -f "usher_pango_lineage_map" -p "proposed([0-9]+)" -k {input.issue_to_lineage} -r "{{kv}}" \
-      > {output.clades}.tmp;
+      1> {output.clades}.tmp 2>> {log};
     mv {output.clades}.tmp {output.clades}
-
-    # Cleanup
-    rm -f {params.outdir}/final-tree.nh
-    rm -f {params.outdir}/clades.txt
-    rm -f {params.outdir}/placement_stats.tsv
     """
 
 # -----------------------------------------------------------------------------
@@ -620,7 +645,6 @@ rule usher_subtree:
   message: "{wildcards.build} | Creating subtrees from UShER protobuf."
   input:
     pb       = "results/{build}/usher.pb.gz",
-    #metadata = "results/{build}/usher.metadata.tsv",
     metadata = "results/{build}/usher.metadata.decimal_date.tsv",
     samples  = "results/{build}/sc2rf.recombinants.txt",
   output:

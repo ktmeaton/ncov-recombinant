@@ -40,6 +40,7 @@
 1. Fixed growth calculations in report.
 1. Add a Definitions section to the markdown/pdf report.
 1. Use parent order for breakpoint matching, as we see same breakpoint different parents.
+1. Add the number of usher placements to the summary.
 
 ## Output
 
@@ -77,13 +78,16 @@
     - This speeds up testing for collapsing trees and styling the Auspice JSON.
 
 1. Force include `Nextclade` recombinants (auto-pass through `sc2rf`).
+1. Split `usher` and `usher_stats` into separate rules.
 
 ## To Do
 
 ### Priority
 
 1. Should deletions be used to define recombinants and breakpoints?
-1. Add the number of usher placements to the summary (and linelist?).
+
+    - Currently, no, it changes published breakpoints.
+
 1. Troubleshoot `sc2rf` update to `bd2a4009` which drops all deltacrons.
 
     - The last stable commit was `5ac8d04`.
