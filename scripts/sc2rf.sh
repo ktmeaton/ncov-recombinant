@@ -92,24 +92,6 @@ cd sc2rf;
 echo "python3 sc2rf.py ${aligned} --clades ${clades} ${sc2rf_args[@]}" > ${outdir}/${prefix}.ansi.txt;
 python3 sc2rf.py ${aligned} --clades ${clades} ${sc2rf_args[@]} 1>> ${outdir}/${prefix}.ansi.txt 2> ${log};
 
-# Check if any recombinants were detected"
-if [[ -s ${outdir}/${prefix}.csv ]]; then
-
-  # rename tabular columns
-  # + placeholder until breakpoints/intermissions regions are reported
-  csvtk rename -f "sample" -n "strain" ${outdir}/${prefix}.csv \
-    | csvtk rename -f "examples" -n "sc2rf_clades" \
-    | csvtk rename -f "regions" -n "sc2rf_clades_regions" \
-    | csvtk rename -f "intermissions" -n "sc2rf_intermissions" \
-    | csvtk rename -f "breakpoints" -n "sc2rf_breakpoints" \
-    | csvtk csv2tab \
-    > ${outdir}/${prefix}.tsv
-
-# If not, touch an empty tabular file
-else
-  touch ${outdir}/${prefix}.tsv
-fi
-
 # Clean up primers
 if [[ "${primers}" ]]; then
   rm -f sc2rf/${primers_name}.bed
