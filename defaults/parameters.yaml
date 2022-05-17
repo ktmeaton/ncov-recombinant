@@ -113,15 +113,19 @@ rule_params:
   - name: usher_metadata
     cols: "date,country"
 
-  # years            : (Optional) csv list of years to include in the report
-  # prev_linelist    : (Optional) Path to a previous linelist (output of rule report) for growth calculation
-  # changelog        : (Optional) Path to a markdown changelog to append to the report.
   # extra_cols       : (Optional) csv list of columns from the summary to include in the linelist
+  # prev_linelist    : (Optional) Path to a previous linelist (output of rule report) for growth calculation
+  # geo              : (Optional) column to use for a geographic summary
+  - name: linelist
+    extra_cols: ""
+    prev_linelist: ""
+    geo: "country"
+
+  # years            : (Optional) csv list of years to include in the report
+  # changelog        : (Optional) Path to a markdown changelog to append to the report.
   - name: report
     years: ""
-    prev_linelist: ""
     changelog: ""
-    extra_cols: ""
 
 
 # -----------------------------------------------------------------------------

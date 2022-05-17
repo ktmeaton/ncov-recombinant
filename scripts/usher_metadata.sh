@@ -35,7 +35,7 @@ usher_placement="results/${build}/usher.placement_stats.tsv"
 issue_to_lineage="resources/issue_to_lineage.tsv"
 
 default_cols="strain"
-extract_cols="clade,usher_clade,Nextclade_pango,usher_pango_lineage,dataset,sc2rf_clades_filter,sc2rf_clades_regions_filter,sc2rf_breakpoints_regions_filter,usher_num_best"
+extract_cols="clade,usher_clade,Nextclade_pango,usher_pango_lineage,dataset,sc2rf_parents,sc2rf_regions,sc2rf_breakpoints,usher_num_best"
 rename_cols="Nextstrain_clade,Nextstrain_clade_usher,pangolin_lineage,pango_lineage_usher,dataset,parents,parents_regions,breakpoints,usher_placements"
 rename_cols_final="clade_nextclade,clade_usher,lineage_nextclade,lineage_usher,dataset,parents,parents_regions,breakpoints,usher_placements"
 

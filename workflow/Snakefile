@@ -117,8 +117,8 @@ rule all:
         expand("results/{build_name}/subtrees_collapse",
           build_name=BUILDS,
           ),
-        # Stage 4: Report
-        expand("results/{build_name}/report.md",
+        # Stage 4: Linelist
+        expand("results/{build_name}/linelist.tsv",
           build_name=BUILDS,
           ),
 # -----------------------------------------------------------------------------#
@@ -404,6 +404,7 @@ rule sc2rf_recombinants:
     aligned = "results/{build}/nextclade.aligned.fasta",
     qc      = "results/{build}/nextclade.qc.tsv",
     issues  = "resources/issues.tsv",
+    false_positives = "resources/false_positives.tsv",
   output:
     strains = "results/{build}/sc2rf.recombinants.txt",
     aligned = "results/{build}/sc2rf.recombinants.fasta",
@@ -415,6 +416,7 @@ rule sc2rf_recombinants:
     custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
     min_len    = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["min_len"],
     max_parents = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_parents"],
+    max_breakpoints = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_breakpoints"],
   threads: 1
   resources:
     cpus = 1,
@@ -429,11 +431,13 @@ rule sc2rf_recombinants:
       --ansi {input.ansi} \
       --min-len {params.min_len} \
       --max-parents {params.max_parents} \
+      --max-breakpoints {params.max_breakpoints} \
       --outdir {params.outdir} \
       --aligned {input.aligned} \
       --custom-ref "{params.custom_ref}" \
       --issues {input.issues} \
       --qc {input.qc} \
+      --false-positives {input.false_positives} \
       2> {log};
     """
 
@@ -620,7 +624,7 @@ rule usher_metadata:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    if [[ {params.low_memory_mode} == "True" ]]; then
+    if [[ "{params.low_memory_mode}" == "True" ]]; then
       cp {input.input_metadata} {output.metadata};
     else
       bash scripts/usher_metadata.sh \
@@ -743,26 +747,23 @@ rule summary:
     """
 
 # -----------------------------------------------------------------------------#
-
-rule_name = "report"
-rule report:
+rule_name = "linelist"
+rule linelist:
   """
-  Summarize results into a report.
+  Create a linelist of recombinant sequences and types.
   """
-  message: "{wildcards.build} | Summarizing results into a report."
+  message: "{wildcards.build} | Creating a linelist of recombinant sequences and types."
   input:
     summary = "results/{build}/summary.tsv",
     issues      = "resources/issues.tsv",
   output:
     linelist      = "results/{build}/linelist.tsv",
-    report        = "results/{build}/report.md",
     recombinants  = "results/{build}/recombinants.tsv",
   params:
     # All optional, catch in shell
-    years         = lambda wildcards: config["builds"][wildcards.build]["report"]["years"],
-    changelog     = lambda wildcards: config["builds"][wildcards.build]["report"]["changelog"],
-    prev_linelist = lambda wildcards: config["builds"][wildcards.build]["report"]["prev_linelist"],
-    extra_cols    = lambda wildcards: config["builds"][wildcards.build]["report"]["extra_cols"],
+    extra_cols    = lambda wildcards: config["builds"][wildcards.build]["linelist"]["extra_cols"],
+    prev_linelist = lambda wildcards: config["builds"][wildcards.build]["linelist"]["prev_linelist"],
+    geo           = lambda wildcards: config["builds"][wildcards.build]["linelist"]["geo"],
   threads: 1
   resources:
     cpus = 1,
@@ -772,22 +773,67 @@ rule report:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    years=""
-    if [[ "{params.years}" ]]; then years="--years {params.years}"; fi
+    extra_cols=""
+    if [[ "{params.extra_cols}" ]]; then extra_cols="--extra-cols {params.extra_cols}"; fi
 
     prev_linelist=""
     if [[ "{params.prev_linelist}" ]]; then prev_linelist="--prev-linelist {params.prev_linelist}"; fi
 
-    changelog=""
-    if [[ "{params.changelog}" ]]; then changelog="--changelog {params.changelog}"; fi
+    geo=""
+    if [[ "{params.geo}" ]]; then geo="--geo {params.geo}"; fi
 
-    extra_cols=""
-    if [[ "{params.extra_cols}" ]]; then extra_cols="--extra-cols {params.extra_cols}"; fi
+    cmd="python3 scripts/linelist.py --summary {input.summary} --issues {input.issues} $extra_cols $prev_linelist 2> {log}";
+    eval $cmd
 
-    # Generate report
-    cmd="python3 scripts/report.py --summary {input.summary} --issues {input.issues} $years $prev_linelist $changelog $extra_cols 2> {log}";
+    cmd="python3 scripts/recombinants.py --linelist {output.linelist} $geo 2>> {log}";
     eval $cmd
     """
+
+# -----------------------------------------------------------------------------#
+# rule_name = "report"
+# rule report:
+#   """
+#   Summarize results into a report.
+#   """
+#   message: "{wildcards.build} | Summarizing results into a report."
+#   input:
+#     summary = "results/{build}/summary.tsv",
+#     issues      = "resources/issues.tsv",
+#   output:
+#     linelist      = "results/{build}/linelist.tsv",
+#     report        = "results/{build}/report.md",
+#     recombinants  = "results/{build}/recombinants.tsv",
+#   params:
+#     # All optional, catch in shell
+#     years         = lambda wildcards: config["builds"][wildcards.build]["report"]["years"],
+#     changelog     = lambda wildcards: config["builds"][wildcards.build]["report"]["changelog"],
+#     prev_linelist = lambda wildcards: config["builds"][wildcards.build]["report"]["prev_linelist"],
+#     extra_cols    = lambda wildcards: config["builds"][wildcards.build]["report"]["extra_cols"],
+#   threads: 1
+#   resources:
+#     cpus = 1,
+#   benchmark:
+#     "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+#   log:
+#     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+#   shell:
+#     """
+#     years=""
+#     if [[ "{params.years}" ]]; then years="--years {params.years}"; fi
+
+#     prev_linelist=""
+#     if [[ "{params.prev_linelist}" ]]; then prev_linelist="--prev-linelist {params.prev_linelist}"; fi
+
+#     changelog=""
+#     if [[ "{params.changelog}" ]]; then changelog="--changelog {params.changelog}"; fi
+
+#     extra_cols=""
+#     if [[ "{params.extra_cols}" ]]; then extra_cols="--extra-cols {params.extra_cols}"; fi
+
+#     # Generate report
+#     cmd="python3 scripts/report.py --summary {input.summary} --issues {input.issues} $years $prev_linelist $changelog $extra_cols 2> {log}";
+#     eval $cmd
+#     """
 
 # -----------------------------------------------------------------------------#
 
