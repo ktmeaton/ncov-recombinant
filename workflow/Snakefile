@@ -620,7 +620,7 @@ rule usher_metadata:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    if [[ {params.low_memory_mode} == "True" ]]; then
+    if [[ "{params.low_memory_mode}" == "True" ]]; then
       cp {input.input_metadata} {output.metadata};
     else
       bash scripts/usher_metadata.sh \

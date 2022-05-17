@@ -84,6 +84,10 @@
 
 ### Priority
 
+1. Use `python-pptx` to create the report as a presentation.
+
+    - And rename report rule to linelist?
+
 1. Should deletions be used to define recombinants and breakpoints?
 
     - Currently, no, it changes published breakpoints.
