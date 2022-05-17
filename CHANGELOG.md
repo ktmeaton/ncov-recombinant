@@ -2,7 +2,112 @@
 
 ## Development
 
+### Notes
+
+1. Should deletions be used to define recombinants and breakpoints?
+1. Troubleshoot `sc2rf` update to `bd2a4009` which drops all deltacrons.
+1. Remove the `resources` in config.yaml.
+1. Investigate the reasons that X* lineages are excluded by `sc2rf`.
+1. Add citations to report.
+1. Update UShER to 0.5.3.
+1. Plot recombinant breakpoints differently.
+1. Edit Auspice json to change default colorings,filters,and panels (also sort).
+1. Automate unit test update.
+1. Not implemented recombinant lineages:
+
 ### Commits
+
+## v0.2.0
+
+### Notes
+
+1. Fix bug in `sc2rf_recombinants` regions/breakpoints logic.
+1. Fix bug in `sc2rf` where a sample has no definitive substitutions.
+1. Allow `--breakpoints 0-4`, for XN. We'll determine the breakpoints in post-processing.
+1. Bump up the `min_len` of `sc2rf_recombinants` to 1000 bp.
+1. Add param `mutation_threshold` to `sc2rf`.
+1. Reduce default `mutation_threshold` to 0.25 to catch [Issue #591](https://github.com/cov-lineages/pango-designation/issues/591_.
+1. Bump up subtree size from 100 sequences to 500 sequences.
+1. Discovered that `--primers` interferes with breakpoint detection, use only for debugging.
+1. Only use `--enable-deletions` in `sc2rf` for debug mode. Otherwise it changes breakpoints.
+1. Only use `--private-mutations` to `sc2rf` for debug mode. Unreadable output for bulk sample processing.
+1. Change `sc2rf_lineage` column to use NA for no lineage found.
+1. Add `sc2rf_mutations_version` to summary based on a datestamp of `virus_properties.json`.
+1. Allow multiple issues in report.
+1. Use three status categories of recombinants:
+1. Add column `status` to recombinants.
+1. Add column `usher_extra` to `usher_metadata` for 2022-05-06 tree.
+1. Separate out columns lineage and issue in `report`.
+1. Add optional columns to report.
+1. Fixed growth calculations in report.
+1. Add a Definitions section to the markdown/pdf report.
+1. Use parent order for breakpoint matching, as we see same breakpoint different parents.
+1. Add the number of usher placements to the summary.
+1. Set Auspice default coloring to `lineage_usher` where possible.
+1. Remove nwk output from `usher` and `usher_subtrees`:
+1. Output `linelist.exclude.tsv` of false-positive recombinants.
+1. Update `nextclade_dataset` to 2022-04-28.
+1. Add `taxoniumtools` and `chronumental` to environment.
+1. Separate nextclade clades and pango lineage allele frequences in `sc2rf`.
+1. Exclude BA.3, BA.4, and BA.5 for now, as their global prevalence is low and they are descendants of BA.2.
+1. Add a `tutorial` profile.
+1. Add XL to `controls`.
+1. Add XN to `controls`.
+1. Add XR to `controls`.
+1. Add XP to `controls`.
+1. Split `usher_subtree` and `usher_subtree_collapse` into separate rules.
+1. Force include `Nextclade` recombinants (auto-pass through `sc2rf`).
+1. Split `usher` and `usher_stats` into separate rules.
+
+### Pull Requests
+
+* [```pull/13```](https://github.com/ktmeaton/ncov-recombinant/pull/13) Three status categories: designated, proposed, unpublished
+* [```pull/12```](https://github.com/ktmeaton/ncov-recombinant/pull/12) Tutorial dataset and map panel for Auspice subtrees
+* [```pull/11```](https://github.com/ktmeaton/ncov-recombinant/pull/11) Add a tutorial profile
+
+### Commits
+
+* [```32b9e8ab```](https://github.com/ktmeaton/ncov-recombinant/commit/32b9e8ab) separate usher and usher_stats rule and catch 3 or 4 col usher
+* [```70da837c```](https://github.com/ktmeaton/ncov-recombinant/commit/70da837c) update github issues and breakpoints for 636 and 637
+* [```9ed10f17```](https://github.com/ktmeaton/ncov-recombinant/commit/9ed10f17) skip parsing github issues that don't have body
+* [```216cb28e```](https://github.com/ktmeaton/ncov-recombinant/commit/216cb28e) put the date in the usher data for tutorial
+* [```c95cca0e```](https://github.com/ktmeaton/ncov-recombinant/commit/c95cca0e) update usher v0.5.3
+* [```98c91bee```](https://github.com/ktmeaton/ncov-recombinant/commit/98c91bee) finish reporting cycle 2022-05-11
+* [```e4755f16```](https://github.com/ktmeaton/ncov-recombinant/commit/e4755f16) new sc2rf mutation data by clade
+* [```4a501d56```](https://github.com/ktmeaton/ncov-recombinant/commit/4a501d56) separate omicron lineages from omicron clades
+* [```d6185aaf```](https://github.com/ktmeaton/ncov-recombinant/commit/d6185aaf) testing change to auto-pass nextclade recombinants
+* [```2e02922f```](https://github.com/ktmeaton/ncov-recombinant/commit/2e02922f) add XL XN XR XP to controls
+* [```e2c9675b```](https://github.com/ktmeaton/ncov-recombinant/commit/e2c9675b) add usher_extra and qc file to sc2rf recombinants
+* [```941a64c5```](https://github.com/ktmeaton/ncov-recombinant/commit/941a64c5) update github issues
+* [```943cde95```](https://github.com/ktmeaton/ncov-recombinant/commit/943cde95) add usher placements to summary
+* [```0d0ffbd4```](https://github.com/ktmeaton/ncov-recombinant/commit/0d0ffbd4) combine show-private-mutations with ignore-shared
+* [```f1d7e6c1```](https://github.com/ktmeaton/ncov-recombinant/commit/f1d7e6c1) update sc2rf after terminal bugfixes
+* [```8f4fd95a```](https://github.com/ktmeaton/ncov-recombinant/commit/8f4fd95a) add country England to geo res
+* [```efeeb6ca```](https://github.com/ktmeaton/ncov-recombinant/commit/efeeb6ca) add mutation threshold param sep for sc2rf
+* [```9c42bc6c```](https://github.com/ktmeaton/ncov-recombinant/commit/9c42bc6c) limit table col width size in report
+* [```7d746e3f```](https://github.com/ktmeaton/ncov-recombinant/commit/7d746e3f) fix growth calculation
+* [```0dc7f464```](https://github.com/ktmeaton/ncov-recombinant/commit/0dc7f464) identify sc2rf lineage by breakpoints and parents
+* [```19fc3721```](https://github.com/ktmeaton/ncov-recombinant/commit/19fc3721) add parents to breakpoints and issues
+* [```27bbff0a```](https://github.com/ktmeaton/ncov-recombinant/commit/27bbff0a) generate geo_resolutions from ncov defaults lat longs
+* [```86aa78ba```](https://github.com/ktmeaton/ncov-recombinant/commit/86aa78ba) add map to auspice subtrees
+* [```2499827e```](https://github.com/ktmeaton/ncov-recombinant/commit/2499827e) add taxoniumtools and chronumental to env
+* [```ec46a569```](https://github.com/ktmeaton/ncov-recombinant/commit/ec46a569) change tutorial seq names from underscores to dashes
+* [```27170a0b```](https://github.com/ktmeaton/ncov-recombinant/commit/27170a0b) fix issues line endings
+* [```e8eb1215```](https://github.com/ktmeaton/ncov-recombinant/commit/e8eb1215) update nextclade dataset to 2022-04-28
+* [```89335c3a```](https://github.com/ktmeaton/ncov-recombinant/commit/89335c3a) (broken) updating columns in report
+* [```67475ecc```](https://github.com/ktmeaton/ncov-recombinant/commit/67475ecc) update sc2rf
+* [```79b7b2b9```](https://github.com/ktmeaton/ncov-recombinant/commit/79b7b2b9) add tip to readme
+* [```10df6a54```](https://github.com/ktmeaton/ncov-recombinant/commit/10df6a54) remove all sample extraction from usher
+* [```2ffbcb61```](https://github.com/ktmeaton/ncov-recombinant/commit/2ffbcb61) switch sc2rf submodule to ktmeaton fork
+* [```e2adaabe```](https://github.com/ktmeaton/ncov-recombinant/commit/e2adaabe) disable snakemake report in pipeline ci
+* [```f12fef14```](https://github.com/ktmeaton/ncov-recombinant/commit/f12fef14) edit line linst preview instructions
+* [```d10eb730```](https://github.com/ktmeaton/ncov-recombinant/commit/d10eb730) add collection date to tutorial
+* [```d4e0aa86```](https://github.com/ktmeaton/ncov-recombinant/commit/d4e0aa86) very preliminary credits and tutorial
+* [```e9c41e6e```](https://github.com/ktmeaton/ncov-recombinant/commit/e9c41e6e) change ci pipeline to tutorial build
+* [```4de7370d```](https://github.com/ktmeaton/ncov-recombinant/commit/4de7370d) add tutorial data
+* [```8d8c88fc```](https://github.com/ktmeaton/ncov-recombinant/commit/8d8c88fc) set min version for click to troubleshoot env creation
+* [```c7fb50a4```](https://github.com/ktmeaton/ncov-recombinant/commit/c7fb50a4) better issue reporting
+* [```b2699823```](https://github.com/ktmeaton/ncov-recombinant/commit/b2699823) update sc2rf
 
 ## v0.1.2
 
@@ -36,6 +141,7 @@
 
 ### Commits
 
+* [```941f0c08```](https://github.com/ktmeaton/ncov-recombinant/commit/941f0c08) update CHANGELOG
 * [```bce219b6```](https://github.com/ktmeaton/ncov-recombinant/commit/bce219b6) fix notes conflict
 * [```cdb3bc7f```](https://github.com/ktmeaton/ncov-recombinant/commit/cdb3bc7f) fix duplicate pr output in autologs
 * [```0a8ffd84```](https://github.com/ktmeaton/ncov-recombinant/commit/0a8ffd84) update notes for v0.1.2
