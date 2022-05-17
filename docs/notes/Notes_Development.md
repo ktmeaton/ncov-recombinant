@@ -1,8 +1,15 @@
 # Development
 
+## Programs
+
+1. Move `sc2rf_recombinants.py` to `postprocess.py` in ktmeaton fork of `sc2rf`.
+1. Add false positives filtering to `sc2rf_recombinants` based on parents and breakpoints.
+
 ## To Do
 
 ### Priority
+
+1. Split `report` rule into `linelist` and `recombinants`.
 
 1. Should deletions be used to define recombinants and breakpoints?
 
