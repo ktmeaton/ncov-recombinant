@@ -94,6 +94,8 @@ LOCAL_INPUTS = [input for input in config["inputs"] if "local" in config["inputs
 # Delete generic params (they've all been added to each build at this point)
 config.pop("rule_params", None)
 
+localrules: all, print_config, help, issues_download, nextclade_dataset, nextclade_recombinants, sc2rf, sc2rf_recombinants, usher_download, usher_stats, usher_subtree_collapse, summary, report
+
 # -----------------------------------------------------------------------------#
 #  Default Target
 # -----------------------------------------------------------------------------#
@@ -341,15 +343,12 @@ rule sc2rf:
   """
   message: "{wildcards.build} | Identifying recombinants with sc2rf."
   input:
-    #aligned = "results/{build}/nextclade.aligned.fasta",
     aligned = "results/{build}/nextclade.recombinants.fasta",
   output:
     txt       = "results/{build}/sc2rf.ansi.txt",
     csv       = "results/{build}/sc2rf.csv",
-    tsv       = "results/{build}/sc2rf.tsv",
     debug_txt = "results/{build}/sc2rf_debug.ansi.txt",
     debug_csv = "results/{build}/sc2rf_debug.csv",
-    debug_tsv = "results/{build}/sc2rf_debug.tsv",
   params:
     clades          = lambda wildcards: " ".join(config["builds"][wildcards.build]["sc2rf"]["clades"]),
     mutation_threshold   = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["mutation_threshold"],
@@ -401,7 +400,7 @@ rule sc2rf_recombinants:
   message: "{wildcards.build} | Extracting recombinants from sc2rf output."
   input:
     ansi    = "results/{build}/sc2rf.ansi.txt",
-    tsv     = "results/{build}/sc2rf.tsv",
+    csv     = "results/{build}/sc2rf.csv",
     aligned = "results/{build}/nextclade.aligned.fasta",
     qc      = "results/{build}/nextclade.qc.tsv",
     issues  = "resources/issues.tsv",
@@ -426,7 +425,8 @@ rule sc2rf_recombinants:
   shell:
     """
     python3 scripts/sc2rf_recombinants.py \
-      --tsv {input.tsv} \
+      --csv {input.csv} \
+      --ansi {input.ansi} \
       --min-len {params.min_len} \
       --max-parents {params.max_parents} \
       --outdir {params.outdir} \

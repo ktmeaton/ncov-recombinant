@@ -8,26 +8,37 @@ NO_DATA_CHAR = "NA"
 
 
 @click.command()
-@click.option("--tsv", help="TSV output from sc2rf.", required=True)
-@click.option("--min-len", help="Minimum region length.", required=True, default=10)
+@click.option("--csv", help="CSV output from sc2rf.", required=True)
+@click.option("--ansi", help="ANSI output from sc2rf.", required=False)
+@click.option("--min-len", help="Minimum region length.", required=False, default=1000)
 @click.option(
-    "--max-parents", help="Maximum number of parents.", required=True, default=10
+    "--max-parents", help="Maximum number of parents.", required=False, default=2
 )
-@click.option("--outdir", help="Output directory", required=True)
-@click.option("--aligned", help="Alignment", required=True)
-@click.option("--custom-ref", help="Reference strain name", required=True)
+@click.option("--outdir", help="Output directory", required=False, default=".")
 @click.option(
-    "--issues", help="Issues TSV metadata from pango-designation", required=True
+    "--aligned",
+    help="Extract recombinants from this alignment (Note: requires seqkit)",
+    required=False,
 )
-@click.option("--qc", help="Nextclade QC Output TSV", required=True)
+@click.option(
+    "--custom-ref",
+    help="Reference strain name",
+    required=False,
+    default="Wuhan/Hu-1/2019",
+)
+@click.option(
+    "--issues", help="Issues TSV metadata from pango-designation", required=False
+)
+@click.option("--qc", help="Nextclade QC Output TSV", required=False)
 @click.option(
     "--max-breakpoints",
     help="The maximum number of breakpoints",
     required=False,
-    default=10,
+    default=2,
 )
 def main(
-    tsv,
+    csv,
+    ansi,
     min_len,
     outdir,
     aligned,
@@ -37,44 +48,50 @@ def main(
     qc,
     max_breakpoints,
 ):
-    """Detect recombinant seqences from sc2rf."""
+    """Detect recombinant seqences from sc2rf. Dependencies: pandas, click"""
 
     # -----------------------------------------------------------------------------
     # Import Dataframe
 
-    # sc2rf output
-    df = pd.read_csv(tsv, sep="\t", index_col=0)
+    # sc2rf output (required)
+    df = pd.read_csv(csv, sep=",", index_col=0)
     df.fillna("", inplace=True)
     df["sc2rf_clades_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_clades_regions_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_breakpoints_regions_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_lineage"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_regions_filter"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_breakpoints_filter"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_num_breakpoints_filter"] = [NO_DATA_CHAR] * len(df)
 
-    # breakpoint
-    breakpoint_col = "breakpoints_curated"
-    parents_col = "parents_curated"
-    breakpoint_df = pd.read_csv(issues, sep="\t")
-    breakpoint_df.fillna(NO_DATA_CHAR, inplace=True)
-    drop_rows = breakpoint_df[breakpoint_df[breakpoint_col] == NO_DATA_CHAR].index
-    breakpoint_df.drop(drop_rows, inplace=True)
+    # if using issues.tsv of pango-designation issues (optional)
+    # does lineage assignment by parent+breakpoint matching
+    if issues:
 
-    # Convert CSV to lists
-    breakpoint_df[breakpoint_col] = [
-        bp.split(",") for bp in breakpoint_df[breakpoint_col]
-    ]
-    breakpoint_df[parents_col] = [p.split(",") for p in breakpoint_df[parents_col]]
+        df["sc2rf_lineage"] = [NO_DATA_CHAR] * len(df)
+        breakpoint_col = "breakpoints_curated"
+        parents_col = "parents_curated"
+        breakpoint_df = pd.read_csv(issues, sep="\t")
+        breakpoint_df.fillna(NO_DATA_CHAR, inplace=True)
+        drop_rows = breakpoint_df[breakpoint_df[breakpoint_col] == NO_DATA_CHAR].index
+        breakpoint_df.drop(drop_rows, inplace=True)
 
-    # A breakpoint match if within 10 base pairs
-    breakpoint_approx_bp = 10
+        # Convert CSV to lists
+        breakpoint_df[breakpoint_col] = [
+            bp.split(",") for bp in breakpoint_df[breakpoint_col]
+        ]
+        breakpoint_df[parents_col] = [p.split(",") for p in breakpoint_df[parents_col]]
 
+        # Consider a breakpoint match if within 50 base pairs
+        breakpoint_approx_bp = 50
+
+    # Initialize a dictionary of strains to drop with
+    # key: strain, value: reason
     drop_strains = {}
 
     for rec in df.iterrows():
 
-        regions_str = rec[1]["sc2rf_clades_regions"]
+        regions_str = rec[1]["regions"]
         regions_split = regions_str.split(",")
 
-        # Keys are start coord
+        # Keys are going to be the start coord of the region
         regions_filter = {}
         breakpoints_filter = []
 
@@ -164,7 +181,7 @@ def main(
         # check if the number of breakpoints changed
         # the filtered breakpoints should only ever be equal or less
         # Except! If the breakpoints were initially 0
-        num_breakpoints = df["sc2rf_breakpoints"][rec[0]]
+        num_breakpoints = df["breakpoints"][rec[0]]
         num_breakpoints_filter = len(breakpoints_filter)
 
         if (num_breakpoints > 0) and (num_breakpoints_filter > num_breakpoints):
@@ -197,76 +214,79 @@ def main(
         ]
 
         # Identify lineage based on breakpoint and parents!
-        sc2rf_lineage = ""
-        sc2rf_lineages = {bp_s: [] for bp_s in breakpoints_filter}
+        # But only if we've suppled the issues.tsv for pango-designation
+        if issues:
+            sc2rf_lineage = ""
+            sc2rf_lineages = {bp_s: [] for bp_s in breakpoints_filter}
 
-        for bp_s in breakpoints_filter:
-            start_s = int(bp_s.split(":")[0])
-            end_s = int(bp_s.split(":")[1])
+            for bp_s in breakpoints_filter:
+                start_s = int(bp_s.split(":")[0])
+                end_s = int(bp_s.split(":")[1])
 
-            match_found = False
+                match_found = False
 
-            for bp_rec in breakpoint_df.iterrows():
+                for bp_rec in breakpoint_df.iterrows():
 
-                # Skip over this potential lineage if parents are wrong
-                bp_parents = bp_rec[1][parents_col]
-                if bp_parents != clades_filter:
+                    # Skip over this potential lineage if parents are wrong
+                    bp_parents = bp_rec[1][parents_col]
+                    if bp_parents != clades_filter:
+                        continue
+
+                    for bp_i in bp_rec[1][breakpoint_col]:
+
+                        start_i = int(bp_i.split(":")[0])
+                        end_i = int(bp_i.split(":")[1])
+                        start_diff = abs(start_s - start_i)
+                        end_diff = abs(end_s - end_i)
+
+                        if (
+                            start_diff <= breakpoint_approx_bp
+                            and end_diff <= breakpoint_approx_bp
+                        ):
+
+                            sc2rf_lineages[bp_s].append(bp_rec[1]["lineage"])
+                            match_found = True
+
+                if not match_found:
+                    sc2rf_lineages[bp_s].append(NO_DATA_CHAR)
+
+            # if len(sc2rf_lineages) == num_breakpoints_filter:
+            collapse_lineages = []
+            for bp in sc2rf_lineages.values():
+                for lineage in bp:
+                    collapse_lineages.append(lineage)
+
+            collapse_lineages = list(set(collapse_lineages))
+
+            # When there are multiple breakpoint, a match must be the same for all!
+            collapse_lineages_filter = []
+            for lin in collapse_lineages:
+
+                if lin == NO_DATA_CHAR:
                     continue
+                # By default, assume they all match
+                matches_all_bp = True
+                for bp_s in sc2rf_lineages:
+                    # If the lineage is missing, it's not in all bp
+                    if lin not in sc2rf_lineages[bp_s]:
+                        matches_all_bp = False
+                        break
 
-                for bp_i in bp_rec[1][breakpoint_col]:
+                # Check if we should drop it
+                if matches_all_bp:
+                    collapse_lineages_filter.append(lin)
 
-                    start_i = int(bp_i.split(":")[0])
-                    end_i = int(bp_i.split(":")[1])
-                    start_diff = abs(start_s - start_i)
-                    end_diff = abs(end_s - end_i)
+            if len(collapse_lineages_filter) == 0:
+                collapse_lineages_filter = [NO_DATA_CHAR]
 
-                    if (
-                        start_diff <= breakpoint_approx_bp
-                        and end_diff <= breakpoint_approx_bp
-                    ):
-
-                        sc2rf_lineages[bp_s].append(bp_rec[1]["lineage"])
-                        match_found = True
-
-            if not match_found:
-                sc2rf_lineages[bp_s].append(NO_DATA_CHAR)
-
-        # if len(sc2rf_lineages) == num_breakpoints_filter:
-        collapse_lineages = []
-        for bp in sc2rf_lineages.values():
-            for lineage in bp:
-                collapse_lineages.append(lineage)
-
-        collapse_lineages = list(set(collapse_lineages))
-
-        # When there are multiple breakpoint, a match must be the same for all!
-        collapse_lineages_filter = []
-        for lin in collapse_lineages:
-
-            if lin == NO_DATA_CHAR:
-                continue
-            # By default, assume they all match
-            matches_all_bp = True
-            for bp_s in sc2rf_lineages:
-                # If the lineage is missing, it's not in all bp
-                if lin not in sc2rf_lineages[bp_s]:
-                    matches_all_bp = False
-                    break
-
-            # Check if we should drop it
-            if matches_all_bp:
-                collapse_lineages_filter.append(lin)
-
-        if len(collapse_lineages_filter) == 0:
-            collapse_lineages_filter = [NO_DATA_CHAR]
-
-        sc2rf_lineage = ",".join(collapse_lineages_filter)
+            sc2rf_lineage = ",".join(collapse_lineages_filter)
+            df.at[rec[0], "lineage"] = sc2rf_lineage
 
         df.at[rec[0], "sc2rf_clades_filter"] = ",".join(clades_filter)
-        df.at[rec[0], "sc2rf_clades_regions_filter"] = ",".join(regions_filter)
-        df.at[rec[0], "sc2rf_clades_regions_length"] = ",".join(regions_length)
-        df.at[rec[0], "sc2rf_breakpoints_regions_filter"] = ",".join(breakpoints_filter)
-        df.at[rec[0], "sc2rf_lineage"] = sc2rf_lineage
+        df.at[rec[0], "sc2rf_regions_filter"] = ",".join(regions_filter)
+        df.at[rec[0], "sc2rf_regions_length"] = ",".join(regions_length)
+        df.at[rec[0], "sc2rf_breakpoints_filter"] = ",".join(breakpoints_filter)
+        df.at[rec[0], "sc2rf_num_breakpoints_filter"] = num_breakpoints
 
     # write exclude strains
     outpath_exclude = os.path.join(outdir, "sc2rf.recombinants.exclude.tsv")
@@ -284,20 +304,39 @@ def main(
 
     # -------------------------------------------------------------------------
     # force include nextclade recombinants
-    qc_df = pd.read_csv(qc, sep="\t", index_col=0, low_memory=False)
+    if qc:
+        qc_df = pd.read_csv(qc, sep="\t", index_col=0, low_memory=False)
 
-    for rec in qc_df.iterrows():
-        strain = rec[0]
-        if strain in df.index:
-            continue
-        if rec[1]["clade"] != "recombinant":
-            continue
-        df.loc[strain] = NO_DATA_CHAR
+        for rec in qc_df.iterrows():
+            strain = rec[0]
+            if strain in df.index:
+                continue
+            if rec[1]["clade"] != "recombinant":
+                continue
+            df.loc[strain] = NO_DATA_CHAR
 
     # -------------------------------------------------------------------------
     # write output table
+
+    # Drop old columns
+    df.drop(
+        ["examples", "intermissions", "breakpoints", "regions"],
+        axis="columns",
+        inplace=True,
+    )
+    df.insert(loc=0, column="strain", value=df.index)
+    df.rename(
+        {
+            "sc2rf_clades_filter": "sc2rf_parents",
+            "sc2rf_regions_filter": "sc2rf_regions",
+            "sc2rf_breakpoints_filter": "sc2rf_breakpoints",
+            "sc2rf_num_breakpoints_filter": "sc2rf_num_breakpoints",
+        },
+        axis="columns",
+        inplace=True,
+    )
     outpath_rec = os.path.join(outdir, "sc2rf.recombinants.tsv")
-    df.to_csv(outpath_rec, sep="\t")
+    df.to_csv(outpath_rec, sep="\t", index=False)
 
     # -------------------------------------------------------------------------
     # write output strains
@@ -309,39 +348,40 @@ def main(
 
     # -------------------------------------------------------------------------
     # filter the ansi output
-    inpath_ansi = os.path.join(outdir, "sc2rf.ansi.txt")
-    outpath_ansi = os.path.join(outdir, "sc2rf.recombinants.ansi.txt")
-    if len(drop_strains) > 0:
-        cmd = "cut -f 1 {exclude} | grep -v -f - {inpath} > {outpath}".format(
-            exclude=outpath_exclude,
-            inpath=inpath_ansi,
-            outpath=outpath_ansi,
-        )
-    else:
-        cmd = "cp -f {inpath} {outpath}".format(
-            inpath=inpath_ansi,
-            outpath=outpath_ansi,
-        )
-    os.system(cmd)
+    if ansi:
+        outpath_ansi = os.path.join(outdir, "sc2rf.recombinants.ansi.txt")
+        if len(drop_strains) > 0:
+            cmd = "cut -f 1 {exclude} | grep -v -f - {inpath} > {outpath}".format(
+                exclude=outpath_exclude,
+                inpath=ansi,
+                outpath=outpath_ansi,
+            )
+        else:
+            cmd = "cp -f {inpath} {outpath}".format(
+                inpath=ansi,
+                outpath=outpath_ansi,
+            )
+        os.system(cmd)
 
     # -------------------------------------------------------------------------
     # write alignment
-    outpath_fasta = os.path.join(outdir, "sc2rf.recombinants.fasta")
+    if aligned:
+        outpath_fasta = os.path.join(outdir, "sc2rf.recombinants.fasta")
 
-    # first extract the reference genome
-    cmd = "seqkit grep -p '{custom_ref}' {aligned} > {outpath_fasta};".format(
-        custom_ref=custom_ref,
-        aligned=aligned,
-        outpath_fasta=outpath_fasta,
-    )
-    os.system(cmd)
-    # Next all the recombinant strains
-    cmd = "seqkit grep -f {outpath_strains} {aligned} >> {outpath_fasta};".format(
-        outpath_strains=outpath_strains,
-        aligned=aligned,
-        outpath_fasta=outpath_fasta,
-    )
-    os.system(cmd)
+        # first extract the reference genome
+        cmd = "seqkit grep -p '{custom_ref}' {aligned} > {outpath_fasta};".format(
+            custom_ref=custom_ref,
+            aligned=aligned,
+            outpath_fasta=outpath_fasta,
+        )
+        os.system(cmd)
+        # Next all the recombinant strains
+        cmd = "seqkit grep -f {outpath_strains} {aligned} >> {outpath_fasta};".format(
+            outpath_strains=outpath_strains,
+            aligned=aligned,
+            outpath_fasta=outpath_fasta,
+        )
+        os.system(cmd)
 
 
 if __name__ == "__main__":
