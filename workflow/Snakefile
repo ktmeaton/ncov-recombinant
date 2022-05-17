@@ -424,7 +424,7 @@ rule sc2rf_recombinants:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    python3 scripts/sc2rf_recombinants.py \
+    python3 sc2rf/postprocess.py \
       --csv {input.csv} \
       --ansi {input.ansi} \
       --min-len {params.min_len} \
