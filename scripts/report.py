@@ -51,6 +51,9 @@ CLADES_RENAME = {
     "--geo", help="Geography column to summarize", required=False, default="country"
 )
 @click.option(
+    "--changelog", help="Markdown changelog", required=False, default="CHANGELOG.md"
+)
+@click.option(
     "--template",
     help="Powerpoint template",
     required=False,
@@ -61,6 +64,7 @@ def main(
     recombinants,
     template,
     geo,
+    changelog,
 ):
     """Create a report of powerpoint slides"""
 
@@ -72,6 +76,25 @@ def main(
     # Import dataframes
     linelist_df = pd.read_csv(linelist, sep="\t")
     recombinants_df = pd.read_csv(recombinants, sep="\t")
+
+    # Import changelog (just the first header 2 section)
+    with open(changelog) as infile:
+        changelog_lines = infile.read().split("\n")
+        changelog_content = []
+        in_header_two = False
+        for line in changelog_lines:
+
+            # Stop at the second one
+            if line.startswith("## ") and in_header_two:
+                break
+            elif in_header_two:
+                if line.startswith("#"):
+                    continue
+                if not line:
+                    continue
+                changelog_content.append(line.replace("1. ", ""))
+            elif line.startswith("## ") and not in_header_two:
+                in_header_two = True
 
     # Add datetime columns
     linelist_df["datetime"] = pd.to_datetime(linelist_df["date"], format="%Y-%m-%d")
@@ -273,6 +296,21 @@ def main(
         )
 
     body.text = summary
+
+    # ---------------------------------------------------------------------
+    # Changelog
+    text_slide_layout = presentation.slide_layouts[1]
+    slide = presentation.slides.add_slide(text_slide_layout)
+    title = slide.shapes.title
+
+    title.text_frame.text = "Changelog ({})".format(date.today())
+    title.text_frame.paragraphs[0].font.bold = True
+
+    body = slide.placeholders[1]
+    body.text_frame.text = "\n".join(changelog_content)
+
+    for paragraph in body.text_frame.paragraphs:
+        paragraph.font.size = pptx.util.Pt(18)
 
     # ---------------------------------------------------------------------
     # Saving file

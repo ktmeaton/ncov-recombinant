@@ -5,10 +5,22 @@
 1. New param `weeks` for new rule `plot`.
 1. Removed `prev_linelist` param.
 
+## Output
+
+1. Switch from a pdf `report` to powerpoint slides for better automation.
+1. Create summary plots.
+
 ## Workflow
 
 1. New rule `plot`.
 1. Changed growth calculation from a comparison to the previous week to a score of sequences per day.
+1. Assign a `cluster_id` according to the first sequence observed in the recombinant lineage.
+1. Define a recombinant lineage as a group of sequences that share the same:
+    - Lineage assignment
+    - Parents
+    - Breakpoints or phylogenetic placement (subtree)
+1. For some sequences, the breakpoints are inaccurate and shifted slightly due to ambiguous bases. These sequences can be assigned to their corresponding cluster because they belong to the same subtree.
+1. For some lineages, global prevalence has exceeded 500 sequences (which is the subtree size used). Sequences of these lineages are split into different subtrees. However, they can be assigned to the correct cluster/lineage, because they have the same breakpoints.
 
 ## Programs
 
