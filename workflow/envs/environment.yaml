@@ -20,6 +20,7 @@ dependencies:
   - anaconda::pip=22.0.3
   - anaconda::click>=8.0.2
   - conda-forge::pandas=1.4.1
+  - conda-forge::seaborn
   # Report Generation
   - python-pptx
   - epiweeks
