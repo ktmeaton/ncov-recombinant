@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import copy
 from datetime import datetime
+import numpy as np
 
 # Hard-coded constants
 
@@ -38,7 +39,6 @@ LINELIST_COLS = {
     required=True,
     default="resources/issues.tsv",
 )
-@click.option("--prev-linelist", help="Previous linelist", required=False)
 @click.option(
     "--extra-cols",
     help="Extra columns (CSV) to extract from the summary",
@@ -47,7 +47,6 @@ LINELIST_COLS = {
 def main(
     summary,
     issues,
-    prev_linelist,
     extra_cols,
 ):
     """Create a linelist and recombinant report"""
@@ -249,7 +248,11 @@ def main(
 
     linelist_df["recombinant_lineage_curated"] = recombinant_lineage
 
-    # Drop false_positive recombinants
+    # Write and drop false_positive recombinants
+    false_positive_df = linelist_df[linelist_df["status"] == "false_positive"]
+    outpath = os.path.join(outdir, "false_positives.tsv")
+    false_positive_df.to_csv(outpath, sep="\t", index=False)
+
     linelist_df = linelist_df[linelist_df["status"] != "false_positive"]
 
     # -------------------------------------------------------------------------
@@ -261,6 +264,25 @@ def main(
 
     # Recode NA
     linelist_df.fillna(NO_DATA_CHAR, inplace=True)
+
+    # Sort
+    status_order = {
+        "designated": 0,
+        "proposed": 1,
+        "unpublished": 2,
+        "false_positive": 3,
+    }
+
+    # Change empty cells to NaN so they'll be sorted to the end
+    linelist_df = linelist_df.replace({"lineage": "", "status": ""}, np.nan)
+    linelist_df.sort_values(
+        [
+            "status",
+            "lineage",
+        ],
+        inplace=True,
+        key=lambda x: x.map(status_order),
+    )
 
     outpath = os.path.join(outdir, "linelist.tsv")
     linelist_df.to_csv(outpath, sep="\t", index=False)

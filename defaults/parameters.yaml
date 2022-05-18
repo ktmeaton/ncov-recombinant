@@ -32,14 +32,18 @@ inputs:
       - usher
 
     # Latest: Not version controlled!
-    # pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.all.masked.pb.gz
-    # metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.metadata.tsv.gz
-    # ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.version.txt
+    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.all.masked.pb.gz
+    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.metadata.tsv.gz
+    ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.version.txt
 
-    # Date: Version controlled option
-    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/02/public-2022-04-02.metadata.tsv.gz
-    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/02/public-2022-04-02.all.masked.pb.gz
-    ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/02/public-2022-04-02.version.txt
+  - name: public-20220417
+    type:
+      - usher
+
+    # Date: Version controlled!
+    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.metadata.tsv.gz
+    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.all.masked.pb.gz
+    ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.version.txt
 
 # -----------------------------------------------------------------------------
 # Rule Parameters
@@ -109,23 +113,28 @@ rule_params:
     k: 500
     low_memory_mode: true
 
-  # cols : csv list of metadata columns to output going forwards
+  # extra_cols : (Optional) csv list of metadata columns to output going forwards (aside from defaults of strain,date,country)
+  #            : If no extra columns are needed, set to an empty string ("")
   - name: usher_metadata
-    cols: "date,country"
-
-  # extra_cols       : (Optional) csv list of columns from the summary to include in the linelist
-  # prev_linelist    : (Optional) Path to a previous linelist (output of rule report) for growth calculation
-  # geo              : (Optional) column to use for a geographic summary
-  - name: linelist
     extra_cols: ""
-    prev_linelist: ""
-    geo: "country"
 
-  # years            : (Optional) csv list of years to include in the report
-  # changelog        : (Optional) Path to a markdown changelog to append to the report.
+  # geo              : Column to use for a geographic summary (typically region, country, or division)
+  # Note: the rule `linelist` is also going to use the `extra_cols` param of rule `usher_metadata`,
+  # to determine which metadata columns appear in the linelist
+  - name: linelist
+    geo: country
+
+  # weeks : The number of weeks to plot in retrospect
+  # lag   : The number of weeks before the present where data is accurate. Used to plot a light grey box.
+  # Note: the rule `plot` is also going to use the `geo` param of rule `linelist`,
+  # to plot recombinants by geographic location
+  - name: plot
+    weeks: 16
+    lag: 4
+
+  # years : (Optional) csv list of years to include in the report
   - name: report
-    years: ""
-    changelog: ""
+    years: 2022
 
 
 # -----------------------------------------------------------------------------
@@ -146,6 +155,5 @@ builds:
   - name: controls
     base_input: public-latest
 
-    # Universal rule parameters can (optionally) be overridden for a specific build.
     usher_metadata:
-      extra_cols: "date,country,gisaid_epi_isl,genbank_accession"
+      extra_cols: "gisaid_epi_isl,genbank_accession"

@@ -1,9 +1,23 @@
 # Development
 
+## Params
+
+1. New param `weeks` for new rule `plot`.
+1. Removed `prev_linelist` param.
+
+## Workflow
+
+1. New rule `plot`.
+1. Changed growth calculation from a comparison to the previous week to a score of sequences per day.
+
 ## Programs
 
 1. Move `sc2rf_recombinants.py` to `postprocess.py` in ktmeaton fork of `sc2rf`.
 1. Add false positives filtering to `sc2rf_recombinants` based on parents and breakpoints.
+
+## Docs
+
+1. Add section `Configuration` to `README.md`.
 
 ## To Do
 
