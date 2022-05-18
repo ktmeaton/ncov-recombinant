@@ -118,7 +118,7 @@ rule_params:
   - name: usher_metadata
     extra_cols: ""
 
-  # geo              : Column to use for a geographic summary (typically region, country, or division)
+  # geo : Column to use for a geographic summary (typically region, country, or division)
   # Note: the rule `linelist` is also going to use the `extra_cols` param of rule `usher_metadata`,
   # to determine which metadata columns appear in the linelist
   - name: linelist
@@ -132,9 +132,13 @@ rule_params:
     weeks: 16
     lag: 4
 
-  # years : (Optional) csv list of years to include in the report
+  # changelog : (Optional) path to a CHANGELOG.md to append to the report
+  # template  : (Optional) path to a powerpoint template
+  # Note: the rule `report` is also going to use the `geo` param of rule `linelist`,
+  # to summarize recombinants by geographic location
   - name: report
-    years: 2022
+    changelog: "CHANGELOG.md"
+    template: "resources/template.pptx"
 
 
 # -----------------------------------------------------------------------------

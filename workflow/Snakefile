@@ -838,6 +838,10 @@ rule report:
   output:
     slides = "results/{build}/report.pptx",
     xlsx   = "results/{build}/report.xlsx",
+  params:
+    geo       = lambda wildcards: config["builds"][wildcards.build]["linelist"]["geo"],
+    changelog = lambda wildcards: config["builds"][wildcards.build]["report"]["changelog"],
+    template  = lambda wildcards: config["builds"][wildcards.build]["report"]["template"],
   threads: 1
   resources:
     cpus = 1,
@@ -847,8 +851,17 @@ rule report:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
+    if [[ "{params.changelog}" ]]; then changelog="--changelog {params.changelog}"; else extra_cols=""; fi
+    if [[ "{params.geo}" ]]; then geo="--geo {params.geo}"; else geo=""; fi
+    if [[ "{params.template}" ]]; then template="--template {params.template}"; else template=""; fi
+
     csvtk csv2xlsx -t -o {output.xlsx} {input.recombinants} {input.linelist} {input.false_positives};
-    python3 scripts/report.py --linelist {input.linelist} --recombinants {input.recombinants} 2> {log};
+    cmd="python3 scripts/report.py \
+      --linelist {input.linelist} \
+      --recombinants {input.recombinants} \
+      $geo $changelog $template \
+      2> {log}";
+    eval $cmd
     """
 
 # -----------------------------------------------------------------------------#
