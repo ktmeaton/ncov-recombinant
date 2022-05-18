@@ -833,6 +833,7 @@ rule report:
     linelist        = "results/{build}/linelist.tsv",
     recombinants    = "results/{build}/recombinants.tsv",
     false_positives = "results/{build}/false_positives.tsv",
+    issues          = "resources/issues.tsv",
     timeline = "results/{build}/plots/status.png",
     geo      = "results/{build}/plots/geography.png",
   output:
@@ -855,7 +856,8 @@ rule report:
     if [[ "{params.geo}" ]]; then geo="--geo {params.geo}"; else geo=""; fi
     if [[ "{params.template}" ]]; then template="--template {params.template}"; else template=""; fi
 
-    csvtk csv2xlsx -t -o {output.xlsx} {input.recombinants} {input.linelist} {input.false_positives};
+    csvtk csv2xlsx -t -o {output.xlsx} {input.recombinants} {input.linelist} {input.false_positives} {input.issues};
+
     cmd="python3 scripts/report.py \
       --linelist {input.linelist} \
       --recombinants {input.recombinants} \
@@ -863,35 +865,3 @@ rule report:
       2> {log}";
     eval $cmd
     """
-
-# -----------------------------------------------------------------------------#
-
-# rule snipit:
-
-# rule export_taxonium:
-#   """
-#   Export to taxonium protobuf.
-#   """
-#   message: "{wildcards.build} | Exporting to taxonium protobuf."
-#   input:
-#     pb        = "results/{build}/usher.pb.gz",
-#     tsv       = "data/{build}/metadata.tsv",
-#     ref_fasta = "data/reference/reference.fasta",
-#     ref_gtf   = "data/reference/reference.gtf",
-#   output:
-#     pb  = "results/{build}/taxonium.pb.gz",
-#     tsv = "results/{build}/taxonium.metadata.tsv",
-#   shell:
-#     """
-#     # Rename pango_lineage to pangolin_lineage
-#     csvtk rename -t -f "pango_lineage" -n "pangolin_lineage" {input.tsv} > {output.tsv};
-
-#     matUtils extract \
-#       -i {input.pb} \
-#       -M {output.tsv} \
-#       -f {input.ref_fasta} \
-#       -g {input.ref_gtf} \
-#       --description "{wildcards.dataset}" \
-#       --extra-fields "{params.extra_fields}" \
-#       -l {output.pb}
-#     """
