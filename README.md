@@ -86,6 +86,60 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 
     - Trees: Upload Auspice JSON in `results/tutorial/subtrees_collapse/` to <https://auspice.us/>
 
+## Custom Configuration
+
+1. Create new directories for your data and build profile.
+
+    ```bash
+    mkdir -p my_profiles/custom
+    mkdir -p data/custom
+    ```
+
+1. Copy over your metadata and unaligned fasta sequences to `data/custom`.
+
+    > Note: `metadata.tsv` MUST have at minimum the columns `strain`, `date`, `country`.
+
+1. Copy over the default build and parameters to get started.
+
+    ```bash
+    cp defaults/parameters.yaml my_profiles/custom/builds.yaml
+    ```
+
+1. Create a new input entry for your data
+
+    ```yaml
+    inputs:
+
+        # Custom sequences and metadata
+        - name: custom
+            type:
+            - local
+            metadata: data/custom/metadata.tsv
+            sequences: data/custom/sequences.fasta
+    ```
+
+1. Create a new build entry for your data.
+
+    ```yaml
+    builds:
+
+        - name: custom
+            base_input: public-latest
+    ```
+
+1. Do a dry run to confirm setup.
+
+    ```bash
+    snakemake --profile my_profiles/custom print_config
+    snakemake --profile my_profiles/custom --dry-run
+    ```
+
+1. Run the custom profile.
+
+    ```bash
+    snakemake --profile my_profiles/custom
+    ```
+
 ## SLURM
 
 The workflow can be dispatched using the SLURM job submission system. In `profiles/hpc`, modify the `partition` name in `default-resources` according to your system partition. Then dispatch the workflow using the following command, where `MyPartition` is replaced with your local value:

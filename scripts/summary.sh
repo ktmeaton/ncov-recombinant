@@ -35,8 +35,8 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    --cols)
-      cols=$2
+    --extra-cols)
+      extra_cols=$2
       shift # past argument
       shift # past value
       ;;
@@ -78,7 +78,16 @@ usher_dataset_ver="${usher_dataset_name}:${usher_dataset_ver}"
 
 sort_col="usher_subtree"
 
-csvtk cut -t -f "strain,${cols},clade,Nextclade_pango" ${nextclade} \
+default_cols="strain,date,country"
+
+# Hack to fix commas if extra_cols is empty
+if [[ $extra_cols ]]; then
+  extra_cols=",${extra_cols},"
+else
+  extra_cols=","
+fi
+
+csvtk cut -t -f "${default_cols}${extra_cols}clade,Nextclade_pango" ${nextclade} \
   | csvtk rename -t -f "clade" -n "Nextclade_clade" \
   | csvtk merge -t --na "NA" -f "strain" - ${sc2rf} \
   | csvtk merge -t -k --na "NA" -f "strain" - ${usher_clades} \

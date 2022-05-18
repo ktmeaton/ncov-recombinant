@@ -4,47 +4,49 @@ import os
 import pandas as pd
 import epiweeks
 import matplotlib.pyplot as plt
+from matplotlib import patches
+from datetime import datetime, timedelta
 
 NO_DATA_CHAR = "NA"
-
-# designated: X*
-# proposed: proposed* or associated issue
-# unpublished: not designated or proposed
-
-RECOMBINANT_STATUS = {
-    "designated": "X*",
-    "proposed": "proposed*",
-    "unpublished": "misc*",
-}
-
-# Concise names for report
-CLADES_RENAME = {
-    "Alpha/B.1.1.7/20I": "Alpha (20I)",
-    "Delta/21I": "Delta (21I)",
-    "Delta/21J": "Delta (21J)",
-    "Omicron/21K": "BA.1",
-    "Omicron/21L": "BA.2",
-}
-
-D3_PAL = [
-    "#1f77b4",
-    "#ff7f0e",
-    "#2ca02c",
-    "#d62728",
-]
+ALPHA_LAG = 0.15
+ALPHA_BAR = 0.75
+WIDTH_BAR = 0.75
+# This is the aspect ratio/dpi for ppt embeds
+DPI = 200
+FIGSIZE = [7, 4]
+EPIWEEK_MAX_BUFF_FACTOR = 1.1
 
 
 @click.command()
 @click.option("--linelist", help="Recombinant sequences (TSV)", required=True)
+@click.option("--recombinants", help="Recombinant lineages (TSV)", required=True)
+@click.option("--outdir", help="Output directory", required=False, default=".")
+@click.option(
+    "--weeks", help="Number of weeks in retrospect to plot", required=False, default=16
+)
+@click.option(
+    "--geo",
+    help="Geography column to use when plotting",
+    required=False,
+    default="country",
+)
+@click.option(
+    "--lag", help="Reporting lag weeks to draw a grey box", required=False, default=4
+)
 def main(
     linelist,
+    recombinants,
+    outdir,
+    weeks,
+    geo,
+    lag,
 ):
     """Create a report of powerpoint slides"""
 
-    outdir = os.path.dirname(linelist)
-
+    # -------------------------------------------------------------------------
     # Import dataframes
     linelist_df = pd.read_csv(linelist, sep="\t")
+    recombinants_df = pd.read_csv(recombinants, sep="\t")
 
     # Add datetime columns
     linelist_df["datetime"] = pd.to_datetime(linelist_df["date"], format="%Y-%m-%d")
@@ -54,47 +56,204 @@ def main(
         for d in linelist_df["datetime"]
     ]
 
-    # Dates
-    dates_df = pd.pivot_table(
+    # Change status to title case
+    linelist_df["status"] = [s.title() for s in linelist_df["status"]]
+
+    # Filter on weeks reporting
+    max_epiweek = epiweeks.Week.fromdate(datetime.today(), system="iso").startdate()
+    min_epiweek = max_epiweek - timedelta(weeks=weeks)
+    linelist_df = linelist_df[linelist_df["epiweek"] >= min_epiweek]
+
+    largest_i = recombinants_df["sequences"].idxmax()
+    largest_cluster_id = recombinants_df["cluster_id"][largest_i]
+
+    # -------------------------------------------------------------------------
+    # Pivot Tables
+    # -------------------------------------------------------------------------
+
+    # -------------------------------------------------------------------------
+    # All
+    all_df = pd.pivot_table(
+        data=linelist_df.sort_values(by="epiweek"),
+        values="strain",
+        index=["epiweek"],
+        aggfunc="count",
+    )
+    all_df.index.name = None
+    all_df.fillna(0, inplace=True)
+    all_df["epiweek"] = all_df.index
+    all_df.rename(columns={"strain": "sequences"}, inplace=True)
+    max_epiweek_sequences = max(all_df["sequences"])
+
+    # -------------------------------------------------------------------------
+    # Status
+    status_df = pd.pivot_table(
         data=linelist_df.sort_values(by="epiweek"),
         values="strain",
         index=["epiweek"],
         columns=["status"],
         aggfunc="count",
     )
-
-    dates_df.fillna(0, inplace=True)
-    dates_df["epiweek"] = dates_df.index
-    # dates_df["epiweek"] = [i[0] for i in dates_df.index]
-    # dates_df["status"] = [i[1] for i in dates_df.index]
-    # dates_df.rename(columns={"strain" : "sequences"}, inplace=True)
-    print(dates_df)
-
-    out_path = os.path.join(outdir, "linelist.dates.tsv")
-    dates_df.to_csv(out_path, sep="\t", index=False)
+    status_df.index.name = None
+    status_df.fillna(0, inplace=True)
+    status_df["epiweek"] = status_df.index
 
     # -------------------------------------------------------------------------
-    # Timeline
-
-    dpi = 200
-    figsize = [16, 6]
-    fig, ax = plt.subplots(
-        1,
-        figsize=figsize,
-        dpi=dpi,
+    # Geography
+    geo_df = pd.pivot_table(
+        data=linelist_df.sort_values(by="epiweek"),
+        values="strain",
+        index=["epiweek"],
+        columns=[geo],
+        aggfunc="count",
     )
+    geo_df.index.name = None
+    geo_df.fillna(0, inplace=True)
+    geo_df["epiweek"] = geo_df.index
 
-    ax.set_title("Timeline of Recombinant Sequences in Canada", fontweight="bold")
+    # ---------------------------------------------------------------------
+    # Designated
 
-    dates_df.plot.bar(stacked=True, ax=ax, edgecolor="black", width=0.75)
+    designated_df = pd.pivot_table(
+        data=linelist_df[linelist_df["status"] == "Designated"].sort_values(
+            by="epiweek"
+        ),
+        values="strain",
+        index=["epiweek"],
+        columns=["lineage"],
+        aggfunc="count",
+    )
+    designated_df.index.name = None
+    designated_df.fillna(0, inplace=True)
+    designated_df["epiweek"] = designated_df.index
 
-    ax.set_ylabel("Number of Sequences")
-    ax.set_xlabel("Start of Week")
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
-    ax.legend(title="Status")
+    # ---------------------------------------------------------------------
+    # Largest
 
-    out_path = os.path.join(outdir, "linelist.dates")
-    plt.savefig(out_path + ".png", bbox_inches="tight")
+    largest_df = pd.pivot_table(
+        data=linelist_df[linelist_df["cluster_id"] == largest_cluster_id].sort_values(
+            by="epiweek"
+        ),
+        values="strain",
+        index=["epiweek"],
+        columns=[geo],
+        aggfunc="count",
+    )
+    largest_df.index.name = None
+    largest_df.fillna(0, inplace=True)
+    largest_df["epiweek"] = largest_df.index
+
+    # -------------------------------------------------------------------------
+    # Filter for Reporting Period
+    # -------------------------------------------------------------------------
+
+    # Add empty data for weeks if needed
+    epiweek_map = {}
+    iter_week = min_epiweek
+    iter_i = 0
+    while iter_week <= max_epiweek:
+
+        if iter_week not in status_df["epiweek"]:
+
+            status_df.loc[iter_week] = 0
+            status_df.at[iter_week, "epiweek"] = iter_week
+
+            geo_df.loc[iter_week] = 0
+            geo_df.at[iter_week, "epiweek"] = iter_week
+
+        if iter_week not in designated_df["epiweek"]:
+            designated_df.loc[iter_week] = 0
+            designated_df.at[iter_week, "epiweek"] = iter_week
+
+        if iter_week not in largest_df["epiweek"]:
+            largest_df.loc[iter_week] = 0
+            largest_df.at[iter_week, "epiweek"] = iter_week
+
+        # Check if its the largest
+
+        epiweek_map[iter_week] = iter_i
+        iter_week += timedelta(weeks=1)
+        iter_i += 1
+
+    status_df.sort_values(by="epiweek", axis="index", inplace=True)
+    geo_df.sort_values(by="epiweek", axis="index", inplace=True)
+    designated_df.sort_values(by="epiweek", axis="index", inplace=True)
+    largest_df.sort_values(by="epiweek", axis="index", inplace=True)
+
+    lag_epiweek = max_epiweek - timedelta(weeks=lag)
+    lag_i = epiweek_map[lag_epiweek]
+
+    # -------------------------------------------------------------------------
+    # Plot Status
+
+    plot_dict = {
+        "status": {
+            "legend_title": "status",
+            "df": status_df,
+        },
+        "geography": {
+            "legend_title": geo,
+            "df": geo_df,
+        },
+        "designated": {"legend_title": "lineage", "df": designated_df},
+        "largest": {"legend_title": geo, "df": largest_df},
+    }
+
+    for plot in plot_dict:
+
+        df = plot_dict[plot]["df"]
+        label = plot
+        legend_title = plot_dict[plot]["legend_title"]
+
+        # Setup up Figure
+        fig, ax = plt.subplots(1, figsize=FIGSIZE, dpi=DPI)
+
+        df.plot.bar(
+            stacked=True,
+            ax=ax,
+            x="epiweek",
+            edgecolor="black",
+            width=WIDTH_BAR,
+            alpha=ALPHA_BAR,
+        )
+
+        # Plot the reporting lag
+        lag_rect = patches.Rectangle(
+            xy=[lag_i + (1 - (WIDTH_BAR) / 2), 0],
+            width=lag + (1 - (WIDTH_BAR) / 2),
+            height=len(linelist_df),
+            linewidth=1,
+            edgecolor="none",
+            facecolor="grey",
+            alpha=ALPHA_LAG,
+            zorder=0,
+        )
+        ax.add_patch(lag_rect)
+        footnote = (
+            "The grey area indicates an approximate reporting"
+            + " lag of {} weeks.".format(lag)
+        )
+        ax.text(
+            x=0,
+            y=-0.45,
+            s=footnote,
+            transform=ax.transAxes,
+            fontsize=6,
+        )
+
+        ax.set_ylabel("Number of Sequences", fontweight="bold")
+        ax.set_xlabel("Start of Week", fontweight="bold")
+        ax.xaxis.set_label_coords(0.5, -0.30)
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=90, ha="center", fontsize=8)
+
+        ax.set_ylim(0, round(max_epiweek_sequences * EPIWEEK_MAX_BUFF_FACTOR, 1))
+
+        legend = ax.legend(title=legend_title.title(), edgecolor="black", fontsize=8)
+        legend.get_frame().set_linewidth(1)
+        legend.get_title().set_fontweight("bold")
+
+        out_path = os.path.join(outdir, label)
+        plt.savefig(out_path + ".png", bbox_inches="tight")
 
 
 if __name__ == "__main__":

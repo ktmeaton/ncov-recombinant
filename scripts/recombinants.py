@@ -2,7 +2,6 @@
 import click
 import os
 import pandas as pd
-import copy
 
 # Hard-coded constants
 
@@ -19,7 +18,7 @@ RECOMBINANTS_COLS = [
     "issue",
     "subtree",
     "sequences",
-    "growth",
+    "growth_score",
     "earliest_date",
     "latest_date",
 ]
@@ -27,20 +26,9 @@ RECOMBINANTS_COLS = [
 
 @click.command()
 @click.option("--linelist", help="Linelist (tsv).", required=True)
-@click.option(
-    "--prev-linelist",
-    help="Previous linelist (TSV) for growth calculation",
-    required=False,
-)
-@click.option(
-    "--geo",
-    help="Geography column to use for summary",
-    required=False,
-    default="country",
-)
+@click.option("--geo", help="Geography column", required=False, default="country")
 def main(
     linelist,
-    prev_linelist,
     geo,
 ):
     """Create a table of recombinant lineages"""
@@ -57,11 +45,6 @@ def main(
 
     linelist_df["datetime"] = pd.to_datetime(linelist_df["date"], format="%Y-%m-%d")
 
-    if prev_linelist:
-        prev_linelist_df = pd.read_csv(prev_linelist, sep="\t")
-    else:
-        prev_linelist_df = copy.deepcopy(linelist_df)
-
     # -------------------------------------------------------------------------
     # Create the recombinants table (recombinants.tsv)
     # -------------------------------------------------------------------------
@@ -73,6 +56,10 @@ def main(
 
         match_df = linelist_df[linelist_df["cluster_id"] == cluster_id]
 
+        earliest_date = min(match_df["datetime"])
+        latest_date = max(match_df["datetime"])
+        sequences = len(match_df)
+
         # TBD majority vote on disagreement
         recombinants_data["cluster_id"].append(cluster_id)
         recombinants_data["status"].append(match_df["status"].values[0])
@@ -81,9 +68,10 @@ def main(
         recombinants_data["breakpoints"].append(match_df["breakpoints"].values[0])
         recombinants_data["issue"].append(match_df["issue"].values[0])
         recombinants_data["subtree"].append(match_df["subtree"].values[0])
-        recombinants_data["sequences"].append(len(match_df))
-        recombinants_data["earliest_date"].append(min(match_df["datetime"]))
-        recombinants_data["latest_date"].append(max(match_df["datetime"]))
+
+        recombinants_data["sequences"].append(sequences)
+        recombinants_data["earliest_date"].append(earliest_date)
+        recombinants_data["latest_date"].append(latest_date)
 
         geo_list = list(set(match_df[geo]))
         geo_list.sort()
@@ -96,21 +84,10 @@ def main(
         recombinants_data[geo].append(", ".join(geo_counts))
 
         # Growth Calculation
-        if "cluster_id" not in prev_linelist_df.columns:
-            growth = 0
-        else:
-            prev_match_df = prev_linelist_df[
-                prev_linelist_df["cluster_id"] == cluster_id
-            ]
-            growth = len(match_df) - len(prev_match_df)
-            if growth > 0:
-                growth = "+{}".format(growth)
-            elif growth == 0:
-                growth = "{}".format(growth)
-            else:
-                growth = "-{}".format(growth)
-
-        recombinants_data["growth"].append(growth)
+        growth_score = 0
+        duration = (latest_date - earliest_date).days + 1
+        growth_score = round(sequences / duration, 2)
+        recombinants_data["growth_score"].append(growth_score)
 
     recombinants_df = pd.DataFrame(recombinants_data)
     recombinants_df.sort_values(by="sequences", ascending=False, inplace=True)
