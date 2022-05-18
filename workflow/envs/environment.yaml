@@ -22,6 +22,7 @@ dependencies:
   - conda-forge::pandas=1.4.1
   # Report Generation
   - python-pptx
+  - epiweeks
   # For dev users
   #- conda-forge::pre_commit=2.17.0
   #- anaconda::git=2.35.0
