@@ -406,7 +406,6 @@ rule sc2rf_recombinants:
     aligned = "results/{build}/nextclade.aligned.fasta",
     qc      = "results/{build}/nextclade.qc.tsv",
     issues  = "resources/issues.tsv",
-    false_positives = "resources/false_positives.tsv",
   output:
     strains = "results/{build}/sc2rf.recombinants.txt",
     aligned = "results/{build}/sc2rf.recombinants.fasta",
@@ -414,11 +413,12 @@ rule sc2rf_recombinants:
     exclude = "results/{build}/sc2rf.recombinants.exclude.tsv",
     tsv     = "results/{build}/sc2rf.recombinants.tsv",
   params:
-    outdir     = lambda wildcards: "results/{build}".format(build=wildcards.build),
-    custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
-    min_len    = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["min_len"],
-    max_parents = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_parents"],
+    outdir          = lambda wildcards: "results/{build}".format(build=wildcards.build),
+    custom_ref      = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
+    min_len         = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["min_len"],
+    max_parents     = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_parents"],
     max_breakpoints = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_breakpoints"],
+    motifs          = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["motifs"],
   threads: 1
   resources:
     cpus = 1,
@@ -428,7 +428,8 @@ rule sc2rf_recombinants:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    python3 sc2rf/postprocess.py \
+    if [[ "{params.motifs}" ]]; then motifs="--motifs {params.motifs}"; else motifs=""; fi
+    cmd="python3 sc2rf/postprocess.py \
       --csv {input.csv} \
       --ansi {input.ansi} \
       --min-len {params.min_len} \
@@ -439,8 +440,9 @@ rule sc2rf_recombinants:
       --custom-ref "{params.custom_ref}" \
       --issues {input.issues} \
       --qc {input.qc} \
-      --false-positives {input.false_positives} \
-      2> {log};
+      $motifs \
+      2> {log}";
+      eval $cmd
     """
 
 # -----------------------------------------------------------------------------#
@@ -760,8 +762,8 @@ rule linelist:
     issues      = "resources/issues.tsv",
   output:
     linelist        = "results/{build}/linelist.tsv",
-    false_positives = "results/{build}/recombinants.tsv",
-    recombinants    = "results/{build}/false_positives.tsv",
+    false_positives = "results/{build}/false_positives.tsv",
+    recombinants    = "results/{build}/recombinants.tsv",
   params:
     # All optional, catch in shell
     extra_cols    = lambda wildcards: config["builds"][wildcards.build]["usher_metadata"]["extra_cols"],
