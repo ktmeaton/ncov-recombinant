@@ -109,7 +109,8 @@ def main(
     largest_lineage = recombinants_df["lineage"][largest_i]
 
     # Find plots
-    status_plot = os.path.join(outdir, "plots", "status.png")
+    lineage_plot = os.path.join(outdir, "plots", "lineage.png")
+    # status_plot = os.path.join(outdir, "plots", "status.png")
     geo_plot = os.path.join(outdir, "plots", "geography.png")
     designated_plot = os.path.join(outdir, "plots", "designated.png")
     largest_plot = os.path.join(outdir, "plots", "largest.png")
@@ -182,7 +183,7 @@ def main(
     slide.placeholders[1].text = subtitle
 
     # ---------------------------------------------------------------------
-    # Status Summary
+    # Lineage Summary
 
     graph_slide_layout = presentation.slide_layouts[8]
     slide = presentation.slides.add_slide(graph_slide_layout)
@@ -191,7 +192,7 @@ def main(
     title.text_frame.paragraphs[0].font.bold = True
 
     chart_placeholder = slide.placeholders[1]
-    chart_placeholder.insert_picture(status_plot)
+    chart_placeholder.insert_picture(lineage_plot)
     body = slide.placeholders[2]
 
     summary = "\n"

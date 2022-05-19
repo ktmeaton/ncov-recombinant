@@ -2,14 +2,16 @@
 import click
 import os
 import pandas as pd
+import numpy as np
 import epiweeks
 import matplotlib.pyplot as plt
-from matplotlib import patches
+from matplotlib import patches, cm
 from datetime import datetime, timedelta
+import sys
 
 NO_DATA_CHAR = "NA"
-ALPHA_LAG = 0.15
-ALPHA_BAR = 0.75
+ALPHA_LAG = 0.25
+ALPHA_BAR = 1.00
 WIDTH_BAR = 0.75
 # This is the aspect ratio/dpi for ppt embeds
 DPI = 200
@@ -41,7 +43,7 @@ def main(
     geo,
     lag,
 ):
-    """Create a report of powerpoint slides"""
+    """Plot recombinant lineages"""
 
     # -------------------------------------------------------------------------
     # Import dataframes
@@ -84,6 +86,28 @@ def main(
     all_df["epiweek"] = all_df.index
     all_df.rename(columns={"strain": "sequences"}, inplace=True)
     max_epiweek_sequences = max(all_df["sequences"])
+
+    # -------------------------------------------------------------------------
+    # Lineages
+    lineage_df = pd.pivot_table(
+        data=linelist_df.sort_values(by="epiweek"),
+        values="strain",
+        index=["epiweek"],
+        columns=["recombinant_lineage_curated"],
+        aggfunc="count",
+    )
+    lineage_df.index.name = None
+    lineage_df.fillna(0, inplace=True)
+
+    # Drop singletons
+    drop_lineages = []
+    for lineage in lineage_df.columns:
+        total_sequences = sum(lineage_df[lineage])
+        if total_sequences == 1 and not lineage.startswith("X"):
+            drop_lineages.append(lineage)
+    lineage_df.drop(labels=drop_lineages, axis="columns", inplace=True)
+
+    lineage_df["epiweek"] = lineage_df.index
 
     # -------------------------------------------------------------------------
     # Status
@@ -158,8 +182,15 @@ def main(
             status_df.loc[iter_week] = 0
             status_df.at[iter_week, "epiweek"] = iter_week
 
+        if iter_week not in geo_df["epiweek"]:
+
             geo_df.loc[iter_week] = 0
             geo_df.at[iter_week, "epiweek"] = iter_week
+
+        if iter_week not in lineage_df["epiweek"]:
+
+            lineage_df.loc[iter_week] = 0
+            lineage_df.at[iter_week, "epiweek"] = iter_week
 
         if iter_week not in designated_df["epiweek"]:
             designated_df.loc[iter_week] = 0
@@ -175,6 +206,7 @@ def main(
         iter_week += timedelta(weeks=1)
         iter_i += 1
 
+    lineage_df.sort_values(by="epiweek", axis="index", inplace=True)
     status_df.sort_values(by="epiweek", axis="index", inplace=True)
     geo_df.sort_values(by="epiweek", axis="index", inplace=True)
     designated_df.sort_values(by="epiweek", axis="index", inplace=True)
@@ -187,6 +219,11 @@ def main(
     # Plot Status
 
     plot_dict = {
+        "lineage": {
+            "legend_title": "lineage",
+            "df": lineage_df,
+            "y": "recombinant_lineage_curated",
+        },
         "status": {
             "legend_title": "status",
             "df": status_df,
@@ -202,8 +239,23 @@ def main(
     for plot in plot_dict:
 
         df = plot_dict[plot]["df"]
+        x = "epiweek"
         label = plot
         legend_title = plot_dict[plot]["legend_title"]
+
+        # Use the tab20 color palette
+        if len(df.columns) > 20:
+            print(
+                "WARNING: {} dataframe has more than 20 categories".format(label),
+                file=sys.stderr,
+            )
+
+        legend_ncol = 1
+        if len(df.columns) > 10:
+            legend_ncol = 2
+
+        custom_cmap_i = np.linspace(0.0, 1.0, 20)
+        df_cmap = cm.get_cmap("tab20")(custom_cmap_i)
 
         # Setup up Figure
         fig, ax = plt.subplots(1, figsize=FIGSIZE, dpi=DPI)
@@ -211,13 +263,15 @@ def main(
         df.plot.bar(
             stacked=True,
             ax=ax,
-            x="epiweek",
+            x=x,
+            color=df_cmap,
             edgecolor="black",
             width=WIDTH_BAR,
             alpha=ALPHA_BAR,
         )
 
         # Plot the reporting lag
+        ax.axvline(x=lag_i + (1 - (WIDTH_BAR) / 2), color="black", linestyle="--", lw=1)
         lag_rect = patches.Rectangle(
             xy=[lag_i + (1 - (WIDTH_BAR) / 2), 0],
             width=lag + (1 - (WIDTH_BAR) / 2),
@@ -238,7 +292,7 @@ def main(
             y=-0.45,
             s=footnote,
             transform=ax.transAxes,
-            fontsize=6,
+            fontsize=8,
         )
 
         ax.set_ylabel("Number of Sequences", fontweight="bold")
@@ -248,7 +302,9 @@ def main(
 
         ax.set_ylim(0, round(max_epiweek_sequences * EPIWEEK_MAX_BUFF_FACTOR, 1))
 
-        legend = ax.legend(title=legend_title.title(), edgecolor="black", fontsize=8)
+        legend = ax.legend(
+            title=legend_title.title(), edgecolor="black", fontsize=8, ncol=legend_ncol
+        )
         legend.get_frame().set_linewidth(1)
         legend.get_title().set_fontweight("bold")
 

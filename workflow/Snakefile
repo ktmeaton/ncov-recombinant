@@ -798,8 +798,7 @@ rule plot:
     linelist     = "results/{build}/linelist.tsv",
     recombinants = "results/{build}/recombinants.tsv",
   output:
-    timeline = "results/{build}/plots/status.png",
-    geo      = "results/{build}/plots/geography.png",
+    plots = directory("results/{build}/plots"),
   params:
     outdir = "results/{build}/plots",
     weeks  = lambda wildcards: config["builds"][wildcards.build]["plot"]["weeks"],
@@ -836,8 +835,7 @@ rule report:
     recombinants    = "results/{build}/recombinants.tsv",
     false_positives = "results/{build}/false_positives.tsv",
     issues          = "resources/issues.tsv",
-    timeline = "results/{build}/plots/status.png",
-    geo      = "results/{build}/plots/geography.png",
+    plots           = directory("results/{build}/plots"),
   output:
     slides = "results/{build}/report.pptx",
     xlsx   = "results/{build}/report.xlsx",
