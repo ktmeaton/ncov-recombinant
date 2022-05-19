@@ -102,10 +102,12 @@ rule_params:
   # min_len     : Ignore recombinants regions shorter than this
   # max_parents : Exlude samples with greater than this number of parents
   # max_parents : Exlude samples with greater than this number of breakpoints
+  # motifs      : (optional, experimental) Path to a breakpoints motif file
   - name: sc2rf_recombinants
     min_len: 1000
     max_parents: 2
     max_breakpoints: 2
+    motifs: ""
 
   # k               : The number of contextual samples to select when extracting subtrees.
   # low_memory_mode : true if the metadata should not be used, false if it should
