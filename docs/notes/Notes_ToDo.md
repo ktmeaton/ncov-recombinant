@@ -2,7 +2,6 @@
 
 ## Priority
 
-1. Output `svg` plots.
 1. Experiment with the `motifs` param for `sc2rf_recombinants`.
 1. Troubleshoot `sc2rf` update to `bd2a4009` which drops all deltacrons.
 

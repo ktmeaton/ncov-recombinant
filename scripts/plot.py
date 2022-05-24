@@ -310,6 +310,7 @@ def main(
 
         out_path = os.path.join(outdir, label)
         plt.savefig(out_path + ".png", bbox_inches="tight")
+        plt.savefig(out_path + ".svg", bbox_inches="tight")
 
 
 if __name__ == "__main__":

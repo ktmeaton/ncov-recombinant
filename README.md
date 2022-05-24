@@ -12,37 +12,53 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 1. Identify parental clades and plot recombination breakpoints with [sc2rf](https://github.com/lenaschimmel/sc2rf).
 1. Phylogenetically place recombinant sequences with [UShER](https://github.com/yatisht/usher).
 
+## Table of Contents
+
+1. [Output](https://github.com/ktmeaton/ncov-recombinant#output)
+1. [Install](https://github.com/ktmeaton/ncov-recombinant#install)
+1. [Tutorial](https://github.com/ktmeaton/ncov-recombinant#tutorial
+)
+1. [Custom Configuration](https://github.com/ktmeaton/ncov-recombinant#custom-configuration)
+1. [SLURM](https://github.com/ktmeaton/ncov-recombinant#slurm)
+1. [Troubleshooting](https://github.com/ktmeaton/ncov-recombinant#troubleshooting)
+1. [Credits](https://github.com/ktmeaton/ncov-recombinant#credits)
+
 ## Output
 
-### Line list
+### Tables
 
-|                 strain                  | lineage | parents                           |    date    | country  | breakpoints |
-|:---------------------------------------:|:-------:| --------------------------------- |:----------:|:--------:|:-----------:|
-|        England/BRBR-3899D04/2022        |   XE    | Omicron/BA.1/21K,Omicron/BA.2/21L | 2022-02-27 | England  | 10450:11536 |
-|        England/ALDP-31AE19E/2022        |   XF    | Delta/21J,Omicron/BA.1/21K        | 2022-01-06 | England  | 21619:21761 |
-|        England/PLYM-336A651/2022        |   XF    | Delta/21J,Omicron/BA.1/21K        | 2022-01-20 | England  | 21619:21761 |
-|      USA/TN-CDC-ASC210559252/2021       |   XF    | Delta/21J,Omicron/BA.1/21K        | 2021-12-31 |   USA    | 21988:22577 |
-|       Scotland/QEUH-37E04A0/2022        |   XG    | Omicron/BA.1/21K,Omicron/BA.2/21L | 2022-02-21 | Scotland |  5387:8392  |
-|        England/MILK-385C31A/2022        |   XH    | Omicron/BA.1/21K,Omicron/BA.2/21L | 2022-02-24 | England  | 10450:11536 |
-| USA/VT-CDCBI-CRSP_3IGFKAUB6STYVNPK/2022 |   XJ    | Omicron/BA.1/21K,Omicron/BA.2/21L | 2022-02-14 |   USA    | 15241:15713 |
-| USA/NY-Broad-CRSP_WH5TJZ42BYV4BC3T/2022 |   XM    | Omicron/BA.1/21K,Omicron/BA.2/21L | 2022-03-28 |   USA    | 18164:19954 |
-|        England/MILK-38AA91B/2022        |   XQ    | Omicron/BA.1/21K,Omicron/BA.2/21L | 2022-02-28 | England  |  4322:5385  |
-|        USA/CO-CDC-FG-248528/2022        |   XS    | Delta/21J,Omicron/BA.1/21K        | 2022-01-19 |   USA    | 10030:10448 |
+Tables collated into a spreadsheet for excel/google sheets:
+
+1. `recombinants`: Per-lineage summary statistics.
+1. `linelist`: Per-sequence statistics.
+1. `false_positives`: Sequences flagged as potential recombinants by Nextclade, that could not be verified by [sc2rf](https://github.com/lenaschimmel/sc2rf) or [UShER](https://github.com/yatisht/usher).
+1. `issues`: Metadata of issues related to recombinant lineages posted in the [pango-designation](https://github.com/cov-lineages/pango-designation/issues) repository.
+
+[![excel_output](images/excel_output.png)](https://docs.google.com/spreadsheets/d/1Voy4zw4VCZSp1K4oSjXPrKVbB1w8K_VnC_a5dxEU4rg/edit#gid=1139120749)
+
+### Slides
+
+Powerpoint/google slides with acommpanying plots for presenting.
+
+[![powerpoint_output](images/powerpoint_output.png)](https://docs.google.com/presentation/d/1dFKHPaaD8wOHt_4Vde_yfSBlHz8m7XrqDDn0pik_hs4/edit#slide=id.p2)
 
 ### Breakpoints
+
+Visualization of breakpoints by parent from [sc2rf](https://github.com/lenaschimmel/sc2rf).
 
 ![sc2rf_output](images/sc2rf_output.png)
 
 ### Phylogenetic Context
 
+Placement of samples on the latest global phylogeny using [UShER](https://github.com/yatisht/usher).
+
 ![usher_output](images/usher_output.png)
 
 ## Install
 
-1. Clone the repository:
+1. Clone the repository, using the `--recursive` flag for submodules:
 
     ```bash
-    # https
     git clone --recursive https://github.com/ktmeaton/ncov-recombinant.git
     cd ncov-recombinant
     ```
@@ -72,19 +88,13 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 
 1. Inspect the output
 
-    - Sample line list:
+    - Slides | `results/tutorial/report.pptx`
+    - Tables | `results/tutorial/report.xlsx`
+    - Breakpoints<sup>*</sup> | `results/tutorial/sc2rf.recombinants.ansi.txt`
+    - Trees<sup>†</sup> | `results/tutorial/subtrees_collapse`
 
-        ```bash
-        csvtk pretty -t results/tutorial/linelist.tsv | less -S
-        ```
-
-    - Breakpoints:
-
-        ```bash
-        less -S results/tutorial/sc2rf.recombinants.ansi.txt
-        ```
-
-    - Trees: Upload Auspice JSON in `results/tutorial/subtrees_collapse/` to <https://auspice.us/>
+<sup>*</sup> Visualize breakpoints with `less -S` or [Visual Studio ANSI Colors](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi).  
+<sup>†</sup> Upload Auspice JSON trees to <https://auspice.us/>.
 
 ## Custom Configuration
 
@@ -95,7 +105,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
     mkdir -p data/custom
     ```
 
-1. Copy over your metadata and unaligned fasta sequences to `data/custom`.
+1. Copy over your `metadata.tsv` and unaligned `sequences.fasta` to `data/custom`.
 
     > Note: `metadata.tsv` MUST have at minimum the columns `strain`, `date`, `country`.
 
@@ -118,7 +128,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
             sequences: data/custom/sequences.fasta
     ```
 
-1. Create a new build entry for your data.
+1. Create a new build entry for your data, using the latest public data as the UShER base phylogeny.
 
     ```yaml
     builds:
@@ -134,7 +144,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
     snakemake --profile my_profiles/custom --dry-run
     ```
 
-1. Run the custom profile.
+1. Run your custom profile.
 
     ```bash
     snakemake --profile my_profiles/custom
@@ -142,7 +152,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 
 ## SLURM
 
-The workflow can be dispatched using the SLURM job submission system. In `profiles/hpc`, modify the `partition` name in `default-resources` according to your system partition. Then dispatch the workflow using the following command, where `MyPartition` is replaced with your local value:
+The `ncov-recombinant` tutorial workflow can be dispatched using the SLURM job submission system. In `profiles/hpc`, modify the `partition` name in `default-resources` according to your system partition. Then dispatch the workflow using the following command, where `MyPartition` is replaced with your local value:
 
 ```bash
 bash scripts/slurm.sh --profile profiles/hpc --partition MyPartition

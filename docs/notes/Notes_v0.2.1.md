@@ -11,6 +11,7 @@
 1. Switch from a pdf `report` to powerpoint slides for better automation.
 1. Create summary plots.
 1. Split `report` rule into `linelist` and `report`.
+1. Output `svg` plots.
 
 ## Workflow
 
