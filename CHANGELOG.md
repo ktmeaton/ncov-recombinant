@@ -15,6 +15,7 @@
 1. Switch from a pdf `report` to powerpoint slides for better automation.
 1. Create summary plots.
 1. Split `report` rule into `linelist` and `report`.
+1. Output `svg` plots.
 
 #### Workflow
 
@@ -44,6 +45,9 @@
 
 ### Commits
 
+- [```9c8a774e```](https://github.com/ktmeaton/ncov-recombinant/commit/9c8a774e) update autologs to exclude first blank line in notes
+- [```2a8a7af5```](https://github.com/ktmeaton/ncov-recombinant/commit/2a8a7af5) overhaul README
+- [```9c2bd2f5```](https://github.com/ktmeaton/ncov-recombinant/commit/9c2bd2f5) change asterisks to dashes
 - [```46d4ec81```](https://github.com/ktmeaton/ncov-recombinant/commit/46d4ec81) update autologs to allow more complex notes content
 - [```a01a903c```](https://github.com/ktmeaton/ncov-recombinant/commit/a01a903c) split docs into dev and todo
 - [```23e8d715```](https://github.com/ktmeaton/ncov-recombinant/commit/23e8d715) change color palette for plotting
@@ -233,7 +237,7 @@
     - Comment out dev tools: `git` and `pre-commit`.
 
 1. Use github api to pull recombinant issues.
-1. Consolidate \*_to_\- files into `resources/issues.tsv`.
+1. Consolidate \*_to_\* files into `resources/issues.tsv`.
 1. Use the `--clades` param of `sc2rf` rather than using `exclude_clades`.
 1. Disabled `--rebuild-examples` in `sc2rf` because of requests error.
 1. Add column `issue` to `recombinants.tsv`.
