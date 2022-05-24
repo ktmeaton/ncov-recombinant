@@ -20,12 +20,6 @@ printshellcmds: True
 # System config
 #------------------------------------------------------------------------------#
 
-# Total resources for the ENTIRE WORKFLOW
-# workflow.global_resources
-resources:
-  - cpus=1
-  - mem_mb=4000
-
 # Maximum number of jobs to run
 jobs : 1
 

@@ -98,7 +98,9 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 
 ## Custom Configuration
 
-1. Create new directories for your data and build profile.
+### Data
+
+1. Create new directories for your data, system configuration, and run parameters.
 
     ```bash
     mkdir -p my_profiles/custom
@@ -109,13 +111,54 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 
     > Note: `metadata.tsv` MUST have at minimum the columns `strain`, `date`, `country`.
 
-1. Copy over the default build and parameters to get started.
+### Setting up a template
+
+1. Copy over the default build parameters to get started.
 
     ```bash
     cp defaults/parameters.yaml my_profiles/custom/builds.yaml
     ```
 
-1. Create a new input entry for your data
+1. Copy over the minimal system configuration (`laptop`) to get started.
+
+    ```bash
+    cp profiles/laptop/config.yaml my_profiles/custom/config.yaml
+    ```
+
+### Editing the template
+
+1. Add your build file to the `configfile` element of `my_profiles/custom/config.yaml`:
+
+    ```yaml
+    #------------------------------------------------------------------------------#
+    # Build Config
+    #------------------------------------------------------------------------------#
+
+    configfile:
+      - defaults/parameters.yaml
+      - my_profiles/custom/builds.yaml
+    ```
+
+1. Edit the `jobs` and `default-resources` to match your system.
+
+    > Note: For HPC environments, see the [SLURM](https://github.com/ktmeaton/ncov-recombinant#slurm) section.
+
+    ```yaml
+    #------------------------------------------------------------------------------#
+    # System config
+    #------------------------------------------------------------------------------#
+
+    # Maximum number of jobs to run
+    jobs : 2
+
+    # Default resources for a SINGLE JOB
+    default-resources:
+    - cpus=2
+    - mem_mb=8000
+    - time_min=120
+    ```
+
+1. Create a new **input** entry for your data in `my_profiles/custom/builds.yaml`.
 
     ```yaml
     inputs:
@@ -128,7 +171,7 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
             sequences: data/custom/sequences.fasta
     ```
 
-1. Create a new build entry for your data, using the latest public data as the UShER base phylogeny.
+1. Create a new **build** entry in `my_profiles/custom/builds.yaml`, using the latest public data as the UShER base phylogeny.
 
     ```yaml
     builds:
