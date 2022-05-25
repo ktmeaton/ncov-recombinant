@@ -80,12 +80,15 @@ def main(
     # Import changelog (just the first header 2 section)
     with open(changelog) as infile:
         changelog_lines = infile.read().split("\n")
+        changelog_date = ""
         changelog_content = []
         in_header_two = False
+
         for line in changelog_lines:
 
             # Stop at the second one
             if line.startswith("## ") and in_header_two:
+                changelog_date = line.replace("## ", "")
                 break
             elif in_header_two:
                 if line.startswith("#"):
@@ -304,7 +307,7 @@ def main(
     slide = presentation.slides.add_slide(text_slide_layout)
     title = slide.shapes.title
 
-    title.text_frame.text = "Changelog ({})".format(date.today())
+    title.text_frame.text = "Changelog ({})".format(changelog_date)
     title.text_frame.paragraphs[0].font.bold = True
 
     body = slide.placeholders[1]
