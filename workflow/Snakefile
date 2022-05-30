@@ -764,6 +764,7 @@ rule linelist:
     linelist        = "results/{build}/linelist.tsv",
     false_positives = "results/{build}/false_positives.tsv",
     recombinants    = "results/{build}/recombinants.tsv",
+    parents         = "results/{build}/parents.tsv",
   params:
     # All optional, catch in shell
     extra_cols     = lambda wildcards: config["builds"][wildcards.build]["usher_metadata"]["extra_cols"],
@@ -783,8 +784,8 @@ rule linelist:
     cmd="python3 scripts/linelist.py --summary {input.summary} --issues {input.issues} --max-placements {params.max_placements} $extra_cols 2> {log}";
     eval $cmd
 
-    cmd="python3 scripts/recombinants.py --linelist {output.linelist} --geo {params.geo} 2>> {log}";
-    eval $cmd
+    python3 scripts/recombinants.py --linelist {output.linelist} --geo {params.geo} 2>> {log}
+    python3 scripts/parents.py --linelist {output.linelist} 2>> {log}
     """
 
 # -----------------------------------------------------------------------------#
@@ -834,6 +835,7 @@ rule report:
   input:
     linelist        = "results/{build}/linelist.tsv",
     recombinants    = "results/{build}/recombinants.tsv",
+    parents         = "results/{build}/parents.tsv",
     false_positives = "results/{build}/false_positives.tsv",
     issues          = "resources/issues.tsv",
     plots           = directory("results/{build}/plots"),
@@ -857,7 +859,7 @@ rule report:
     if [[ "{params.geo}" ]]; then geo="--geo {params.geo}"; else geo=""; fi
     if [[ "{params.template}" ]]; then template="--template {params.template}"; else template=""; fi
 
-    csvtk csv2xlsx -t -o {output.xlsx} {input.recombinants} {input.linelist} {input.false_positives} {input.issues};
+    csvtk csv2xlsx -t -o {output.xlsx} {input.recombinants} {input.linelist} {input.parents} {input.false_positives} {input.issues};
 
     cmd="python3 scripts/report.py \
       --linelist {input.linelist} \

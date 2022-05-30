@@ -138,6 +138,8 @@ def main(
 
                 # TBD: regions if desired
 
+            linelist_df.at[rec[0], "issue"] = issue
+
         # Alternatively, try to find related pango-designation issues by breakpoint
         # Multiple matches are possible here
         else:
