@@ -88,7 +88,6 @@ def main(
 
             # Stop at the second one
             if line.startswith("## ") and in_header_two:
-                changelog_date = line.replace("## ", "")
                 break
             elif in_header_two:
                 if line.startswith("#"):
@@ -98,6 +97,7 @@ def main(
                 changelog_content.append(line.replace("1. ", ""))
             elif line.startswith("## ") and not in_header_two:
                 in_header_two = True
+                changelog_date = line.replace("## ", "")
 
     # Add datetime columns
     linelist_df["datetime"] = pd.to_datetime(linelist_df["date"], format="%Y-%m-%d")
@@ -146,17 +146,20 @@ def main(
 
     # ---------------------------------------------------------------------
     # Designated
-    designated_df = pd.pivot_table(
-        data=linelist_df[linelist_df["status"] == "designated"],
-        values="strain",
-        index=["lineage"],
-        aggfunc="count",
-    )
-    designated_df.index.name = None
-    designated_df.fillna(0, inplace=True)
-    designated_df["lineage"] = designated_df.index
-    designated_df.rename(columns={"strain": "sequences"}, inplace=True)
-    designated_df.sort_values(by="sequences", inplace=True, ascending=False)
+
+    # Designated lineages aren't always present, so this is optional
+    if os.path.exists(designated_plot):
+        designated_df = pd.pivot_table(
+            data=linelist_df[linelist_df["status"] == "designated"],
+            values="strain",
+            index=["lineage"],
+            aggfunc="count",
+        )
+        designated_df.index.name = None
+        designated_df.fillna(0, inplace=True)
+        designated_df["lineage"] = designated_df.index
+        designated_df.rename(columns={"strain": "sequences"}, inplace=True)
+        designated_df.sort_values(by="sequences", inplace=True, ascending=False)
 
     # ---------------------------------------------------------------------
     # Largest
@@ -247,28 +250,31 @@ def main(
 
     # ---------------------------------------------------------------------
     # Designated Summary
-    graph_slide_layout = presentation.slide_layouts[8]
-    slide = presentation.slides.add_slide(graph_slide_layout)
-    title = slide.shapes.title
+    if os.path.exists(designated_plot):
+        graph_slide_layout = presentation.slide_layouts[8]
+        slide = presentation.slides.add_slide(graph_slide_layout)
+        title = slide.shapes.title
 
-    title.text_frame.text = "Designated"
-    title.text_frame.paragraphs[0].font.bold = True
+        title.text_frame.text = "Designated"
+        title.text_frame.paragraphs[0].font.bold = True
 
-    chart_placeholder = slide.placeholders[1]
-    chart_placeholder.insert_picture(designated_plot)
-    body = slide.placeholders[2]
+        chart_placeholder = slide.placeholders[1]
+        chart_placeholder.insert_picture(designated_plot)
+        body = slide.placeholders[2]
 
-    summary = "\n"
-    summary += "There are {num} designated lineages.\n".format(num=len(designated_df))
-
-    for rec in designated_df.iterrows():
-        lineage = rec[1]["lineage"]
-        sequences = rec[1]["sequences"]
-        summary += "  - {lineage} ({sequences})\n".format(
-            lineage=lineage, sequences=sequences
+        summary = "\n"
+        summary += "There are {num} designated lineages.\n".format(
+            num=len(designated_df)
         )
 
-    body.text = summary
+        for rec in designated_df.iterrows():
+            lineage = rec[1]["lineage"]
+            sequences = rec[1]["sequences"]
+            summary += "  - {lineage} ({sequences})\n".format(
+                lineage=lineage, sequences=sequences
+            )
+
+        body.text = summary
 
     # ---------------------------------------------------------------------
     # Largest Summary

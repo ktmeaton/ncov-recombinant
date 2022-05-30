@@ -232,9 +232,17 @@ def main(
             "legend_title": geo,
             "df": geo_df,
         },
-        "designated": {"legend_title": "lineage", "df": designated_df},
         "largest": {"legend_title": geo, "df": largest_df},
     }
+
+    # Check if the designated df actually had records
+    if len(designated_df.columns) > 1:
+        plot_dict["designated"] = {"legend_title": "lineage", "df": designated_df}
+    else:
+        print(
+            "WARNING: No designated lineages to plot",
+            file=sys.stderr,
+        )
 
     for plot in plot_dict:
 

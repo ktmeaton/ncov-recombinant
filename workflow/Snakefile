@@ -766,8 +766,9 @@ rule linelist:
     recombinants    = "results/{build}/recombinants.tsv",
   params:
     # All optional, catch in shell
-    extra_cols    = lambda wildcards: config["builds"][wildcards.build]["usher_metadata"]["extra_cols"],
-    geo           = lambda wildcards: config["builds"][wildcards.build]["linelist"]["geo"],
+    extra_cols     = lambda wildcards: config["builds"][wildcards.build]["usher_metadata"]["extra_cols"],
+    geo            = lambda wildcards: config["builds"][wildcards.build]["linelist"]["geo"],
+    max_placements = lambda wildcards: config["builds"][wildcards.build]["linelist"]["max_placements"],
   threads: 1
   resources:
     cpus = 1,
@@ -778,12 +779,11 @@ rule linelist:
   shell:
     """
     if [[ "{params.extra_cols}" ]]; then extra_cols="--extra-cols {params.extra_cols}"; else extra_cols=""; fi
-    if [[ "{params.geo}" ]]; then geo="--geo {params.geo}"; else geo=""; fi
 
-    cmd="python3 scripts/linelist.py --summary {input.summary} --issues {input.issues} $extra_cols 2> {log}";
+    cmd="python3 scripts/linelist.py --summary {input.summary} --issues {input.issues} --max-placements {params.max_placements} $extra_cols 2> {log}";
     eval $cmd
 
-    cmd="python3 scripts/recombinants.py --linelist {output.linelist} $geo 2>> {log}";
+    cmd="python3 scripts/recombinants.py --linelist {output.linelist} --geo {params.geo} 2>> {log}";
     eval $cmd
     """
 
@@ -820,7 +820,8 @@ rule plot:
       --outdir {params.outdir} \
       --weeks {params.weeks} \
       --lag {params.lag} \
-      --geo {params.geo};
+      --geo {params.geo} \
+      2> {log};
     """
 
 # ----------------------------------------------------------------------------#

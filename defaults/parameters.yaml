@@ -109,6 +109,7 @@ rule_params:
     max_breakpoints: 2
     motifs: ""
 
+
   # k               : The number of contextual samples to select when extracting subtrees.
   # low_memory_mode : true if the metadata should not be used, false if it should
   - name: usher_subtree
@@ -120,11 +121,13 @@ rule_params:
   - name: usher_metadata
     extra_cols: ""
 
-  # geo : Column to use for a geographic summary (typically region, country, or division)
+  # geo            : Column to use for a geographic summary (typically region, country, or division)
+  # max_placements : The maximum number of UShER placements before labeling false_positive (-1 to disable.).
   # Note: the rule `linelist` is also going to use the `extra_cols` param of rule `usher_metadata`,
   # to determine which metadata columns appear in the linelist
   - name: linelist
     geo: country
+    max_placements: -1
 
   # weeks : The number of weeks to plot in retrospect
   # lag   : The number of weeks before the present where data is accurate. Used to plot a light grey box.
