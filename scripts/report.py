@@ -117,6 +117,7 @@ def main(
     geo_plot = os.path.join(outdir, "plots", "geography.png")
     designated_plot = os.path.join(outdir, "plots", "designated.png")
     largest_plot = os.path.join(outdir, "plots", "largest.png")
+    parents_plot = os.path.join(outdir, "plots", "parents.png")
 
     # Stats
     num_lineages = len(recombinants_df)
@@ -177,6 +178,21 @@ def main(
     largest_df.sort_values(by="sequences", inplace=True, ascending=False)
 
     # ---------------------------------------------------------------------
+    # Parents
+    if os.path.exists(parents_plot):
+        parents_df = pd.pivot_table(
+            data=linelist_df,
+            values="strain",
+            index=["parents"],
+            aggfunc="count",
+        )
+        parents_df.index.name = None
+        parents_df.fillna(0, inplace=True)
+        parents_df["parents"] = parents_df.index
+        parents_df.rename(columns={"strain": "sequences"}, inplace=True)
+        parents_df.sort_values(by="sequences", inplace=True, ascending=False)
+
+    # ---------------------------------------------------------------------
     # Presentation
     # ---------------------------------------------------------------------
     presentation = pptx.Presentation(template)
@@ -218,7 +234,7 @@ def main(
             sequences=status_counts[status]["sequences"], status=status
         )
 
-    body.text = summary
+    body.text_frame.text = summary
 
     # ---------------------------------------------------------------------
     # Geographic Summary
@@ -250,6 +266,7 @@ def main(
 
     # ---------------------------------------------------------------------
     # Designated Summary
+
     if os.path.exists(designated_plot):
         graph_slide_layout = presentation.slide_layouts[8]
         slide = presentation.slides.add_slide(graph_slide_layout)
@@ -278,6 +295,7 @@ def main(
 
     # ---------------------------------------------------------------------
     # Largest Summary
+
     graph_slide_layout = presentation.slide_layouts[8]
     slide = presentation.slides.add_slide(graph_slide_layout)
     title = slide.shapes.title
@@ -306,6 +324,40 @@ def main(
         )
 
     body.text = summary
+
+    # ---------------------------------------------------------------------
+    # Parents Summary
+
+    if os.path.exists(parents_plot):
+
+        graph_slide_layout = presentation.slide_layouts[8]
+        slide = presentation.slides.add_slide(graph_slide_layout)
+        title = slide.shapes.title
+
+        title.text_frame.text = "Parents"
+        title.text_frame.paragraphs[0].font.bold = True
+
+        chart_placeholder = slide.placeholders[1]
+        chart_placeholder.insert_picture(parents_plot)
+        body = slide.placeholders[2]
+
+        summary = "\n"
+        summary += "There are {num} parental combinations.\n".format(
+            num=len(parents_df)
+        )
+
+        for rec in parents_df.iterrows():
+            parents = rec[1]["parents"]
+            sequences = rec[1]["sequences"]
+            summary += "  - {parents} ({sequences})\n".format(
+                parents=parents, sequences=sequences
+            )
+
+        # Adjust font size of body
+        body.text_frame.text = summary
+        for paragraph in body.text_frame.paragraphs:
+            for run in paragraph.runs:
+                run.font.size = pptx.util.Pt(14)
 
     # ---------------------------------------------------------------------
     # Changelog

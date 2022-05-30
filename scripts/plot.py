@@ -110,6 +110,20 @@ def main(
     lineage_df["epiweek"] = lineage_df.index
 
     # -------------------------------------------------------------------------
+    # Parents
+
+    parents_df = pd.pivot_table(
+        data=linelist_df.sort_values(by="epiweek"),
+        values="strain",
+        index=["epiweek"],
+        columns=["parents"],
+        aggfunc="count",
+    )
+    parents_df.index.name = None
+    parents_df.fillna(0, inplace=True)
+    parents_df["epiweek"] = lineage_df.index
+
+    # -------------------------------------------------------------------------
     # Status
     status_df = pd.pivot_table(
         data=linelist_df.sort_values(by="epiweek"),
@@ -175,42 +189,21 @@ def main(
     epiweek_map = {}
     iter_week = min_epiweek
     iter_i = 0
+    df_list = [status_df, geo_df, lineage_df, designated_df, largest_df, parents_df]
     while iter_week <= max_epiweek:
 
-        if iter_week not in status_df["epiweek"]:
+        for df in df_list:
 
-            status_df.loc[iter_week] = 0
-            status_df.at[iter_week, "epiweek"] = iter_week
-
-        if iter_week not in geo_df["epiweek"]:
-
-            geo_df.loc[iter_week] = 0
-            geo_df.at[iter_week, "epiweek"] = iter_week
-
-        if iter_week not in lineage_df["epiweek"]:
-
-            lineage_df.loc[iter_week] = 0
-            lineage_df.at[iter_week, "epiweek"] = iter_week
-
-        if iter_week not in designated_df["epiweek"]:
-            designated_df.loc[iter_week] = 0
-            designated_df.at[iter_week, "epiweek"] = iter_week
-
-        if iter_week not in largest_df["epiweek"]:
-            largest_df.loc[iter_week] = 0
-            largest_df.at[iter_week, "epiweek"] = iter_week
+            if iter_week not in df["epiweek"]:
+                df.at[iter_week, "epiweek"] = iter_week
 
         # Check if its the largest
-
         epiweek_map[iter_week] = iter_i
         iter_week += timedelta(weeks=1)
         iter_i += 1
 
-    lineage_df.sort_values(by="epiweek", axis="index", inplace=True)
-    status_df.sort_values(by="epiweek", axis="index", inplace=True)
-    geo_df.sort_values(by="epiweek", axis="index", inplace=True)
-    designated_df.sort_values(by="epiweek", axis="index", inplace=True)
-    largest_df.sort_values(by="epiweek", axis="index", inplace=True)
+    for df in df_list:
+        df.sort_values(by="epiweek", axis="index", inplace=True)
 
     lag_epiweek = max_epiweek - timedelta(weeks=lag)
     lag_i = epiweek_map[lag_epiweek]
@@ -239,10 +232,12 @@ def main(
     if len(designated_df.columns) > 1:
         plot_dict["designated"] = {"legend_title": "lineage", "df": designated_df}
     else:
-        print(
-            "WARNING: No designated lineages to plot",
-            file=sys.stderr,
-        )
+        print("WARNING: No designated lineages to plot", file=sys.stderr)
+    # Check if the parents df actually had records
+    if len(parents_df.columns) > 1:
+        plot_dict["parents"] = {"legend_title": "parents", "df": parents_df}
+    else:
+        print("WARNING: No parents to plot", file=sys.stderr)
 
     for plot in plot_dict:
 
@@ -264,6 +259,22 @@ def main(
 
         custom_cmap_i = np.linspace(0.0, 1.0, 20)
         df_cmap = cm.get_cmap("tab20")(custom_cmap_i)
+
+        # The df is sorted by time (epiweek)
+        # But we want colors to be sorted by number of sequences
+        df_count_dict = {}
+        for col in df.columns:
+            if col == "epiweek":
+                continue
+            df_count_dict[col] = sum([c for c in df[col] if not np.isnan(c)])
+
+        # Sort by counts
+        df_count_dict = dict(
+            sorted(df_count_dict.items(), key=lambda item: item[1], reverse=True)
+        )
+        # Reorder the columns in the data frame
+        ordered_cols = list(df_count_dict.keys()) + ["epiweek"]
+        df = df[ordered_cols]
 
         # Setup up Figure
         fig, ax = plt.subplots(1, figsize=FIGSIZE, dpi=DPI)
@@ -288,8 +299,9 @@ def main(
             edgecolor="none",
             facecolor="grey",
             alpha=ALPHA_LAG,
-            zorder=0,
+            # zorder=0,
         )
+
         ax.add_patch(lag_rect)
         footnote = (
             "The grey area indicates an approximate reporting"
@@ -313,6 +325,7 @@ def main(
         legend = ax.legend(
             title=legend_title.title(), edgecolor="black", fontsize=8, ncol=legend_ncol
         )
+
         legend.get_frame().set_linewidth(1)
         legend.get_title().set_fontweight("bold")
 
