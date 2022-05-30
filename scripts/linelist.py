@@ -21,6 +21,7 @@ LINELIST_COLS = {
     "Nextclade_pango": "lineage_nextclade",
     "sc2rf_parents": "parents",
     "sc2rf_breakpoints": "breakpoints",
+    "usher_num_best": "placements",
     "usher_subtree": "subtree",
     "sc2rf_regions": "regions",
     "date": "date",
@@ -35,19 +36,26 @@ LINELIST_COLS = {
 @click.option("--summary", help="Summary (tsv).", required=True)
 @click.option(
     "--issues",
-    help="Reporting years (csv)",
+    help="pango-designation issues table",
     required=True,
     default="resources/issues.tsv",
 )
 @click.option(
     "--extra-cols",
-    help="Extra columns (CSV) to extract from the summary",
+    help="Extra columns (csv) to extract from the summary",
     required=False,
+)
+@click.option(
+    "--max-placements",
+    help="Maximum number of UShER placements before labeling false_positive",
+    required=False,
+    default=-1,
 )
 def main(
     summary,
     issues,
     extra_cols,
+    max_placements,
 ):
     """Create a linelist and recombinant report"""
 
@@ -98,6 +106,7 @@ def main(
         lineages_sc2rf = rec[1]["lineage_sc2rf"].split(",")
         breakpoints = rec[1]["breakpoints"]
         lineage_usher = rec[1]["lineage_usher"]
+        usher_placements = rec[1]["placements"]
 
         # Check if sc2rf or UShER thinks its a recombinant
         if breakpoints != NO_DATA_CHAR and lineages_sc2rf[0] != "false_positive":
@@ -142,16 +151,20 @@ def main(
             if len(issues) > 1:
                 issue = ",".join(issues)
 
-        linelist_df.at[rec[0], "issue"] = str(issue)
-
         # Add status
         status = "unpublished"
-        if lineage.startswith("X"):
-            status = "designated"
+        if max_placements != -1 and usher_placements > max_placements:
+            status = "false_positive"
+
         elif not is_recombinant:
             status = "false_positive"
+
+        elif lineage.startswith("X"):
+            status = "designated"
+
         elif issue != NO_DATA_CHAR:
             status = "proposed"
+
         linelist_df.at[rec[0], "status"] = str(status)
 
     # -------------------------------------------------------------------------

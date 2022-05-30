@@ -2,6 +2,7 @@
 
 ## Priority
 
+1. Create a summary file by parent.
 1. Experiment with the `motifs` param for `sc2rf_recombinants`.
 1. Troubleshoot `sc2rf` update to `bd2a4009` which drops all deltacrons.
 
@@ -24,3 +25,5 @@
     - XK | No public genomes
     - XT | No public genomes, South Africa
     - XU | No public genomes, India, Japan, Australia
+    - XW | ...
+    - XY | ...
