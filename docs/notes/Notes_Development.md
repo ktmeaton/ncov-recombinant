@@ -14,3 +14,7 @@
 ## Params
 
 1. Add new optional param `max_placements` to rule `linelist`.
+
+## Programs
+
+1. Upgrade UShER to v0.5.4 (possible was in ver prior?)
