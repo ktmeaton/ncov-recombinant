@@ -80,6 +80,9 @@ rule_params:
         - "20E"
         - "20F"
         - "20G"
+        - "Alpha"
+        - "Beta"
+        - "Gamma"
 
   # max_name_length : The maximum character length of strain names
   # clades          : Restrict parent search to these clades
