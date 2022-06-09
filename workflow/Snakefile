@@ -796,15 +796,16 @@ rule plot:
   """
   message: "{wildcards.build} | Plotting results."
   input:
-    linelist     = "results/{build}/linelist.tsv",
-    recombinants = "results/{build}/recombinants.tsv",
+    linelist  = "results/{build}/linelist.tsv",
   output:
-    plots = directory("results/{build}/plots"),
+    plots     = directory("results/{build}/plots"),
   params:
-    outdir = "results/{build}/plots",
-    weeks  = lambda wildcards: config["builds"][wildcards.build]["plot"]["weeks"],
-    lag    = lambda wildcards: config["builds"][wildcards.build]["plot"]["lag"],
-    geo    = lambda wildcards: config["builds"][wildcards.build]["linelist"]["geo"],
+    outdir    = "results/{build}/plots",
+    weeks     = lambda wildcards: config["builds"][wildcards.build]["plot"]["weeks"],
+    min_date  = lambda wildcards: config["builds"][wildcards.build]["plot"]["min_date"],    
+    lag       = lambda wildcards: config["builds"][wildcards.build]["plot"]["lag"],
+    geo       = lambda wildcards: config["builds"][wildcards.build]["linelist"]["geo"],
+    singletons = lambda wildcards: config["builds"][wildcards.build]["plot"]["singletons"],    
   threads: 1
   resources:
     cpus = 1,
@@ -814,15 +815,21 @@ rule plot:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
+    if [[ "{params.weeks}" ]]; then weeks="--weeks {params.weeks}"; else weeks=""; fi
+    if [[ "{params.min_date}" ]]; then min_date="--min-date {params.min_date}"; else min_date=""; fi
+    if [[ "{params.singletons}" == "True" ]]; then singletons="--singletons"; else singletons=""; fi
+
     mkdir -p {params.outdir};
-    python3 scripts/plot.py \
+
+    cmd="python3 scripts/plot.py \
       --linelist {input.linelist} \
-      --recombinants {input.recombinants} \
       --outdir {params.outdir} \
-      --weeks {params.weeks} \
       --lag {params.lag} \
       --geo {params.geo} \
-      2> {log};
+      $weeks $min_date $singletons \
+      1> {log} 2>&1";
+
+    eval $cmd
     """
 
 # ----------------------------------------------------------------------------#
@@ -831,7 +838,14 @@ rule report:
   """
   Summarize results into a report.
   """
-  message: "{wildcards.build} | Summarizing results into a report."
+
+  message: """Creating excel report and powerpoint slides.\n
+  build:   {{wildcards.build}}
+  log:     logs/{rule}/{{build}}_{today}.log
+  report:  results/{{wildcards.build}}/report.xlsx
+  slides:  results/{{wildcards.build}}/report.pptx
+""".format(today=today, rule=rule_name)
+
   input:
     linelist        = "results/{build}/linelist.tsv",
     recombinants    = "results/{build}/recombinants.tsv",
@@ -846,6 +860,7 @@ rule report:
     geo       = lambda wildcards: config["builds"][wildcards.build]["linelist"]["geo"],
     changelog = lambda wildcards: config["builds"][wildcards.build]["report"]["changelog"],
     template  = lambda wildcards: config["builds"][wildcards.build]["report"]["template"],
+
   threads: 1
   resources:
     cpus = 1,
@@ -861,10 +876,6 @@ rule report:
 
     csvtk csv2xlsx -t -o {output.xlsx} {input.recombinants} {input.linelist} {input.parents} {input.false_positives} {input.issues};
 
-    cmd="python3 scripts/report.py \
-      --linelist {input.linelist} \
-      --recombinants {input.recombinants} \
-      $geo $changelog $template \
-      2> {log}";
+    cmd="python3 scripts/report.py --plot-dir {input.plots} $geo $changelog $template > {log} 2>&1";
     eval $cmd
     """

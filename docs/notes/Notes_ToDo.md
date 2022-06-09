@@ -2,6 +2,8 @@
 
 ## Priority
 
+1. Include rule_name in message text and point to log file.
+1. Make `plot` and `report` more dynamic with regards to plots.
 1. Troubleshoot the missing designated lineages in the controls report.
 1. Add better filters to the Auspice JSON output (ex. `lineage_usher`).
 1. Experiment with the `motifs` param for `sc2rf_recombinants`.

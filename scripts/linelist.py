@@ -168,6 +168,7 @@ def main(
             status = "proposed"
 
         linelist_df.at[rec[0], "status"] = str(status)
+        linelist_df.at[rec[0], "issue"] = issue
 
     # -------------------------------------------------------------------------
     # Lineage Grouping
