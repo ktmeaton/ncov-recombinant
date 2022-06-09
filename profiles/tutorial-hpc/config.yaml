@@ -3,6 +3,7 @@
 #------------------------------------------------------------------------------#
 configfile:
   - defaults/parameters.yaml
+  - profiles/tutorial/builds.yaml # Load custom inputs, builds, and rule params
 
 #------------------------------------------------------------------------------#
 # Snakemake config
