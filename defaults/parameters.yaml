@@ -132,13 +132,17 @@ rule_params:
     geo: country
     max_placements: -1
 
-  # weeks : The number of weeks to plot in retrospect
-  # lag   : The number of weeks before the present where data is accurate. Used to plot a light grey box.
+  # lag           : The number of weeks before the present where data is accurate. Used to plot a light grey box.
+  # weeks         : The number of weeks to plot in retrospect
+  # min_date      : (Optional) The date to start plots at. Overrides the `weeks` parameter.
+  # singletons    : "true" is singelton lineages (N=1) should be plotted and reported.
   # Note: the rule `plot` is also going to use the `geo` param of rule `linelist`,
   # to plot recombinants by geographic location
   - name: plot
     weeks: 16
+    min_date: "2022-01-03"    
     lag: 4
+    singletons: true
 
   # changelog : (Optional) path to a CHANGELOG.md to append to the report
   # template  : (Optional) path to a powerpoint template
