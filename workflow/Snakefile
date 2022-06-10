@@ -192,7 +192,11 @@ rule issues_download:
   """
   Download pango-designation issues.
   """
-  message: "Downloading pango-designation issues."
+  message: """Downloading pango-designation issues.\n
+  log:     logs/{rule}/{today}.log
+  issues:  resources/issues.tsv
+  """.format(today=today, rule=rule_name)
+  
   input:
     breakpoints = "resources/breakpoints.tsv",
   output:
@@ -208,7 +212,7 @@ rule issues_download:
   shell:
     """
     python3 resources/issues.py --breakpoints {input.breakpoints} 1> {output.issues} 2> {log};
-    csvtk cut -t -f "issue,lineage" {output.issues}| tail -n+2 > {output.issue_to_lineage} 2>> {log};
+    csvtk cut -t -f "issue,lineage" {output.issues} | tail -n+2   1> {output.issue_to_lineage} 2>> {log};
     """
 
 # -----------------------------------------------------------------------------#
@@ -220,7 +224,12 @@ rule nextclade_dataset:
   """
   Download Nextclade dataset.
   """
-  message: "{wildcards.dataset} | Downloading Nextclade sars-cov-2 dataset."
+
+  message: """Downloading Nextclade dataset.\n
+  log:     logs/{rule}/{{wildcards.dataset}}_{{wildcards.tag}}_{today}.log
+  dataset: data/{{wildcards.dataset}}_{{wildcards.tag}}
+  """.format(today=today, rule=rule_name)
+
   wildcard_constraints:
     # The tag will always begin with the year (ex. 2022)
     tag="([0-9]){4}.*",
@@ -238,13 +247,38 @@ rule nextclade_dataset:
     nextclade dataset get --name {wildcards.dataset} --tag {wildcards.tag} --output-dir {output.dataset_dir} > {log} 2>&1;
     """
 
-# ----------------------------------------------------------------------------#
+# -----------------------------------------------------------------------------
+# Nextclade
+
 rule_name = "nextclade"
+
+# Parameters function
+def _params_nextclade(wildcards):
+  """Parse parameters from wildcards for rule nextclade."""
+
+  params = {}
+
+  nextclade_ref = config["builds"][wildcards.build]["nextclade"]["nextclade_ref"]
+  params["nextclade_ref"] = "{}".format(nextclade_ref)
+
+  custom_ref = config["builds"][wildcards.build]["nextclade"]["custom_ref"]
+  params["custom_ref"] = "{}".format(custom_ref)
+
+  return params
+
+# Snakemake rule
 rule nextclade:
   """
   Align sequences and perform QC with Nextclade.
   """
-  message: "{wildcards.build} | Aligning sequences and performing QC with Nextclade."
+
+  message: """Aligning sequences and performing QC with Nextclade.\n
+  build:     {{wildcards.build}}
+  log:       logs/{rule}/{{wildcards.build}}_{today}.log
+  alignment: results/{{wildcards.build}}/nextclade.aligned.fasta
+  qc:        results/{{wildcards.build}}/nextclade.qc.tsv
+  metadata:  results/{{wildcards.build}}/nextclade.metadata.tsv 
+  """.format(today=today, rule=rule_name)  
   input:
     dataset   = lambda wildcards: "data/{dataset}_{tag}".format(
                   dataset=config["builds"][wildcards.build]["nextclade_dataset"]["dataset"],
@@ -261,8 +295,8 @@ rule nextclade:
   params:
     outdir        = "results/{build}",
     basename      = "nextclade",
-    nextclade_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["nextclade_ref"],
-    custom_ref    = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
+    nextclade_ref = lambda wildcards: _params_nextclade(wildcards)["nextclade_ref"],
+    custom_ref    = lambda wildcards: _params_nextclade(wildcards)["custom_ref"],
   benchmark:
     "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
   log:
@@ -298,21 +332,40 @@ rule nextclade:
 
 # ----------------------------------------------------------------------------#
 rule_name = "nextclade_recombinants"
+
+# Parameters function
+def _params_nextclade_recombinants(wildcards):
+  """Parse parameters from wildcards for rule nextclade_recombinants."""
+
+  params = {}
+
+  exclude_clades = config["builds"][wildcards.build]["nextclade_recombinants"]["exclude_clades"]
+  params["exclude_clades"] = "{}".format("|".join(exclude_clades))
+
+  return params
+
+# Snakemake rule
 rule nextclade_recombinants:
   """
-  Extract recombinant from nextclade output.
+  Extract recombinants from nextclade output.
   """
-  message: "{wildcards.build} | Extracting recombinant candidates from nextclade output."
+
+  message: """Extracting recombinant candidates from nextclade output.\n
+  build:     {{wildcards.build}}
+  log:       logs/{rule}/{{wildcards.build}}_{today}.log
+  alignment: results/{{wildcards.build}}/nextclade.recombinants.fasta
+  strains:   results/{{wildcards.build}}/nextclade.recombinants.txt
+  """.format(today=today, rule=rule_name)
+
   input:
     aligned  = "results/{build}/nextclade.aligned.fasta",
     qc       = "results/{build}/nextclade.qc.tsv",
-    bed      = "data/reference/problematic_sites.bed",
   output:
     aligned = "results/{build}/nextclade.recombinants.fasta",
     strains = "results/{build}/nextclade.recombinants.txt",
   params:
-    custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
-    exclude_clades = lambda wildcards: "|".join(config["builds"][wildcards.build]["nextclade_recombinants"]["exclude_clades"]),
+    custom_ref     = lambda wildcards: _params_nextclade(wildcards)["custom_ref"],
+    exclude_clades = lambda wildcards: _params_nextclade_recombinants(wildcards)["exclude_clades"],
   threads: 1
   resources:
     cpus = 1,
@@ -339,25 +392,76 @@ rule nextclade_recombinants:
 # -----------------------------------------------------------------------------#
 
 rule_name = "sc2rf"
+
+# Parameters function
+def _params_sc2rf(wildcards):
+  """Parse parameters from wildcards for rule sc2rf."""
+
+  params = {}
+
+  clades = config["builds"][wildcards.build]["sc2rf"]["clades"]
+  params["clades"] = "{}".format(" ".join(clades))
+
+  mutation_threshold = config["builds"][wildcards.build]["sc2rf"]["mutation_threshold"]
+  params["mutation_threshold"] = "{}".format(mutation_threshold)
+
+  sc2rf_args = config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"]
+  params["sc2rf_args"] = "{}".format(sc2rf_args)
+
+  debug_args = config["builds"][wildcards.build]["sc2rf"]["debug_args"]
+  params["debug_args"] = "{}".format(debug_args)
+
+  max_name_length = config["builds"][wildcards.build]["sc2rf"]["max_name_length"]
+  params["max_name_length"] = "{}".format(max_name_length)     
+
+  return params
+
+# Input function
+def _inputs_sc2rf(wildcards):
+  """Parse inputs from wildcards for rule sc2rf."""
+
+  inputs = {}
+
+  # exclude_negatives = True. Use alignment from nextclade_recombinants
+  # exclude_negatives = False. Use alignment from nextclade
+  exclude_negatives = config["builds"][wildcards.build]["nextclade_recombinants"]["exclude_negatives"]
+
+  if exclude_negatives:
+    inputs["alignment"] = "results/{build}/nextclade.recombinants.fasta".format(
+      build=wildcards.build)
+  else:
+    inputs["alignment"] = "results/{build}/nextclade.aligned.fasta".format(
+      build=wildcards.build)  
+
+  return inputs
+
+# Snakemake rule
 rule sc2rf:
   """
   Identify recombinants with sc2rf.
   """
-  message: "{wildcards.build} | Identifying recombinants with sc2rf."
+
+  message: """Identifying recombinants with sc2rf.\n
+  build: {{wildcards.build}}
+  log:   logs/{rule}/{{wildcards.build}}_{today}.log
+  ansi:  results/{{wildcards.build}}/sc2rf.ansi.txt
+  csv:   results/{{wildcards.build}}/sc2rf.csv
+  """.format(today=today, rule=rule_name)
+
   input:
-    aligned = "results/{build}/nextclade.recombinants.fasta",
+    alignment = lambda wildcards: _inputs_sc2rf(wildcards)["alignment"],
   output:
     txt       = "results/{build}/sc2rf.ansi.txt",
     csv       = "results/{build}/sc2rf.csv",
     debug_txt = "results/{build}/sc2rf_debug.ansi.txt",
     debug_csv = "results/{build}/sc2rf_debug.csv",
   params:
-    clades          = lambda wildcards: " ".join(config["builds"][wildcards.build]["sc2rf"]["clades"]),
-    mutation_threshold   = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["mutation_threshold"],
-    sc2rf_args      = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"],
-    debug_args      = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["debug_args"],
-    max_name_length = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["max_name_length"],
-    outdir          = lambda wildcards: "results/{build}".format(build=wildcards.build),
+    clades               = lambda wildcards: _params_sc2rf(wildcards)["clades"], 
+    mutation_threshold   = lambda wildcards: _params_sc2rf(wildcards)["mutation_threshold"], 
+    sc2rf_args           = lambda wildcards: _params_sc2rf(wildcards)["sc2rf_args"], 
+    debug_args           = lambda wildcards: _params_sc2rf(wildcards)["debug_args"],
+    max_name_length      = lambda wildcards: _params_sc2rf(wildcards)["max_name_length"],
+    outdir               = lambda wildcards: "results/{build}".format(build=wildcards.build),
   threads: 1
   resources:
     cpus = 1,
@@ -368,9 +472,10 @@ rule sc2rf:
     debug   = "logs/{rule}/{{build}}_debug_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    # Regular Parameters
+
+    # Regular Mode
     bash scripts/sc2rf.sh \
-      --aligned {input.aligned} \
+      --aligned {input.alignment} \
       --prefix "sc2rf" \
       --outdir {params.outdir} \
       --log {log.regular} \
@@ -379,9 +484,9 @@ rule sc2rf:
       --mutation-threshold {params.mutation_threshold} \
       {params.sc2rf_args};
 
-    # Debugging Parameters
+    # Debugging Mode (for troubleshooting)
     bash scripts/sc2rf.sh \
-      --aligned {input.aligned} \
+      --aligned {input.alignment} \
       --prefix "sc2rf_debug" \
       --outdir {params.outdir} \
       --log {log.debug} \
@@ -392,33 +497,63 @@ rule sc2rf:
     """
 
 # -----------------------------------------------------------------------------
-# This rule needs additional filtering (ex. regions length)
 
 rule_name = "sc2rf_recombinants"
+
+# Parameters function
+def _params_sc2rf_recombinants(wildcards):
+  """Parse parameters from wildcards for rule sc2rf_recombinants."""
+
+  params = {}
+
+  min_len = config["builds"][wildcards.build]["sc2rf_recombinants"]["min_len"]
+  params["min_len"] = "{}".format(min_len)
+
+  max_parents = config["builds"][wildcards.build]["sc2rf_recombinants"]["max_parents"]
+  params["max_parents"] = "{}".format(max_parents)
+
+  max_breakpoints = config["builds"][wildcards.build]["sc2rf_recombinants"]["max_breakpoints"]
+  params["max_breakpoints"] = "{}".format(max_breakpoints)
+
+  motifs = config["builds"][wildcards.build]["sc2rf_recombinants"]["motifs"]
+  if motifs: params["motifs"] = "--motifs {}".format(motifs)
+  else: params["motifs"] = ""
+
+  return params
+
+# Snakemake rule
 rule sc2rf_recombinants:
   """
   Extract recombinant from sc2rf output.
   """
-  message: "{wildcards.build} | Extracting recombinants from sc2rf output."
+
+  message: """Extracting recombinants from sc2rf output.\n
+  build:       {{wildcards.build}}
+  log:         logs/{rule}/{{wildcards.build}}_{today}.log
+  table:       results/{{wildcards.build}}/sc2rf.recombinants.tsv
+  ansi:        results/{{wildcards.build}}/sc2rf.recombinants.ansi.txt
+  alignment:   results/{{wildcards.build}}/sc2rf.recombinants.fasta
+  """.format(today=today, rule=rule_name)
+
   input:
-    ansi    = "results/{build}/sc2rf.ansi.txt",
-    csv     = "results/{build}/sc2rf.csv",
-    aligned = "results/{build}/nextclade.aligned.fasta",
-    qc      = "results/{build}/nextclade.qc.tsv",
-    issues  = "resources/issues.tsv",
+    ansi      = "results/{build}/sc2rf.ansi.txt",
+    csv       = "results/{build}/sc2rf.csv",
+    issues    = "resources/issues.tsv",
+    alignment = lambda wildcards: _inputs_sc2rf(wildcards)["alignment"],
+
   output:
-    strains = "results/{build}/sc2rf.recombinants.txt",
-    aligned = "results/{build}/sc2rf.recombinants.fasta",
-    ansi    = "results/{build}/sc2rf.recombinants.ansi.txt",
-    exclude = "results/{build}/sc2rf.recombinants.exclude.tsv",
-    tsv     = "results/{build}/sc2rf.recombinants.tsv",
+    strains   = "results/{build}/sc2rf.recombinants.txt",
+    alignment = "results/{build}/sc2rf.recombinants.fasta",
+    ansi      = "results/{build}/sc2rf.recombinants.ansi.txt",
+    exclude   = "results/{build}/sc2rf.recombinants.exclude.tsv",
+    tsv       = "results/{build}/sc2rf.recombinants.tsv",
   params:
     outdir          = lambda wildcards: "results/{build}".format(build=wildcards.build),
-    custom_ref      = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
-    min_len         = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["min_len"],
-    max_parents     = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_parents"],
-    max_breakpoints = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_breakpoints"],
-    motifs          = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["motifs"],
+    custom_ref      = lambda wildcards: _params_nextclade(wildcards)["custom_ref"],
+    min_len         = lambda wildcards: _params_sc2rf_recombinants(wildcards)["min_len"],    
+    max_parents     = lambda wildcards: _params_sc2rf_recombinants(wildcards)["max_parents"],
+    max_breakpoints = lambda wildcards: _params_sc2rf_recombinants(wildcards)["max_breakpoints"],
+    motifs          = lambda wildcards: _params_sc2rf_recombinants(wildcards)["motifs"],
   threads: 1
   resources:
     cpus = 1,
@@ -428,21 +563,18 @@ rule sc2rf_recombinants:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    if [[ "{params.motifs}" ]]; then motifs="--motifs {params.motifs}"; else motifs=""; fi
-    cmd="python3 sc2rf/postprocess.py \
+    python3 sc2rf/postprocess.py \
       --csv {input.csv} \
       --ansi {input.ansi} \
       --min-len {params.min_len} \
       --max-parents {params.max_parents} \
       --max-breakpoints {params.max_breakpoints} \
       --outdir {params.outdir} \
-      --aligned {input.aligned} \
+      --aligned {input.alignment} \
       --custom-ref "{params.custom_ref}" \
       --issues {input.issues} \
-      --qc {input.qc} \
-      $motifs \
-      2> {log}";
-      eval $cmd
+      {params.motifs} \
+      2> {log};
     """
 
 # -----------------------------------------------------------------------------#
@@ -450,18 +582,25 @@ rule sc2rf_recombinants:
 # -----------------------------------------------------------------------------#
 
 rule_name = "faToVcf"
+
+# Snakemake rule
 rule faToVcf:
   """
-  Construct VCF of recombinant sequences.
+  Construct VCF from alignment.
   """
-  message: "{wildcards.build} | Constructing VCF of recombinant sequences."
+  message: """Constructing VCF from alignment.\n
+  build: {{wildcards.build}}
+  log:   logs/{rule}/{{wildcards.build}}_{today}.log
+  vcf:   results/{{wildcards.build}}/sc2rf.vcf.gz
+  """.format(today=today, rule=rule_name)
+
   input:
-    fasta      = "results/{build}/sc2rf.recombinants.fasta",
+    alignment  = "results/{build}/sc2rf.recombinants.fasta",
     prob_sites = "data/reference/problematic_sites.vcf",
   output:
     vcf = "results/{build}/sc2rf.vcf.gz",
   params:
-    ref_strain = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
+    custom_ref = lambda wildcards: _params_nextclade(wildcards)["custom_ref"],
     prefix     = "results/{build}/sc2rf.vcf",
   threads: 1
   resources:
@@ -472,22 +611,25 @@ rule faToVcf:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    faToVcf \
-      -ambiguousToN \
-      -maskSites={input.prob_sites} \
-      -ref='{params.ref_strain}' \
-      {input.fasta} \
-      {params.prefix};
+    faToVcf -ambiguousToN -maskSites={input.prob_sites} -ref='{params.custom_ref}' {input.alignment} {params.prefix};
     gzip -f {params.prefix};
     """
 
 # -----------------------------------------------------------------------------
 rule_name = "usher_download"
+
 rule usher_download:
   """
   Download UShER protobuf.
   """
-  message: "{wildcards.input} | Downloading UShER protobuf."
+
+  message: """Downloading UShER protobuf.\n
+  input:    {{wildcards.input}}
+  log:      logs/{rule}/{{wildcards.input}}_{today}.txt
+  protobuf: data/{{wildcards.input}}/usher.pb.gz
+  metadata: data/{{wildcards.input}}/metadata.txt
+  """.format(today=today, rule=rule_name)
+
   wildcard_constraints:
     input = "|".join(USHER_INPUTS),
   output:
@@ -522,7 +664,13 @@ rule usher:
   """
   Place VCF samples with UShER.
   """
-  message: "{wildcards.build} | Placing VCF samples with UShER."
+
+  message: """Placing VCF samples with UShER.\n
+  build:    {{wildcards.build}}
+  log:      logs/{rule}/{{wildcards.build}}_{today}.log
+  protobuf: results/{{wildcards.build}}/usher.pb.gz
+  """.format(today=today, rule=rule_name)
+
   input:
     vcf = "results/{build}/sc2rf.vcf.gz",
     pb  = lambda wildcards: "data/{base_input}/usher.pb.gz".format(
@@ -558,6 +706,7 @@ rule usher_stats:
   Parse statistics from UShER.
   """
   message: "{wildcards.build} | Parsing statistics from UShER."
+  
   input:
     placement_stats = "results/{build}/placement_stats.tsv",
     clades          = "results/{build}/clades.txt",
@@ -751,25 +900,57 @@ rule summary:
     """
 
 # -----------------------------------------------------------------------------#
+# Linelist
+
+# Parameters Function
+def _params_linelist(wildcards):
+  """Parse parameters from wildcards for rule plot."""
+
+  params = {}
+
+  extra_cols = config["builds"][wildcards.build]["usher_metadata"]["extra_cols"]
+  if extra_cols: params["extra_cols"] = "--extra_cols {}".format(extra_cols)
+  else: params["extra_cols"] = ""
+
+  geo = config["builds"][wildcards.build]["linelist"]["geo"]
+  if geo: params["geo"] = "--geo {}".format(geo)
+  else: params["geo"] = ""
+
+  max_placements = config["builds"][wildcards.build]["linelist"]["max_placements"]
+  if max_placements: params["max_placements"] = "--max_placements {}".format(max_placements)
+  else: params["max_placements"] = ""  
+
+  return params
+
+
 rule_name = "linelist"
 rule linelist:
   """
-  Create a linelist of recombinant sequences and types.
+  Create a linelist of recombinant sequences, lineages, and parents.
   """
+  message: """Creating a linelist of recombinant sequences, lineages, and parents..\n
+  build:             {{wildcards.build}}
+  log:               logs/{rule}/{{build}}_{today}.log
+  sequences:         results/{{wildcards.build}}/linelist.tsv
+  false_positives:   results/{{wildcards.build}}/false_positives.tsv
+  lineages:          results/{{wildcards.build}}/recombinants.tsv
+  parents:           results/{{wildcards.build}}/parents.tsv
+
+  """.format(today=today, rule=rule_name)
+
   message: "{wildcards.build} | Creating a linelist of recombinant sequences and types."
   input:
-    summary = "results/{build}/summary.tsv",
-    issues      = "resources/issues.tsv",
+    summary         = "results/{build}/summary.tsv",
+    issues          = "resources/issues.tsv",
   output:
     linelist        = "results/{build}/linelist.tsv",
     false_positives = "results/{build}/false_positives.tsv",
     recombinants    = "results/{build}/recombinants.tsv",
     parents         = "results/{build}/parents.tsv",
   params:
-    # All optional, catch in shell
-    extra_cols     = lambda wildcards: config["builds"][wildcards.build]["usher_metadata"]["extra_cols"],
-    geo            = lambda wildcards: config["builds"][wildcards.build]["linelist"]["geo"],
-    max_placements = lambda wildcards: config["builds"][wildcards.build]["linelist"]["max_placements"],
+    extra_cols     = lambda wildcards: _params_linelist(wildcards)["extra_cols"],
+    geo            = lambda wildcards: _params_linelist(wildcards)["geo"],
+    max_placements = lambda wildcards: _params_linelist(wildcards)["max_placements"],
   threads: 1
   resources:
     cpus = 1,
@@ -779,33 +960,71 @@ rule linelist:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    if [[ "{params.extra_cols}" ]]; then extra_cols="--extra-cols {params.extra_cols}"; else extra_cols=""; fi
+    # Create the sequence table (linelist) and false_positives
+    python3 scripts/linelist.py --summary {input.summary} --issues {input.issues} --max-placements {params.max_placements} $extra_cols > {log} 2>&1;
 
-    cmd="python3 scripts/linelist.py --summary {input.summary} --issues {input.issues} --max-placements {params.max_placements} $extra_cols 2> {log}";
-    eval $cmd
+    # Create the recombinants table
+    python3 scripts/recombinants.py --linelist {output.linelist} --geo {params.geo} >> {log} 2>&1;
 
-    python3 scripts/recombinants.py --linelist {output.linelist} --geo {params.geo} 2>> {log}
-    python3 scripts/parents.py --linelist {output.linelist} 2>> {log}
+    # Create the parents table 
+    python3 scripts/parents.py --linelist {output.linelist} >> {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------#
+# Plot
+
 rule_name = "plot"
+
+# Parameters Function
+def _params_plot(wildcards):
+  """Parse parameters from wildcards for rule plot."""
+
+  params = {}
+
+  weeks = config["builds"][wildcards.build]["plot"]["weeks"]
+  if weeks: params["weeks"] = "--weeks {}".format(weeks)
+  else: params["weeks"] = ""
+
+  min_date = config["builds"][wildcards.build]["plot"]["min_date"]
+  if min_date: params["min_date"] = "--min-date {}".format(min_date)
+  else: params["min_date"] = ""
+
+  singletons = config["builds"][wildcards.build]["plot"]["singletons"]
+  if singletons: params["singletons"] = "--singletons"
+  else: params["singletons"] = ""
+
+  geo = config["builds"][wildcards.build]["linelist"]["geo"]
+  if geo: params["geo"] = "--geo {}".format(geo)
+  else: params["geo"] = ""
+
+  lag = config["builds"][wildcards.build]["plot"]["lag"]
+  if lag: params["lag"] = "--lag {}".format(lag)
+  else: params["lag"] = ""
+
+  return params
+
+# Snakemake Rule
 rule plot:
   """
   Plot results.
   """
-  message: "{wildcards.build} | Plotting results."
+  message: """Plotting results.\n
+  build:   {{wildcards.build}}
+  log:     logs/{rule}/{{build}}_{today}.log
+  plots:   results/{{wildcards.build}}/plots
+  """.format(today=today, rule=rule_name)
+
   input:
-    linelist  = "results/{build}/linelist.tsv",
+    linelist   = "results/{build}/linelist.tsv",
   output:
-    plots     = directory("results/{build}/plots"),
+    plots      = directory("results/{build}/plots"),
   params:
-    outdir    = "results/{build}/plots",
-    weeks     = lambda wildcards: config["builds"][wildcards.build]["plot"]["weeks"],
-    min_date  = lambda wildcards: config["builds"][wildcards.build]["plot"]["min_date"],    
-    lag       = lambda wildcards: config["builds"][wildcards.build]["plot"]["lag"],
-    geo       = lambda wildcards: config["builds"][wildcards.build]["linelist"]["geo"],
-    singletons = lambda wildcards: config["builds"][wildcards.build]["plot"]["singletons"],    
+    outdir     = "results/{build}/plots",
+    weeks      = lambda wildcards: _params_plot(wildcards)["weeks"],
+    min_date   = lambda wildcards: _params_plot(wildcards)["min_date"],
+    lag        = lambda wildcards: _params_plot(wildcards)["lag"],
+    geo        = lambda wildcards: _params_plot(wildcards)["geo"],
+    singletons = lambda wildcards: _params_plot(wildcards)["singletons"],   
   threads: 1
   resources:
     cpus = 1,
@@ -815,25 +1034,41 @@ rule plot:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    if [[ "{params.weeks}" ]]; then weeks="--weeks {params.weeks}"; else weeks=""; fi
-    if [[ "{params.min_date}" ]]; then min_date="--min-date {params.min_date}"; else min_date=""; fi
-    if [[ "{params.singletons}" == "True" ]]; then singletons="--singletons"; else singletons=""; fi
-
-    mkdir -p {params.outdir};
-
-    cmd="python3 scripts/plot.py \
+    python3 scripts/plot.py \
       --linelist {input.linelist} \
       --outdir {params.outdir} \
-      --lag {params.lag} \
-      --geo {params.geo} \
-      $weeks $min_date $singletons \
-      1> {log} 2>&1";
-
-    eval $cmd
+      {params.lag} \
+      {params.geo} \
+      {params.weeks} \
+      {params.min_date} \
+      {params.singletons} \
+      > {log} 2>&1;
     """
 
-# ----------------------------------------------------------------------------#
+# -----------------------------------------------------------------------------#
+# Report
+
 rule_name = "report"
+
+def _params_report(wildcards):
+  """Parse parameters from wildcards for rule report."""
+
+  params = {}
+
+  geo = config["builds"][wildcards.build]["linelist"]["geo"]
+  if geo: params["geo"] = "--geo {}".format(geo)
+  else: params["geo"] = ""
+
+  changelog = config["builds"][wildcards.build]["report"]["changelog"]
+  if changelog: params["changelog"] = "--changelog {}".format(changelog)
+  else: params["changelog"] = ""
+
+  template = config["builds"][wildcards.build]["report"]["template"]  
+  if template: params["template"] = "--template {}".format(template)
+  else: params["template"] = ""
+
+  return params
+
 rule report:
   """
   Summarize results into a report.
@@ -844,7 +1079,7 @@ rule report:
   log:     logs/{rule}/{{build}}_{today}.log
   report:  results/{{wildcards.build}}/report.xlsx
   slides:  results/{{wildcards.build}}/report.pptx
-""".format(today=today, rule=rule_name)
+  """.format(today=today, rule=rule_name)
 
   input:
     linelist        = "results/{build}/linelist.tsv",
@@ -857,9 +1092,9 @@ rule report:
     slides = "results/{build}/report.pptx",
     xlsx   = "results/{build}/report.xlsx",
   params:
-    geo       = lambda wildcards: config["builds"][wildcards.build]["linelist"]["geo"],
-    changelog = lambda wildcards: config["builds"][wildcards.build]["report"]["changelog"],
-    template  = lambda wildcards: config["builds"][wildcards.build]["report"]["template"],
+    geo       = lambda wildcards: _params_report(wildcards)["geo"],
+    changelog = lambda wildcards: _params_report(wildcards)["changelog"],
+    template  = lambda wildcards: _params_report(wildcards)["template"],
 
   threads: 1
   resources:
@@ -870,12 +1105,9 @@ rule report:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    if [[ "{params.changelog}" ]]; then changelog="--changelog {params.changelog}"; else extra_cols=""; fi
-    if [[ "{params.geo}" ]]; then geo="--geo {params.geo}"; else geo=""; fi
-    if [[ "{params.template}" ]]; then template="--template {params.template}"; else template=""; fi
+    # Create the excel report
+    csvtk csv2xlsx -t -o {output.xlsx} {input.recombinants} {input.linelist} {input.parents} {input.false_positives} {input.issues} > {log} 2>&1;
 
-    csvtk csv2xlsx -t -o {output.xlsx} {input.recombinants} {input.linelist} {input.parents} {input.false_positives} {input.issues};
-
-    cmd="python3 scripts/report.py --plot-dir {input.plots} $geo $changelog $template > {log} 2>&1";
-    eval $cmd
+    # Create the powerpoint slides
+    python3 scripts/report.py --plot-dir {input.plots} {params.geo} {params.changelog} {params.template} >> {log} 2>&1;
     """

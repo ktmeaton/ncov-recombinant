@@ -69,8 +69,11 @@ rule_params:
     nextclade_ref: "MN908947 \\(Wuhan-Hu-1/2019\\)"
     custom_ref: "Wuhan/Hu-1/2019"
 
-  # exclude_clades : Exclude strains that are recombinants of these clades
+  # exclude_clades    : Exclude strains that are recombinants of these clades
+  # exclude_negatives : true if sequences that are not recombinants should be excluded from downstream steps.
+  #                   : only set to true used if there are definite recombinants in your sample input
   - name: nextclade_recombinants
+    exclude_negatives: false
     exclude_clades:
         - "19" # From 2019
         - "20A" # Non-VoC From 2020
@@ -110,7 +113,7 @@ rule_params:
     min_len: 1000
     max_parents: 2
     max_breakpoints: 2
-    motifs: ""
+    motifs:
 
 
   # k               : The number of contextual samples to select when extracting subtrees.
@@ -120,9 +123,10 @@ rule_params:
     low_memory_mode: true
 
   # extra_cols : (Optional) csv list of metadata columns to output going forwards (aside from defaults of strain,date,country)
-  #            : If no extra columns are needed, set to an empty string ("")
   - name: usher_metadata
-    extra_cols: ""
+    extra_cols:
+      - gisaid_epi_isl
+      - genbank_accession
 
   # geo            : Column to use for a geographic summary (typically region, country, or division)
   # max_placements : The maximum number of UShER placements before labeling false_positive (-1 to disable.).
@@ -133,13 +137,13 @@ rule_params:
     max_placements: -1
 
   # lag           : The number of weeks before the present where data is accurate. Used to plot a light grey box.
-  # weeks         : The number of weeks to plot in retrospect
-  # min_date      : (Optional) The date to start plots at. Overrides the `weeks` parameter.
+  # weeks         : The number of weeks to plot in retrospect (ex. 16)
+  # min_date      : (Optional) The date to start plots at (ex. "2022-01-03"). Overrides the `weeks` parameter.
   # singletons    : "true" is singelton lineages (N=1) should be plotted and reported.
   # Note: the rule `plot` is also going to use the `geo` param of rule `linelist`,
   # to plot recombinants by geographic location
   - name: plot
-    weeks: 16
+    weeks:
     min_date: "2022-01-03"    
     lag: 4
     singletons: true
