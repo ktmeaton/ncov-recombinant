@@ -2,16 +2,28 @@
 
 ## Priority
 
+1. Include negatives by default.
+1. Put the param checking in functions.
+    - [x] `usher`
+    - [ ] `usher_stats`
+    - [x] `plot`
+    - [x] `report`
 1. Include rule_name in message text and point to log file.
-1. Make `plot` and `report` more dynamic with regards to plots.
+    - [x] `usher`
+    - [ ] `usher_stats`
+    - [x] `plot`
+    - [x] `report`
+
+
+## Misc
+
+1. Rename linelist output.
 1. Troubleshoot the missing designated lineages in the controls report.
 1. Add better filters to the Auspice JSON output (ex. `lineage_usher`).
 1. Experiment with the `motifs` param for `sc2rf_recombinants`.
 1. Troubleshoot `sc2rf` update to `bd2a4009` which drops all deltacrons.
 
     - The last stable commit was `5ac8d04`.
-
-## Misc
 
 1. Remove the `resources` in config.yaml.
 1. Investigate the reasons that X* lineages are excluded by `sc2rf`.

@@ -16,7 +16,7 @@ ALPHA_BAR = 1.00
 WIDTH_BAR = 0.75
 # This is the aspect ratio/dpi for ppt embeds
 DPI = 200
-FIGSIZE = [7, 4]
+FIGSIZE = [7, 5]
 EPIWEEK_MAX_BUFF_FACTOR = 1.1
 
 
@@ -52,6 +52,10 @@ def main(
 ):
     """Plot recombinant lineages"""
 
+    # Creat output directory if it doesn't exist
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+
     # -------------------------------------------------------------------------
     # Import dataframes
     linelist_df = pd.read_csv(linelist, sep="\t")
@@ -84,8 +88,9 @@ def main(
     linelist_df["status"] = [s.title() for s in linelist_df["status"]]
 
     # Get largest cluster
-    largest_cluster_id = None
+    largest_cluster_id = NO_DATA_CHAR
     largest_cluster_size = 0
+    largest_lineage = NO_DATA_CHAR
 
     # All record cluster sizes to decided if singletons should be dropped
     drop_singleton_ids = []
@@ -95,6 +100,7 @@ def main(
         cluster_size = len(cluster_df)
         if cluster_size >= largest_cluster_size:
             largest_cluster_id = cluster_id
+            largest_lineage = cluster_df["lineage"].values[0]
 
         if not cluster_size == 1:
             for i in cluster_df.index:
@@ -208,6 +214,12 @@ def main(
         out_path = os.path.join(outdir, label)
 
         # Save plotting dataframe to file
+        # for the largest, we also include the lineage and cluster_id in the file name
+        if label == "largest":
+            out_path += "_{lineage}_{cluster_id}".format(
+                lineage=largest_lineage,
+                cluster_id=largest_cluster_id,
+            )
         df.to_csv(out_path + ".tsv", sep="\t", index=False)
 
         # Use the tab20 color palette

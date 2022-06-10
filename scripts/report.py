@@ -4,9 +4,7 @@ import pptx
 from datetime import date
 import os
 import pandas as pd
-import epiweeks
-from datetime import datetime, timedelta
-import copy
+import re
 
 
 NO_DATA_CHAR = "NA"
@@ -18,9 +16,9 @@ FONT_SIZE_PARAGRAPH = 20
 # unpublished: not designated or proposed
 
 RECOMBINANT_STATUS = {
-    "designated": "X*",
-    "proposed": "proposed*",
-    "unpublished": "misc*",
+    "designated": "X.*",
+    "proposed": "proposed.*",
+    "unpublished": "misc.*",
 }
 
 # Concise names for report
@@ -78,6 +76,7 @@ def main(
     plot_suffix = ".png"
     df_suffix = ".tsv"
     labels = [f.replace(plot_suffix, "") for f in os.listdir(plot_dir) if f.endswith(plot_suffix)]
+
     plot_dict = {}
     for label in labels:
         plot_dict[label] = {}
@@ -86,6 +85,17 @@ def main(
         plot_dict[label]["df"] = pd.read_csv(plot_dict[label]["df_path"], sep="\t")
         plot_dict[label]["df"].index = plot_dict[label]["df"]["epiweek"]
 
+        # Largest is special, as it takes the form largest_<lineage>_<cluster_id>.*
+        if label.startswith("largest_"):
+
+            largest_lineage = label.split("_")[1]
+            largest_cluster_id = label.split("_")[2]
+
+            plot_dict["largest"] = plot_dict[label]
+            plot_dict["largest"]["lineage"] = largest_lineage
+            plot_dict["largest"]["cluster_id"] = largest_cluster_id
+
+            del plot_dict[label]
 
     # Import changelog (just the first header 2 section)
     with open(changelog) as infile:
@@ -125,29 +135,35 @@ def main(
     # Lineage Summary
 
     plot_path = plot_dict["lineage"]["plot_path"]
-    df = plot_dict["lineage"]["df"]
-    lineages = list(df.columns)
+    lineage_df = plot_dict["lineage"]["df"]
+    lineages = list(lineage_df.columns)
     lineages.remove("epiweek")
 
-    num_lineages = len(lineages)
-    num_sequences = 0
-    for lineage in lineages:
-        count = sum(df[lineage].dropna())
-        num_sequences += count
-
     status_counts = {}
-    df = plot_dict["status"]["df"]
+    status_df = plot_dict["status"]["df"]
+    statuses = list(status_df.columns)
+    statuses.remove("epiweek")
 
-    for col in df.columns:
-        if col == "epiweek": continue
-        status = col
-        seq_count = sum(df[status].dropna())
-        # START HERE! How to count status lineages?   
-        lineage_count = 0
+    for status in statuses:
+
         status_counts[status.lower()] = {
-            "lineages": int(lineage_count),
-            "sequences": int(seq_count),
+            "sequences" : 0,
+            "lineages" : 0,
         }
+
+        if status.lower() in RECOMBINANT_STATUS:
+            regex = RECOMBINANT_STATUS[status.lower()]       
+            for lineage in lineages:
+                if re.match(regex, lineage):
+
+                    seq_count = sum(lineage_df[lineage].dropna())
+    
+                    status_counts[status.lower()]["sequences"] += int(seq_count)
+                    status_counts[status.lower()]["lineages"] += 1
+
+    # Number of lineages and sequences
+    num_lineages  = int(sum([status_counts[s]["lineages"] for s in status_counts]))
+    num_sequences = int(sum([status_counts[s]["sequences"] for s in status_counts]))
 
     graph_slide_layout = presentation.slide_layouts[8]
     slide = presentation.slides.add_slide(graph_slide_layout)
@@ -161,7 +177,7 @@ def main(
 
     summary = "\n"
     summary += "There are {num_lineages} recombinant lineages.\n".format(
-        num_lineages=int(num_lineages)
+        num_lineages=num_lineages
     )
     for status in RECOMBINANT_STATUS:
         summary += "  - {lineages} lineages are {status}.\n".format(
@@ -169,21 +185,26 @@ def main(
         )
     summary += "\n"
     summary += "There are {num_sequences} recombinant sequences.\n".format(
-        num_sequences=int(num_sequences)
+        num_sequences=num_sequences
     )
     for status in RECOMBINANT_STATUS:
         summary += "  - {sequences} sequences are {status}.\n".format(
             sequences=status_counts[status]["sequences"], status=status
         )
-
+        
     body.text_frame.text = summary
+
+    # Adjust font size of body    
+    for paragraph in body.text_frame.paragraphs:
+        for run in paragraph.runs:
+            run.font.size = pptx.util.Pt(14)
 
     # ---------------------------------------------------------------------
     # Geographic Summary
 
     plot_path = plot_dict["geography"]["plot_path"]
-    df = plot_dict["geography"]["df"]
-    geos = list(df.columns)
+    geo_df = plot_dict["geography"]["df"]
+    geos = list(geo_df.columns)
     geos.remove("epiweek")
     num_geos = len(geos)
 
@@ -203,109 +224,154 @@ def main(
         num_geos=num_geos, geo=geo
     )
 
-    # for rec in df.iterrows():
-    #     region = rec[1][geo]
-    #     sequences = rec[1]["sequences"]
-    #     summary += "  - {region} ({sequences})\n".format(
-    #         region=region, sequences=sequences
-    #     )
+    for region in geos:
+        seq_count = int(sum(geo_df[region].dropna()))
+        summary += "  - {region} ({seq_count})\n".format(
+            region=region, seq_count=seq_count
+        )
 
-    body.text = summary
+    body.text_frame.text = summary
 
-    # # ---------------------------------------------------------------------
-    # # Designated Summary
+    # Adjust font size of body    
+    for paragraph in body.text_frame.paragraphs:
+        for run in paragraph.runs:
+            run.font.size = pptx.util.Pt(14)
 
-    # if os.path.exists(designated_plot):
-    #     graph_slide_layout = presentation.slide_layouts[8]
-    #     slide = presentation.slides.add_slide(graph_slide_layout)
-    #     title = slide.shapes.title
+    # ---------------------------------------------------------------------
+    # Designated Summary
 
-    #     title.text_frame.text = "Designated"
-    #     title.text_frame.paragraphs[0].font.bold = True
+    plot_path = plot_dict["designated"]["plot_path"]
+    designated_df = plot_dict["designated"]["df"]
 
-    #     chart_placeholder = slide.placeholders[1]
-    #     chart_placeholder.insert_picture(designated_plot)
-    #     body = slide.placeholders[2]
+    designated_lineages = list(designated_df.columns)
+    designated_lineages.remove("epiweek")
+    num_designated = len(designated_lineages)
 
-    #     summary = "\n"
-    #     summary += "There are {num} designated lineages.\n".format(
-    #         num=len(designated_df)
-    #     )
+    graph_slide_layout = presentation.slide_layouts[8]
+    slide = presentation.slides.add_slide(graph_slide_layout)
+    title = slide.shapes.title
 
-    #     for rec in designated_df.iterrows():
-    #         lineage = rec[1]["lineage"]
-    #         sequences = rec[1]["sequences"]
-    #         summary += "  - {lineage} ({sequences})\n".format(
-    #             lineage=lineage, sequences=sequences
-    #         )
+    title.text_frame.text = "Designated"
+    title.text_frame.paragraphs[0].font.bold = True
 
-    #     body.text = summary
+    chart_placeholder = slide.placeholders[1]
+    chart_placeholder.insert_picture(plot_path)
+    body = slide.placeholders[2]
 
-    # # ---------------------------------------------------------------------
-    # # Largest Summary
+    summary = "\n"
+    summary += "There are {num_designated} designated lineage.\n".format(
+        num_designated=num_designated
+    )
 
-    # graph_slide_layout = presentation.slide_layouts[8]
-    # slide = presentation.slides.add_slide(graph_slide_layout)
-    # title = slide.shapes.title
+    for lineage in designated_lineages:
+        seq_count = int(sum(designated_df[lineage].dropna()))
+        summary += "  - {lineage} ({seq_count})\n".format(
+            lineage=lineage, seq_count=seq_count
+        )
 
-    # title.text_frame.text = "Largest"
-    # title.text_frame.paragraphs[0].font.bold = True
+    body.text_frame.text = summary
 
-    # chart_placeholder = slide.placeholders[1]
-    # chart_placeholder.insert_picture(largest_plot)
-    # body = slide.placeholders[2]
+    # Adjust font size of body    
+    for paragraph in body.text_frame.paragraphs:
+        for run in paragraph.runs:
+            run.font.size = pptx.util.Pt(14)
 
-    # summary = "\n"
-    # summary += "The largest lineage is {lineage}.\n".format(lineage=largest_lineage)
-    # summary += "The cluster ID for this lineage is {id}.\n".format(
-    #     id=largest_cluster_id
-    # )
-    # summary += "{lineage} is observed in {num_geo} {geo}.\n".format(
-    #     lineage=largest_lineage, num_geo=len(largest_df), geo=geo
-    # )
+    # ---------------------------------------------------------------------
+    # Largest Summary
 
-    # for rec in largest_df.iterrows():
-    #     region = rec[1][geo]
-    #     sequences = rec[1]["sequences"]
-    #     summary += "  - {region} ({sequences})\n".format(
-    #         region=region, sequences=sequences
-    #     )
+    plot_path = plot_dict["largest"]["plot_path"]
+    largest_df = plot_dict["largest"]["df"]
+    
+    largest_geos = list(largest_df.columns)
+    largest_geos.remove("epiweek")
+    num_geos = len(largest_geos)    
 
-    # body.text = summary
+    largest_lineage = plot_dict["largest"]["lineage"]
+    largest_lineage_size = 0
+    largest_cluster_id = plot_dict["largest"]["cluster_id"]
 
-    # # ---------------------------------------------------------------------
-    # # Parents Summary
+    for lineage in lineages:
+        seq_count = int(sum(lineage_df[lineage].dropna()))
+        if seq_count > largest_lineage_size:
+            largest_lineage_size = seq_count
 
-    # if os.path.exists(parents_plot):
+    graph_slide_layout = presentation.slide_layouts[8]
+    slide = presentation.slides.add_slide(graph_slide_layout)
+    title = slide.shapes.title
 
-    #     graph_slide_layout = presentation.slide_layouts[8]
-    #     slide = presentation.slides.add_slide(graph_slide_layout)
-    #     title = slide.shapes.title
+    title.text_frame.text = "Largest"
+    title.text_frame.paragraphs[0].font.bold = True
 
-    #     title.text_frame.text = "Parents"
-    #     title.text_frame.paragraphs[0].font.bold = True
+    chart_placeholder = slide.placeholders[1]
+    chart_placeholder.insert_picture(plot_path)
+    body = slide.placeholders[2]
 
-    #     chart_placeholder = slide.placeholders[1]
-    #     chart_placeholder.insert_picture(parents_plot)
-    #     body = slide.placeholders[2]
+    summary = "\n"
+    summary += "The largest lineage is {lineage} (N={size}).\n".format(
+        lineage=largest_lineage,
+        size=largest_lineage_size,
+        )
 
-    #     summary = "\n"
-    #     summary += "There are {num} parental combinations.\n".format(
-    #         num=len(parents_df)
-    #     )
+    summary += "The cluster ID for this lineage is {id}.\n".format(
+        id=largest_cluster_id
+    )
+    summary += "{lineage} is observed in {num_geo} {geo}.\n".format(
+        lineage=largest_lineage, num_geo=num_geos, geo=geo
+    )  
 
-    #     for rec in parents_df.iterrows():
-    #         parents = rec[1]["parents"]
-    #         sequences = rec[1]["sequences"]
-    #         summary += "  - {parents} ({sequences})\n".format(
-    #             parents=parents, sequences=sequences
-    #         )
+    for region in largest_geos:
+        seq_count = int(sum(largest_df[region].dropna()))
+        summary += "  - {region} ({seq_count})\n".format(
+            region=region, seq_count=seq_count
+        )
 
-    #     # Adjust font size of body
-    #     body.text_frame.text = summary
-    #     for paragraph in body.text_frame.paragraphs:
-    #         for run in paragraph.runs:
-    #             run.font.size = pptx.util.Pt(14)
+    body.text_frame.text = summary
+
+    # Adjust font size of body    
+    for paragraph in body.text_frame.paragraphs:
+        for run in paragraph.runs:
+            run.font.size = pptx.util.Pt(14)
+
+
+    # ---------------------------------------------------------------------
+    # Parents Summary
+
+    plot_path = plot_dict["parents"]["plot_path"]
+    parents_df = plot_dict["parents"]["df"]
+    
+    parents = list(parents_df.columns)
+    parents.remove("epiweek")
+    num_parents = len(parents)  
+
+    graph_slide_layout = presentation.slide_layouts[8]
+    slide = presentation.slides.add_slide(graph_slide_layout)
+    title = slide.shapes.title
+
+    title.text_frame.text = "Parents"
+    title.text_frame.paragraphs[0].font.bold = True
+
+    chart_placeholder = slide.placeholders[1]
+    chart_placeholder.insert_picture(plot_path)
+    body = slide.placeholders[2]
+
+    summary = "\n"
+    summary += "There are {num_parents} parental combinations.\n".format(
+        num_parents=num_parents
+    )
+
+
+    for parent in parents:
+        seq_count = int(sum(parents_df[parent].dropna()))
+        summary += "  - {parent} ({seq_count})\n".format(
+            parent=parent, seq_count=seq_count
+        )
+
+    body.text_frame.text = summary
+
+    # Adjust font size of body    
+    for paragraph in body.text_frame.paragraphs:
+        for run in paragraph.runs:
+            run.font.size = pptx.util.Pt(14)
 
     # ---------------------------------------------------------------------
     # Changelog

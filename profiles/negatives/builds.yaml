@@ -1,0 +1,57 @@
+# TIP: To check your parameters before running, use: `snakemake -c 1 print_config`
+
+# -----------------------------------------------------------------------------
+# Inputs
+# -----------------------------------------------------------------------------
+
+# These are the datasets, actual files, you are providing as input.
+
+# name                 : Builds will use this to specify the input
+# type                 : can be any combination of local,usher
+# metadata (local)     : path to metadata for local input
+# sequences (local)    : path to sequences for local input
+# pb_url (usher)       : url to protobuf for usher input
+# metadata_url (usher) : url to metadata for usher input
+# ver_url (usher)      : url to version info for usher input
+
+inputs:
+
+  # An UShER base phylogeny of all publicly available samples (genbank).
+  # The protobuf will be downloaded to: `data/public-20220417/usher.pb.gz
+  # The metadata will be downloaded to: `data/public-20220417/usher.metadata.tsv
+  - name: public-20220417
+    type:
+      - usher
+
+    # Version controlled to 2022-04-17
+    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.all.masked.pb.gz
+    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.metadata.tsv.gz
+    ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.version.txt
+
+  # Negatives sequences and metadata
+  - name: negatives
+    type:
+      - local
+    metadata: data/negatives/metadata.tsv
+    sequences: data/negatives/sequences.fasta
+
+# -----------------------------------------------------------------------------
+# Builds
+# -----------------------------------------------------------------------------
+
+# These are the analyses, you want to run.
+
+# name       : A directory will be created as results/{name}
+# base_input : The base phylogeny for UShER, must be an input with type "usher"
+
+builds:
+
+  # ---------------------------------------------------------------------------
+  # `negatives` is a custom build, that uses sequences that are not recombinants
+
+  - name: negatives
+    base_input: public-20220417
+
+    # Universal rule parameters can (optionally) be overridden for a specific build.
+    usher_metadata:
+      extra_cols: "genbank_accession"
