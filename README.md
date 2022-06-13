@@ -19,7 +19,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 1. [Tutorial](https://github.com/ktmeaton/ncov-recombinant#tutorial
 )
 1. [Custom Configuration](https://github.com/ktmeaton/ncov-recombinant#custom-configuration)
-1. [SLURM](https://github.com/ktmeaton/ncov-recombinant#slurm)
+1. [High Performance Computing](https://github.com/ktmeaton/ncov-recombinant#high-performance-computing)
 1. [Troubleshooting](https://github.com/ktmeaton/ncov-recombinant#troubleshooting)
 1. [Credits](https://github.com/ktmeaton/ncov-recombinant#credits)
 
@@ -141,7 +141,7 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 
 1. Edit the `jobs` and `default-resources` to match your system.
 
-    > Note: For HPC environments, see the [SLURM](https://github.com/ktmeaton/ncov-recombinant#slurm) section.
+    > Note: For HPC environments, see the [High Performance Computing](https://github.com/ktmeaton/ncov-recombinant#high-performance-computing) section.
 
     ```yaml
     #------------------------------------------------------------------------------#
@@ -193,12 +193,52 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
     snakemake --profile my_profiles/custom
     ```
 
-## SLURM
+## High Performance Computing (HPC)
 
-The `ncov-recombinant` tutorial workflow can be dispatched using the SLURM job submission system. In `profiles/hpc`, modify the `partition` name in `default-resources` according to your system partition. Then dispatch the workflow using the following command, where `MyPartition` is replaced with your local value:
+`ncov-recombinant` workflows can alternatively be dispatched using the SLURM job submission system. 
+
+### Tutorial
+
+Edit `profiles/tutorial-hpc/config.yaml` to specify the number of `jobs` and `default-resources` to use.
+
+```yaml
+# Maximum number of jobs to run
+jobs : 2
+
+# Default resources for a SINGLE JOB
+default-resources:
+  - cpus=32
+  - mem_mb=32000
+  - time_min=720
+```
+
+Then dispatch the workflow using the following command:
 
 ```bash
-bash scripts/slurm.sh --profile profiles/hpc --partition MyPartition
+bash scripts/slurm.sh --profile profiles/controls-hpc
+```
+
+Use the `--help` parameter to get additional options for SLURM dispatch.
+
+```bash
+bash scripts/slurm.sh --help
+```
+
+```text
+usage: bash slurm.sh [-h] [--profile PROFILE] [--conda-env CONDA_ENV] [--target TARGET] [--partition PARTITION] [--cpus CPUS] [--mem MEM]
+
+        Dispatch a Snakemake pipeline using SLURM.
+
+        Required arguments:
+                --profile PROFILE                Snakemake profile to execute (ex. profiles/tutorial-hpc)
+
+        Optional arguments:
+                --partition PARTITION            Partition to submit jobs to with SLURM.
+                --conda-env CONDA_ENV            Conda environment to use. (default: ncov-recombinant)
+                --target TARGET                  Snakemake target(s) to execute (default: all)
+                --cpus CPUS                      CPUS to use for the main pipeline. (default: 1)
+                --mem MEM                        Memory to use for the ain pipeline. (default: 4GB)
+                -h, --help                       Show this help message and exit.
 ```
 
 ## Troubleshooting
