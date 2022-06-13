@@ -4,6 +4,7 @@
 # Argument Parsing
 
 while [[ $# -gt 0 ]]; do
+
   case $1 in
     --nextclade)
       nextclade=$2

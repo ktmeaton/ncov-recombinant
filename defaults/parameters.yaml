@@ -127,11 +127,11 @@ rule_params:
     k: 500
     low_memory_mode: true
 
-  # extra_cols : (Optional) csv list of metadata columns to output going forwards (aside from defaults of strain,date,country)
+  # extra_cols : (Optional) list of metadata columns to output going forwards (aside from defaults of strain,date,country)
   - name: usher_metadata
     extra_cols:
-      - gisaid_epi_isl
-      - genbank_accession
+    #  - gisaid_epi_isl
+    #  - genbank_accession
 
   # geo            : Column to use for a geographic summary (typically region, country, or division)
   # max_placements : The maximum number of UShER placements before labeling false_positive (-1 to disable.).

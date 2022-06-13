@@ -18,9 +18,11 @@ PARENTS_COLS = [
 
 
 @click.command()
-@click.option("--linelist", help="Linelist (tsv).", required=True)
+@click.option("--input", help="Input file of recombinant sequences (tsv).", required=True)
+@click.option("--output", help="Output file of recombinant lineages (tsv)", required=True)
 def main(
-    linelist,
+    input,
+    output,
 ):
     """Create a table of recombinant sequences by parent"""
 
@@ -29,12 +31,14 @@ def main(
     # -------------------------------------------------------------------------
 
     # Misc variables
-    outdir = os.path.dirname(linelist)
+    outdir = os.path.dirname(input)
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
 
-    linelist_df = pd.read_csv(linelist, sep="\t")
-    linelist_df.fillna(NO_DATA_CHAR, inplace=True)
+    df = pd.read_csv(input, sep="\t")
+    df.fillna(NO_DATA_CHAR, inplace=True)
 
-    linelist_df["datetime"] = pd.to_datetime(linelist_df["date"], format="%Y-%m-%d")
+    df["datetime"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
 
     # -------------------------------------------------------------------------
     # Create the parents table (parents.tsv)
@@ -42,9 +46,9 @@ def main(
 
     data = {col: [] for col in PARENTS_COLS}
 
-    for parents in set(linelist_df["parents"]):
+    for parents in set(df["parents"]):
 
-        match_df = linelist_df[linelist_df["parents"] == parents]
+        match_df = df[df["parents"] == parents]
 
         if parents == NO_DATA_CHAR:
             parents = "Unknown"
