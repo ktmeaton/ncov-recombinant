@@ -7,8 +7,8 @@ sc2rf_args=()
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --aligned)
-      aligned=$2
+    --alignment)
+      alignment=$2
       shift # past argument
       shift # past value
       ;;
@@ -32,16 +32,16 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    --prefix)
-      prefix=$2
+    --output-ansi)
+      output_ansi=$2
       shift # past argument
       shift # past value
       ;;
-    --outdir)
-      outdir=$2
+    --output-csv)
+      output_csv=$2
       shift # past argument
       shift # past value
-      ;;
+      ;;      
     --log)
       log=$2
       shift # past argument
@@ -60,16 +60,19 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Prep the Output Directory
+outdir=$(dirname $output_csv)
+mkdir -p $outdir
+
+# Location of sc2rf executable
+sc2rf="sc2rf/sc2rf.py"
+
+# Add sc2rf dir to sc2rf_args
+sc2rf_args+=("--sc2rf-dir sc2rf")
+
+# Add optional params to sc2rf_args
 primers_name=${primers_name:-primers}
-
-# Correct relative paths
-aligned="../${aligned}"
-log="../${log}"
-outdir="../${outdir}"
-
-# Add a csvfile
-csvfile="${outdir}/${prefix}.csv"
-sc2rf_args+=("--csvfile $csvfile")
+sc2rf_args+=("--csvfile $output_csv")
 
 # Add primers
 if [[ "${primers}" ]]; then
@@ -82,15 +85,12 @@ if [[ "${mutation_threshold}" ]]; then
   sc2rf_args+=("--mutation-threshold ${mutation_threshold}")
 fi
 
-cd sc2rf;
-
 # rebuild examples
-
 #log_rebuild=${log%.*}_rebuild
 #python3 sc2rf.py --rebuild-examples 1> ${log_rebuild}.log 2> ${log_rebuild}.err
 
-echo "python3 sc2rf.py ${aligned} --clades ${clades} ${sc2rf_args[@]}" > ${outdir}/${prefix}.ansi.txt;
-python3 sc2rf.py ${aligned} --clades ${clades} ${sc2rf_args[@]} 1>> ${outdir}/${prefix}.ansi.txt 2> ${log};
+echo "python3 $sc2rf ${alignment} --clades ${clades} ${sc2rf_args[@]}" > ${output_ansi}
+python3 $sc2rf ${alignment} --clades ${clades} ${sc2rf_args[@]} 1>> ${output_ansi} 2> ${log};
 
 # Clean up primers
 if [[ "${primers}" ]]; then

@@ -46,6 +46,7 @@ CLADES_RENAME = {
 
 @click.command()
 @click.option("--plot-dir", help="Plotting directory", required=True)
+@click.option("--output", help="Output PPTX path", required=True)
 @click.option(
     "--geo", help="Geography column to summarize", required=False, default="country"
 )
@@ -63,13 +64,16 @@ def main(
     template,
     geo,
     changelog,
+    output,
 ):
     """Create a report of powerpoint slides"""
 
     # Parse build name from plot_dir path
 
     build = os.path.basename(os.path.dirname(plot_dir))
-    outdir = os.path.dirname(plot_dir)
+    outdir = os.path.dirname(output)
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
     subtitle = "{}\n{}".format(build.title(), date.today())
 
     # Import dataframes
@@ -390,8 +394,7 @@ def main(
 
     # ---------------------------------------------------------------------
     # Saving file
-    outpath = os.path.join(outdir, "report.pptx")
-    presentation.save(outpath)
+    presentation.save(output)
 
 
 if __name__ == "__main__":

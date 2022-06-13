@@ -3,12 +3,10 @@
 # -----------------------------------------------------------------------------
 # Argument Parsing
 
+num_args="$#"
+
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --dry-run)
-      dry_run="-n"
-      shift # past argument
-      ;;
     --profile)
       profile=$2
       shift # past argument
@@ -39,6 +37,10 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -h|--help)
+      help="true"
+      shift # past argument
+      ;;      
     *)
       echo "Unknown option: $1"
       exit 1
@@ -46,16 +48,47 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-dry_run="${dry_run:-}"
-profile="${profile:-profiles/hpc}"
-conda_env="${conda:-ncov-recombinant}"
+# -----------------------------------------------------------------------------
+# Usage
+
+if [[ $help || $num_args -eq 0 ]]; then
+  usage="
+  usage: bash slurm.sh [-h] [--profile PROFILE] [--conda-env CONDA_ENV] [--target TARGET] [--partition PARTITION] [--cpus CPUS] [--mem MEM]\n\n
+
+  \tDispatch a Snakemake pipeline using SLURM.\n\n
+
+  \tRequired arguments:\n
+  \t\t--profile PROFILE     \t\t   Snakemake profile to execute (ex. profiles/tutorial-hpc)\n\n
+
+  \tOptional arguments:\n
+  \t\t--partition PARTITION     \t\t  Partition to submit jobs to with SLURM.\n
+  \t\t--conda-env CONDA_ENV     \t\t Conda environment to use. (default: ncov-recombinant)\n
+  \t\t--target TARGET           \t\t Snakemake target(s) to execute (default: all)\n   
+  \t\t--cpus CPUS               \t\t\t CPUS to use for the  main pipeline. (default: 1)\n
+  \t\t--mem MEM                 \t\t\t Memory to use for the  ain pipeline. (default: 4GB)\n   
+  \t\t-h, --help                \t\t\t Show this help message and exit.
+  "
+  echo -e $usage
+  exit 0
+fi
+
+if [[ -z $profile ]]; then
+  echo "ERROR: A profile must be specified with --profile <PROFILE>"
+  exit 1
+fi
+
+# Default arguments
+conda_env="${conda_env:-ncov-recombinant}"
 target="${target:-all}"
-partition="${partition:-MyPartition}"
 cpus="${cpus:-1}"
 mem="${mem:-4GB}"
 
 today=$(date +"%Y-%m-%d")
 log_dir="logs/ncov-recombinant"
+
+if [[ $partition ]]; then
+  partition="--partition $partition"
+fi
 
 # -----------------------------------------------------------------------------
 # Run the Workflow
@@ -65,12 +98,12 @@ mkdir -p $log_dir
 cmd="
 sbatch
   --parsable
-  -p ${partition}
+  ${partition}
   -c ${cpus}
   --mem=${mem}
   -J ${conda_env}
   -o ${log_dir}/%x_${today}_%j.log
-  --wrap=\"source activate $conda_env && snakemake --profile $profile $dry_run $target\"
+  --wrap=\"source activate $conda_env && snakemake --profile $profile $target\"
 "
 
 echo $cmd

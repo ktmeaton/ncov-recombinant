@@ -8,12 +8,25 @@
 1. Make `plot` and `report` more dynamic with regards to plots.
 1. Exclude reference genome from alignment until `faToVcf`.
 1. Confirmed that `lambda wildcards` is necessary for output and params.
+1. Include rule_name in message text and indicate log file.
+1. By default, include negatives (`exclude_negatives: false`) and false_positives (`exclude_false_positives: false`).
+1. Use sub-functions to better control optional parameters.
+1. Move rule outputs to sub-directories.
+1. Make sure all rules write to a log if possible.
 
 ## Output
 
 1. Output new file `parents.tsv` to summarize recombinant sequences by parent.
 1. Order the colors/legend of the stacked bar `plots` by number of sequences.
 1. Include lineage and cluster id in filepaths of largest plots and tables.
+1. Rename linelist output.
+
+    - `linelist.tsv`
+    - `positives.tsv`   
+    - `negatives.tsv`
+    - `false_positives.tsv`
+    - `lineages.tsv`
+    - `parents.tsv`
 
 ## Params
 

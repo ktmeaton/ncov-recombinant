@@ -24,6 +24,9 @@ def main(
 ):
     """Collect and condense UShER subtrees"""
 
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+
     trees_list = [
         os.path.join(indir, f) for f in os.listdir(indir) if f.endswith("json")
     ]
