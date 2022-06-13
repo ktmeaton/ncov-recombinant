@@ -70,10 +70,7 @@ rule_params:
     custom_ref: "Wuhan/Hu-1/2019"
 
   # exclude_clades    : Exclude strains that are recombinants of these clades
-  # exclude_negatives : true if sequences that are not recombinants should be excluded from downstream steps.
-  #                   : only set to true used if there are definite recombinants in your sample input
   - name: nextclade_recombinants
-    exclude_negatives: false
     exclude_clades:
         - "19" # From 2019
         - "20A" # Non-VoC From 2020
@@ -87,33 +84,41 @@ rule_params:
         - "Beta"
         - "Gamma"
 
-  # max_name_length : The maximum character length of strain names
-  # clades          : Restrict parent search to these clades
-  # sc2rf_args      : Additional arguments supplied to the program sc2rf
-  # debug_args      : Ultra-sensitive arguments for debugging
-  # primers         : Path to primers, relative to sc2rf directory.
-  # primers_name    : The name of the primer set to display in output.
+  # exclude_negatives : true if sequences that are not recombinants (according to Nextclade) should be excluded from sc2rf analysis.
+  #                   : only set to true if there is at least 1 guaranteed recombinant sequence in your input
+  # max_name_length   : The maximum character length of strain names
+  # clades            : Restrict parent search to these clades
+  # sc2rf_args        : Additional arguments supplied to the program sc2rf
+  # debug_args        : Ultra-sensitive arguments for debugging
+  # primers           : Path to primers, relative to sc2rf directory.
+  # primers_name      : The name of the primer set to display in output.
   - name: sc2rf
+    exclude_negatives: false
     max_name_length: 50
     clades:
       - "21I" # Delta
       - "21J" # Delta
       - "21K" # Omicron
       - "21L" # Omicron
-
     mutation_threshold: 0.25
+    # Note : If you want sc2rf to update its mutation database everytime, add --rebuild-examples to `sc2rf_args`.
     sc2rf_args: "--ansi --parents 2-4 --breakpoints 0-4 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
-    debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --enable-deletions --show-private-mutations"
+    debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --enable-deletions"
 
   # min_len     : Ignore recombinants regions shorter than this
   # max_parents : Exlude samples with greater than this number of parents
   # max_parents : Exlude samples with greater than this number of breakpoints
   # motifs      : (optional, experimental) Path to a breakpoints motif file
-  - name: sc2rf_recombinants
+
+  - name: sc2rf_recombinants   
     min_len: 1000
     max_parents: 2
     max_breakpoints: 2
     motifs:
+
+  # exclude_false_positives : true if sequences that are false positives (according to sc2rf) should be excluded.  
+  - name: faToVcf
+    exclude_false_positives: false
 
 
   # k               : The number of contextual samples to select when extracting subtrees.
