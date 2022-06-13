@@ -2,22 +2,44 @@
 
 ## Priority
 
+1. Adjust all rule targets.
+1. Move rule output to sub-directories
+1. Use the usher_metadata from usher?
+1. Use the build merge logic from usher.
+1. Remove lambda wildcards from params.
+1. Add Vani to credits (see Taxonium).
 1. Include negatives by default.
+1. Make sure all rules write to a log if possible.
 1. Put the param checking in functions.
     - [x] `usher`
-    - [ ] `usher_stats`
+    - [ ] `usher_metadata`
+    - [ ] `usher_subtree`
+    - [ ] `summary`
+    - [ ] `linelist`
     - [x] `plot`
     - [x] `report`
 1. Include rule_name in message text and point to log file.
     - [x] `usher`
-    - [ ] `usher_stats`
+    - [x] `usher_stats`
+    - [ ] `usher_metadata`
+    - [ ] `usher_subtree_collapse`
+    - [ ] `summary`
+    - [ ] `linelist`
     - [x] `plot`
     - [x] `report`
-
+1. Re-rename tutorial action to pipeline, and add different jobs for different profiles.
+    - Tutorial
+    - Negatives
+    - Positives
 
 ## Misc
 
 1. Rename linelist output.
+    - `linelist.positives.tsv`   
+    - `linelist.negatives.tsv`
+    - `linelist.false_positives.tsv`
+    - `linelist.lineages.tsv`
+    - `linelist.parents.tsv`
 1. Troubleshoot the missing designated lineages in the controls report.
 1. Add better filters to the Auspice JSON output (ex. `lineage_usher`).
 1. Experiment with the `motifs` param for `sc2rf_recombinants`.
