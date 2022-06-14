@@ -18,14 +18,42 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 
 ## Table of Contents
 
+1. [Contributors](https://github.com/ktmeaton/ncov-recombinant#contributors)
 1. [Output](https://github.com/ktmeaton/ncov-recombinant#output)
 1. [Install](https://github.com/ktmeaton/ncov-recombinant#install)
-1. [Tutorial](https://github.com/ktmeaton/ncov-recombinant#tutorial
-)
+1. [Tutorial](https://github.com/ktmeaton/ncov-recombinant#tutorial)
 1. [Custom Configuration](https://github.com/ktmeaton/ncov-recombinant#custom-configuration)
 1. [High Performance Computing](https://github.com/ktmeaton/ncov-recombinant#high-performance-computing)
 1. [Troubleshooting](https://github.com/ktmeaton/ncov-recombinant#troubleshooting)
 1. [Credits](https://github.com/ktmeaton/ncov-recombinant#credits)
+
+## Contributors
+
+[ncov-recombinant](https://github.com/ktmeaton/ncov-recombinant) is built and maintained by [Katherine Eaton](https://ktmeaton.github.io/) at the [National Microbiology Laboratory (NML)](https://github.com/phac-nml) of the Public Health Agency of Canada (PHAC).
+
+<table>
+  <tr>
+    <td align="center"><a href="https://ktmeaton.github.io"><img src="https://s.gravatar.com/avatar/0b9dc28b3e64b59f5ce01e809d214a4e?s=80" width="100px;" alt=""/><br /><sub><b>Katherine Eaton</b></sub></a><br /><a href="https://github.com/ktmeaton/ncov-recombinant/commits?author=ktmeaton" title="Code">💻</a> <a href="https://github.com/ktmeaton/ncov-recombinant/commits?author=ktmeaton" title="Documentation">📖</a> <a href="#design-ktmeaton" title="Design">🎨</a> <a href="#ideas-ktmeaton" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-ktmeaton" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-ktmeaton" title="Maintenance">🚧</a></td>
+  </tr>
+</table>
+
+Thanks goes to these wonderful people:
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="http://lenaschimmel.de"><img src="https://avatars.githubusercontent.com/u/1325019?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Lena Schimmel (sc2rf)</b></sub></a><br /><a href="https://github.com/lenaschimmel/sc2rf" title="Code">💻</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
 ## Output
 
@@ -264,23 +292,3 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 - nextstrain/nextclade: https://github.com/nextstrain/nextclade
 - lenaschimmel/sc2rf: https://github.com/lenaschimmel/sc2rf
 - yatisht/usher: https://github.com/yatisht/usher
-
-## Contributors ✨
-
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tr>
-    <td align="center"><a href="http://lenaschimmel.de"><img src="https://avatars.githubusercontent.com/u/1325019?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Lena Schimmel</b></sub></a><br /><a href="https://github.com/ktmeaton/ncov-recombinant/commits?author=lenaschimmel" title="Code">💻</a></td>
-  </tr>
-</table>
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
