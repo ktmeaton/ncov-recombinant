@@ -1,0 +1,126 @@
+# TIP: To check your parameters before running, use: snakemake --profile profiles/controls print_config
+
+# -----------------------------------------------------------------------------
+# Inputs
+# -----------------------------------------------------------------------------
+
+# These are the datasets, actual files, you are providing as input.
+
+# name                 : Builds will use this to specify the input
+# type                 : can be any combination of local,usher
+# metadata (local)     : path to metadata for local input
+# sequences (local)    : path to sequences for local input
+# pb_url (usher)       : url to protobuf for usher input
+# metadata_url (usher) : url to metadata for usher input
+# ver_url (usher)      : url to version info for usher input
+
+inputs:
+
+  # An UShER base phylogeny of all publicly available samples (genbank).
+  # The protobuf will be downloaded to: `data/public-latest/usher.pb.gz
+  # The metadata will be downloaded to: `data/public-latest/usher.metadata.tsv
+  - name: public-latest
+    type:
+      - usher
+    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.all.masked.pb.gz
+    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.metadata.tsv.gz
+    ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.version.txt
+
+  # A time-stamped UShER base phylogeny of all publicly available samples (genbank) available on 2022-04-17
+  # The protobuf will be downloaded to: `data/public-20220417/usher.pb.gz
+  # The metadata will be downloaded to: `data/public-20220417/usher.metadata.tsv
+  - name: public-20220417
+    type:
+      - usher
+    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.all.masked.pb.gz
+    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.metadata.tsv.gz
+    ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.version.txt
+
+  # Positive recombinant controls
+  - name: controls-positive
+    type:
+      - local
+    metadata: data/controls-positive/metadata.tsv
+    sequences: data/controls-positive/sequences.fasta
+
+  # Negative recombinant controls
+  - name: controls-negative
+    type:
+      - local
+    metadata: data/controls-negative/metadata.tsv
+    sequences: data/controls-negative/sequences.fasta
+
+  # All recombinant controls (positive + negative)
+  - name: controls-all
+    type:
+      - local
+    metadata: data/controls-all/metadata.tsv
+    sequences: data/controls-all/sequences.fasta
+
+# -----------------------------------------------------------------------------
+# Builds
+# -----------------------------------------------------------------------------
+
+# These are the analyses, you want to run.
+
+# name       : A directory will be created as results/{name}
+# base_input : The base phylogeny for UShER, must be an input with type "usher"
+
+builds:
+
+  # ---------------------------------------------------------------------------
+  # `positives` uses sequences that ARE recombinants
+
+  - name: controls-positive
+    base_input: public-20220417
+
+    # There are no negatives, this is just for testing
+    sc2rf:
+      exclude_negatives: true
+
+    # There are some false positives that will be corrected
+    faToVcf:
+      exclude_false_positives: false
+
+    plot:
+      weeks: 16
+      max_date: "2022-04-25"
+      singletons: true
+
+  # ---------------------------------------------------------------------------
+  # `negatives` uses sequences that ARE NOT recombinants
+
+  - name: controls-negative
+    base_input: public-20220417
+
+    # All sequences are negatives, must keep!
+    sc2rf:
+      exclude_negatives: false
+
+    # There are no false positives, this is for testing
+    faToVcf:
+      exclude_false_positives: true
+
+    plot:
+      weeks: 16
+      max_date: "2022-05-20"
+      singletons: true
+
+  # ---------------------------------------------------------------------------
+  # `controls` uses a mixture of positive and negative recombinants
+
+  - name: controls-all
+    base_input: public-20220417
+
+    # There are negatives, keep them for testing
+    sc2rf:
+      exclude_negatives: false
+
+    # There are false positives that will be corrected, keep them
+    faToVcf:
+      exclude_false_positives: false
+
+    plot:
+      min_date: "2022-01-10"
+      max_date: "2022-04-25"
+      singletons: true

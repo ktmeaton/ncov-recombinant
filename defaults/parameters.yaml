@@ -1,50 +1,3 @@
-# TIP: To check your parameters before running, use: `snakemake -c 1 print_config`
-
-# -----------------------------------------------------------------------------
-# Inputs
-# -----------------------------------------------------------------------------
-
-# These are the datasets, actual files, you are providing as input.
-
-# name                 : Builds will use this to specify the input
-# type                 : can be any combination of local,usher
-# metadata (local)     : path to metadata for local input
-# sequences (local)    : path to sequences for local input
-# metadata_url (usher) : url to metadata for usher input
-# pb_url (usher)       : url to protobuf for usher input
-# ver_url (usher)      : url to version info for usher input
-
-inputs:
-
-  # A selection of publicly available samples (genbank) that have been posted
-  # to https://github.com/cov-lineages/pango-designation
-  - name: controls
-    type:
-      - local
-    metadata: data/controls/metadata.tsv
-    sequences: data/controls/sequences.fasta
-
-  # An UShER base phylogeny of all publicly available samples (genbank).
-  # The protobuf will be downloaded to: `data/public-latest/usher.pb.gz
-  # The metadata will be downloaded to: `data/public-latest/usher.metadata.tsv
-  - name: public-latest
-    type:
-      - usher
-
-    # Latest: Not version controlled!
-    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.all.masked.pb.gz
-    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.metadata.tsv.gz
-    ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.version.txt
-
-  - name: public-20220417
-    type:
-      - usher
-
-    # Date: Version controlled!
-    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.metadata.tsv.gz
-    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.all.masked.pb.gz
-    ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.version.txt
-
 # -----------------------------------------------------------------------------
 # Rule Parameters
 # -----------------------------------------------------------------------------
@@ -57,19 +10,15 @@ inputs:
 
 rule_params:
 
+  # ---------------------------------------------------------------------------
   # tag : datestamp of dataset (run `nextclade dataset list` for more info)
   # dataset: The nextclade dataset to use as the reference
   - name: nextclade_dataset
     dataset: sars-cov-2
     tag: "2022-04-28T12:00:00Z"
 
-  # nextclade_ref  : The header of the reference used by nextclade
-  # custom_ref     : The header of the reference in `data/reference/reference.fasta`.
-  - name: nextclade
-    nextclade_ref: "MN908947 \\(Wuhan-Hu-1/2019\\)"
-    custom_ref: "Wuhan/Hu-1/2019"
-
-  # exclude_clades : Exclude strains that are recombinants of these clades
+  # ---------------------------------------------------------------------------
+  # exclude_clades    : Exclude strains that are recombinants of these clades
   - name: nextclade_recombinants
     exclude_clades:
         - "19" # From 2019
@@ -80,25 +29,33 @@ rule_params:
         - "20E"
         - "20F"
         - "20G"
+        - "Alpha"
+        - "Beta"
+        - "Gamma"
 
-  # max_name_length : The maximum character length of strain names
-  # clades          : Restrict parent search to these clades
-  # sc2rf_args      : Additional arguments supplied to the program sc2rf
-  # debug_args      : Ultra-sensitive arguments for debugging
-  # primers         : Path to primers, relative to sc2rf directory.
-  # primers_name    : The name of the primer set to display in output.
+  # ---------------------------------------------------------------------------
+  # exclude_negatives : true if sequences that are not recombinants (according to Nextclade) should be excluded from sc2rf analysis.
+  #                   : only set to true if there is at least 1 guaranteed recombinant sequence in your input!
+  # max_name_length   : The maximum character length of strain names
+  # clades            : Restrict parent search to these clades
+  # sc2rf_args        : Additional arguments supplied to the program sc2rf
+  # debug_args        : Ultra-sensitive arguments for debugging
+  # primers           : Path to primers, relative to sc2rf directory.
+  # primers_name      : The name of the primer set to display in output.
   - name: sc2rf
+    exclude_negatives: false
     max_name_length: 50
     clades:
       - "21I" # Delta
       - "21J" # Delta
       - "21K" # Omicron
       - "21L" # Omicron
-
     mutation_threshold: 0.25
-    sc2rf_args: "--ansi --parents 2-4 --breakpoints 0-4 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
-    debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --enable-deletions --show-private-mutations"
+    # Note : If you want sc2rf to update its mutation database everytime, add --rebuild-examples to `sc2rf_args`.
+    sc2rf_args: "--ansi --parents 2-4 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
+    debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --enable-deletions"
 
+  # ---------------------------------------------------------------------------
   # min_len     : Ignore recombinants regions shorter than this
   # max_parents : Exlude samples with greater than this number of parents
   # max_parents : Exlude samples with greater than this number of breakpoints
@@ -107,20 +64,29 @@ rule_params:
     min_len: 1000
     max_parents: 2
     max_breakpoints: 2
-    motifs: ""
+    motifs:
 
+  # ---------------------------------------------------------------------------
+  # exclude_false_positives : true if sequences that are false positives (according to sc2rf) should be excluded.
+  - name: faToVcf
+    exclude_false_positives: false
 
+  # ---------------------------------------------------------------------------
   # k               : The number of contextual samples to select when extracting subtrees.
   # low_memory_mode : true if the metadata should not be used, false if it should
+  #                 : set to true if you have <= 4GB of memory.
   - name: usher_subtree
     k: 500
     low_memory_mode: true
 
-  # extra_cols : (Optional) csv list of metadata columns to output going forwards (aside from defaults of strain,date,country)
-  #            : If no extra columns are needed, set to an empty string ("")
+  # ---------------------------------------------------------------------------
+  # extra_cols : (Optional) list of metadata columns to output going forwards (aside from defaults of strain,date,country)
   - name: usher_metadata
-    extra_cols: ""
+    extra_cols:
+    #  - gisaid_epi_isl
+    #  - genbank_accession
 
+  # ---------------------------------------------------------------------------
   # geo            : Column to use for a geographic summary (typically region, country, or division)
   # max_placements : The maximum number of UShER placements before labeling false_positive (-1 to disable.).
   # Note: the rule `linelist` is also going to use the `extra_cols` param of rule `usher_metadata`,
@@ -129,14 +95,22 @@ rule_params:
     geo: country
     max_placements: -1
 
-  # weeks : The number of weeks to plot in retrospect
-  # lag   : The number of weeks before the present where data is accurate. Used to plot a light grey box.
+  # ---------------------------------------------------------------------------
+  # lag           : The number of weeks before the present where data is accurate. Used to plot a light grey box.
+  # weeks         : The number of weeks to plot in retrospect (ex. 16)
+  # min_date      : (Optional) The date to start plots at (ex. "2022-01-03"). Overrides the `weeks` parameter.
+  # max_date      : (Optional) The date to end plots at (ex. "2022-04-25").
+  # singletons    : "true" is singelton lineages (N=1) should be plotted and reported.
   # Note: the rule `plot` is also going to use the `geo` param of rule `linelist`,
   # to plot recombinants by geographic location
   - name: plot
     weeks: 16
     lag: 4
+    min_date:
+    max_date:
+    singletons: true
 
+  # ---------------------------------------------------------------------------
   # changelog : (Optional) path to a CHANGELOG.md to append to the report
   # template  : (Optional) path to a powerpoint template
   # Note: the rule `report` is also going to use the `geo` param of rule `linelist`,
@@ -144,25 +118,3 @@ rule_params:
   - name: report
     changelog: "CHANGELOG.md"
     template: "resources/template.pptx"
-
-
-# -----------------------------------------------------------------------------
-# Builds
-# -----------------------------------------------------------------------------
-
-# These are the analyses, you want to run.
-
-# name       : A directory will be created as results/{name}
-# base_input : The base phylogeny for UShER, must be an input with type "usher"
-
-builds:
-
-  # `controls` is the default build and will always run.
-  # It uses the `controls` input as experimental samples to analyze, and places
-  # them on a a base UShER phylogeny using the `public-latest` datest.
-
-  - name: controls
-    base_input: public-latest
-
-    usher_metadata:
-      extra_cols: "gisaid_epi_isl,genbank_accession"

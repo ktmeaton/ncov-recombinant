@@ -1,0 +1,25 @@
+# -----------------------------------------------------------------------------
+# Inputs
+# -----------------------------------------------------------------------------
+
+# These are the datasets, actual files, you are providing as input.
+
+# name                 : Builds will use this to specify the input
+# type                 : can be any combination of local,usher
+# metadata (local)     : path to metadata for local input
+# sequences (local)    : path to sequences for local input
+# pb_url (usher)       : url to protobuf for usher input
+# metadata_url (usher) : url to metadata for usher input
+# ver_url (usher)      : url to version info for usher input
+
+inputs:
+
+  # An UShER base phylogeny of all publicly available samples (genbank).
+  # The protobuf will be downloaded to: `data/public-latest/usher.pb.gz
+  # The metadata will be downloaded to: `data/public-latest/usher.metadata.tsv
+  - name: public-latest
+    type:
+      - usher
+    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.all.masked.pb.gz
+    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.metadata.tsv.gz
+    ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.version.txt

@@ -18,6 +18,7 @@ LINELIST_COLS = {
     "strain": "strain",
     "usher_pango_lineage_map": "lineage_usher",
     "sc2rf_lineage": "lineage_sc2rf",
+    "sc2rf_status": "status_sc2rf",
     "Nextclade_pango": "lineage_nextclade",
     "sc2rf_parents": "parents",
     "sc2rf_breakpoints": "breakpoints",
@@ -33,7 +34,7 @@ LINELIST_COLS = {
 
 
 @click.command()
-@click.option("--summary", help="Summary (tsv).", required=True)
+@click.option("--input", help="Summary (tsv).", required=True)
 @click.option(
     "--issues",
     help="pango-designation issues table",
@@ -51,11 +52,17 @@ LINELIST_COLS = {
     required=False,
     default=-1,
 )
+@click.option(
+    "--outdir",
+    help="Output directory for linelists",
+    required=True,
+)
 def main(
-    summary,
+    input,
     issues,
     extra_cols,
     max_placements,
+    outdir,
 ):
     """Create a linelist and recombinant report"""
 
@@ -64,10 +71,11 @@ def main(
     # -------------------------------------------------------------------------
 
     # Misc variables
-    outdir = os.path.dirname(summary)
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
 
     # Import Summary Dataframe
-    summary_df = pd.read_csv(summary, sep="\t")
+    summary_df = pd.read_csv(input, sep="\t")
     summary_df.fillna(NO_DATA_CHAR, inplace=True)
 
     # Import Issues Summary Dataframe
@@ -97,6 +105,7 @@ def main(
     linelist_df.insert(3, "issue", [NO_DATA_CHAR] * len(linelist_df))
 
     for rec in linelist_df.iterrows():
+        strain = rec[0]
         lineage = NO_DATA_CHAR
         issue = NO_DATA_CHAR
         is_recombinant = False
@@ -104,12 +113,17 @@ def main(
         # sc2rf can have multiple lineages, because different lineages
         # can have the same breakpoint
         lineages_sc2rf = rec[1]["lineage_sc2rf"].split(",")
+        status_sc2rf = rec[1]["status_sc2rf"]
         breakpoints = rec[1]["breakpoints"]
         lineage_usher = rec[1]["lineage_usher"]
         usher_placements = rec[1]["placements"]
 
         # Check if sc2rf or UShER thinks its a recombinant
-        if breakpoints != NO_DATA_CHAR and lineages_sc2rf[0] != "false_positive":
+        if (
+            breakpoints != NO_DATA_CHAR
+            and status_sc2rf[0] != "false_positive"
+            and status_sc2rf[0] != "negative"
+        ):
             is_recombinant = True
 
         if (
@@ -118,6 +132,8 @@ def main(
             or lineage_usher.startswith("misc")
         ):
             is_recombinant = True
+
+        print(strain, is_recombinant, lineage_usher)
 
         # Use UShER as the definitive lineage caller
         lineage = lineage_usher
@@ -155,19 +171,27 @@ def main(
 
         # Add status
         status = "unpublished"
-        if max_placements != -1 and usher_placements > max_placements:
-            status = "false_positive"
 
-        elif not is_recombinant:
-            status = "false_positive"
-
-        elif lineage.startswith("X"):
+        # Positive recombinants
+        if lineage.startswith("X"):
             status = "designated"
 
         elif issue != NO_DATA_CHAR:
             status = "proposed"
 
+        # Negatives recombinants
+        if status_sc2rf == "negative":
+            status = "negative"
+
+        # False Positives recombinants
+        elif max_placements != -1 and usher_placements > max_placements:
+            status = "false_positive"
+
+        elif not is_recombinant:
+            status = "false_positive"
+
         linelist_df.at[rec[0], "status"] = str(status)
+        linelist_df.at[rec[0], "issue"] = issue
 
     # -------------------------------------------------------------------------
     # Lineage Grouping
@@ -251,6 +275,9 @@ def main(
         # By default use cluster ID for curated lineage
         linelist_df.at[rec[0], "recombinant_lineage_curated"] = cluster_id
 
+        if status == "negative":
+            linelist_df.at[rec[0], "recombinant_lineage_curated"] = "negative"
+
         # If designated, override with actual lineage
         if status == "designated":
             recombinant_lineage.append(lineage)
@@ -264,13 +291,6 @@ def main(
 
         else:
             recombinant_lineage.append("unpublished_recombinant")
-
-    # Write and drop false_positive recombinants
-    false_positive_df = linelist_df[linelist_df["status"] == "false_positive"]
-    outpath = os.path.join(outdir, "false_positives.tsv")
-    false_positive_df.to_csv(outpath, sep="\t", index=False)
-
-    linelist_df = linelist_df[linelist_df["status"] != "false_positive"]
 
     # -------------------------------------------------------------------------
     # Pipeline Versions
@@ -287,7 +307,9 @@ def main(
     # Save to File
 
     # Drop Unnecessary columns
-    linelist_df.drop(columns=["lineage_sc2rf", "lineage_nextclade"], inplace=True)
+    linelist_df.drop(
+        columns=["lineage_sc2rf", "lineage_nextclade", "status_sc2rf"], inplace=True
+    )
     linelist_df.rename(columns={"lineage_usher": "lineage"}, inplace=True)
 
     # Recode NA
@@ -299,6 +321,7 @@ def main(
         "proposed": 1,
         "unpublished": 2,
         "false_positive": 3,
+        "negative": 4,
     }
 
     # Change empty cells to NaN so they'll be sorted to the end
@@ -312,8 +335,28 @@ def main(
         key=lambda x: x.map(status_order),
     )
 
+    # All
     outpath = os.path.join(outdir, "linelist.tsv")
     linelist_df.to_csv(outpath, sep="\t", index=False)
+    print(linelist_df)
+
+    # Positives
+    positive_df = linelist_df[
+        (linelist_df["status"] != "false_positive")
+        & (linelist_df["status"] != "negative")
+    ]
+    outpath = os.path.join(outdir, "positives.tsv")
+    positive_df.to_csv(outpath, sep="\t", index=False)
+
+    # False Positives
+    false_positive_df = linelist_df[linelist_df["status"] == "false_positive"]
+    outpath = os.path.join(outdir, "false_positives.tsv")
+    false_positive_df.to_csv(outpath, sep="\t", index=False)
+
+    # Negatives
+    negative_df = linelist_df[linelist_df["status"] == "negative"]
+    outpath = os.path.join(outdir, "negatives.tsv")
+    negative_df.to_csv(outpath, sep="\t", index=False)
 
 
 if __name__ == "__main__":

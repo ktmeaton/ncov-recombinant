@@ -25,10 +25,16 @@ RECOMBINANTS_COLS = [
 
 
 @click.command()
-@click.option("--linelist", help="Linelist (tsv).", required=True)
+@click.option(
+    "--input", help="Input file of recombinant sequences (tsv).", required=True
+)
+@click.option(
+    "--output", help="Output file of recombinant lineages (tsv)", required=True
+)
 @click.option("--geo", help="Geography column", required=False, default="country")
 def main(
-    linelist,
+    input,
+    output,
     geo,
 ):
     """Create a table of recombinant lineages"""
@@ -38,12 +44,14 @@ def main(
     # -------------------------------------------------------------------------
 
     # Misc variables
-    outdir = os.path.dirname(linelist)
+    outdir = os.path.dirname(output)
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
 
-    linelist_df = pd.read_csv(linelist, sep="\t")
-    linelist_df.fillna(NO_DATA_CHAR, inplace=True)
+    df = pd.read_csv(input, sep="\t")
+    df.fillna(NO_DATA_CHAR, inplace=True)
 
-    linelist_df["datetime"] = pd.to_datetime(linelist_df["date"], format="%Y-%m-%d")
+    df["datetime"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
 
     # -------------------------------------------------------------------------
     # Create the recombinants table (recombinants.tsv)
@@ -52,9 +60,9 @@ def main(
     recombinants_data = {col: [] for col in RECOMBINANTS_COLS}
     recombinants_data[geo] = []
 
-    for cluster_id in set(linelist_df["cluster_id"]):
+    for cluster_id in set(df["cluster_id"]):
 
-        match_df = linelist_df[linelist_df["cluster_id"] == cluster_id]
+        match_df = df[df["cluster_id"] == cluster_id]
 
         earliest_date = min(match_df["datetime"])
         latest_date = max(match_df["datetime"])
@@ -92,8 +100,7 @@ def main(
     recombinants_df = pd.DataFrame(recombinants_data)
     recombinants_df.sort_values(by="sequences", ascending=False, inplace=True)
 
-    outpath = os.path.join(outdir, "recombinants.tsv")
-    recombinants_df.to_csv(outpath, index=False, sep="\t")
+    recombinants_df.to_csv(output, index=False, sep="\t")
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ latency-wait: 10
 keep-going: True
 show-failed-logs: True
 rerun-incomplete: True
-printshellcmds: True
+printshellcmds: False
 
 #------------------------------------------------------------------------------#
 # System config
