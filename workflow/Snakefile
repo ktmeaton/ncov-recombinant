@@ -123,7 +123,7 @@ rule all:
         expand("results/{build_name}/report/report.pptx",
           build_name=BUILDS,
           ),
-          
+
 # -----------------------------------------------------------------------------#
 #  Accessory Rules
 # -----------------------------------------------------------------------------#
@@ -196,7 +196,7 @@ rule issues_download:
   log:     {log}
   issues:  {output.issues}
   """
-  
+
   input:
     breakpoints      = "resources/breakpoints.tsv",
   output:
@@ -352,7 +352,7 @@ def _inputs_sc2rf(build):
 
   # nextclade/alignment.fasta: positives, negatives, and false_positives
   # nextclade/recombinants.fasta: positives (and false_positives)
-  
+
   # Option 1: Everything (positives, negatives, false_positives)
   if not exclude_negatives:
     inputs["alignment"] = "results/{build}/nextclade/alignment.fasta".format(build=build)
@@ -462,12 +462,12 @@ rule sc2rf_recombinants:
   output:
     stats           = "results/{build}/sc2rf/stats.tsv",
     strains         = "results/{build}/sc2rf/recombinants.txt",
-    alignment       = "results/{build}/sc2rf/recombinants.fasta",  
+    alignment       = "results/{build}/sc2rf/recombinants.fasta",
     ansi            = "results/{build}/sc2rf/recombinants.ansi.txt",
   params:
     outdir          = "results/{build}/sc2rf",
     prefix          = "recombinants",
-    min_len         = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["min_len"],    
+    min_len         = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["min_len"],
     max_parents     = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_parents"],
     max_breakpoints = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_breakpoints"],
     motifs          = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["motifs"],
@@ -511,7 +511,7 @@ rule nextclade_exclude_false_positives:
   """
 
   input:
-    alignment = rules.nextclade.output.alignment, 
+    alignment = rules.nextclade.output.alignment,
     stats     = rules.sc2rf_recombinants.output.stats,
   output:
     alignment = "results/{build}/nextclade/alignment.exclude_false_positives.fasta",
@@ -547,7 +547,7 @@ def _inputs_faToVcf(build):
   # nextclade/alignment.fasta: positives, negatives, and false_positives
   # nextclade/recombinants.fasta: positives and false_positives
   # sc2rf/recombinants.fasta: positives
-  
+
   # Option 1: Everything (positives, negatives, false_positives)
   # nextclade/alignment.fasta
   if not exclude_false_positives and not exclude_negatives:
@@ -588,7 +588,7 @@ rule faToVcf:
     stats                   = rules.sc2rf_recombinants.output.stats,
     alignment               = lambda wildcards: _inputs_faToVcf(wildcards.build)["alignment"],
     prob_sites              = "data/reference/problematic_sites.vcf",
-  output: 
+  output:
     alignment               = "results/{build}/faToVcf/alignment.fasta",
     vcf                     = "results/{build}/faToVcf/alignment.vcf.gz",
   params:
@@ -729,7 +729,7 @@ rule usher_stats:
     placement_stats  = "results/{build}/usher/usher.placement_stats.tsv",
     mut_paths        = "results/{build}/usher/usher.mutation_paths.tsv",
     clades           = "results/{build}/usher/usher.clades.tsv",
-    strains          = "results/{build}/usher/usher.strains.txt",    
+    strains          = "results/{build}/usher/usher.strains.txt",
   params:
     outdir = "results/{build}/usher",
   benchmark:
@@ -866,7 +866,7 @@ rule usher_subtree:
       -M ../../../../{input.metadata} \
       --threads {resources.cpus} \
       > ../../../../{log} 2>&1;
-    """    
+    """
 
 # -----------------------------------------------------------------------------
 rule_name = "usher_subtree_collapse"
@@ -883,7 +883,7 @@ rule usher_subtree_collapse:
   """
 
   wildcard_constraints:
-    build = "|".join(BUILDS),  
+    build = "|".join(BUILDS),
 
   input:
     subtrees_dir  = rules.usher_subtree.output.subtrees_dir,
@@ -968,7 +968,7 @@ def _params_linelist():
 
   max_placements = config["builds"][build]["linelist"]["max_placements"]
   if max_placements: params["max_placements"] = "--max-placements {}".format(max_placements)
-  else: params["max_placements"] = ""  
+  else: params["max_placements"] = ""
 
   return params
 
@@ -991,7 +991,7 @@ rule linelist:
     summary         = rules.summary.output.summary,
     issues          = rules.issues_download.output.issues,
   output:
-    linelist        = "results/{build}/linelists/linelist.tsv",  
+    linelist        = "results/{build}/linelists/linelist.tsv",
     positives       = "results/{build}/linelists/positives.tsv",
     negatives       = "results/{build}/linelists/negatives.tsv",
     false_positives = "results/{build}/linelists/false_positives.tsv",
@@ -1042,7 +1042,7 @@ def _params_plot(wildcards):
 
   max_date = config["builds"][wildcards.build]["plot"]["max_date"]
   if max_date: params["max_date"] = "--max-date {}".format(max_date)
-  else: params["max_date"] = ""  
+  else: params["max_date"] = ""
 
   singletons = config["builds"][wildcards.build]["plot"]["singletons"]
   if singletons: params["singletons"] = "--singletons"
@@ -1075,7 +1075,7 @@ rule plot:
     min_date   = lambda wildcards: _params_plot(wildcards)["min_date"],
     max_date   = lambda wildcards: _params_plot(wildcards)["max_date"],
     lag        = lambda wildcards: _params_plot(wildcards)["lag"],
-    singletons = lambda wildcards: _params_plot(wildcards)["singletons"],   
+    singletons = lambda wildcards: _params_plot(wildcards)["singletons"],
   threads: 1
   resources:
     cpus = 1,
@@ -1115,7 +1115,7 @@ def _params_report(wildcards):
   if changelog: params["changelog"] = "--changelog {}".format(changelog)
   else: params["changelog"] = ""
 
-  template = config["builds"][wildcards.build]["report"]["template"]  
+  template = config["builds"][wildcards.build]["report"]["template"]
   if template: params["template"] = "--template {}".format(template)
   else: params["template"] = ""
 
@@ -1132,7 +1132,7 @@ rule report:
   """
 
   input:
-    plots           = rules.plot.output.plots,  
+    plots           = rules.plot.output.plots,
     tables          = [
                       rules.linelist.output.lineages,
                       rules.linelist.output.parents,
@@ -1140,8 +1140,8 @@ rule report:
                       rules.linelist.output.positives,
                       rules.linelist.output.negatives,
                       rules.linelist.output.false_positives,
-                      rules.summary.output.summary,         
-                      rules.issues_download.output.issues,                  
+                      rules.summary.output.summary,
+                      rules.issues_download.output.issues,
                       ],
   output:
     pptx            = "results/{build}/report/report.pptx",

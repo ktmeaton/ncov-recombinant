@@ -37,7 +37,7 @@ cluster:
     --cpus-per-task={resources.cpus}
     --mem={resources.mem_mb}
     --job-name=ncov-recombinant:{rule}:{wildcards}
-    --output=logs/slurm/{rule}/{wildcards}-%j.out   
+    --output=logs/slurm/{rule}/{wildcards}-%j.out
 
 # What commands should be run to CANCEL a job?
 cluster-cancel: scancel

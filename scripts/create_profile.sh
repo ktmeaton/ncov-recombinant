@@ -16,7 +16,7 @@ while [[ $# -gt 0 ]]; do
     --hpc)
       hpc="true"
       shift # past argument
-      ;;        
+      ;;
     --data)
       data=$2
       shift # past argument
@@ -54,18 +54,25 @@ if [[ -z $data ]]; then
   exit 1
 fi
 
-PROFILES_DIR="profiles"
+PROFILES_DIR="my_profiles"
 NUM_REQUIRED_COLS=3
 REQUIRED_COLS="strain|date|country"
 FIRST_COL="strain"
 DEFAULT_INPUTS="defaults/inputs.yaml"
 DEFAULT_PARAMS="defaults/parameters.yaml"
 DEFAULT_BUILDS="defaults/builds.yaml"
-DEFAULT_CONFIG="$PROFILES_DIR/controls/config.yaml"
-DEFAULT_CONFIG_HPC="$PROFILES_DIR/controls-hpc/config.yaml"
+DEFAULT_CONFIG="profiles/controls/config.yaml"
+DEFAULT_CONFIG_HPC="profiles/controls-hpc/config.yaml"
 DEFAULT_BASE_INPUT="public-latest"
 
-profile=$(basename $data)
+if [[ -z $hpc ]]; then
+  profile="$(basename $data)"
+else
+  profile="$(basename $data)-hpc"
+fi
+
+
+mkdir -p $PROFILES_DIR
 
 
 # -----------------------------------------------------------------------------
@@ -90,10 +97,10 @@ first_col=$(head -n 1 $data/metadata.tsv | cut -f 1)
 if [[ $num_required_cols -eq $NUM_REQUIRED_COLS ]]; then
     echo -e "$(date "+%Y-%m-%d %T")\tSUCCESS: $NUM_REQUIRED_COLS columns found."
 elif [[ "$first_col" != "$FIRST_COL" ]]; then
-    echo -e "\t\t\tFAIL: First column ($first_col) is not '$FIRST_COL'"   
+    echo -e "\t\t\tFAIL: First column ($first_col) is not '$FIRST_COL'"
 elif [[ ! $num_required_cols -eq $NUM_REQUIRED_COLS ]]; then
     echo -e "\t\t\tFAIL: $NUM_REQUIRED_COLS columns not found!"
-    exit 1    
+    exit 1
 fi
 
 # Sequences Check
@@ -118,7 +125,7 @@ else
     echo -e "\t\t\tSequence names:"
     echo $seq_names | sed 's/ /\n/g' | sed 's/^/\t\t\t\t/g'
     echo -e "\t\t\tStrain names:"
-    echo $strain_names | sed 's/ /\n/g' | sed 's/^/\t\t\t\t/g'    
+    echo $strain_names | sed 's/ /\n/g' | sed 's/^/\t\t\t\t/g'
     exit 1
 fi
 
@@ -130,10 +137,10 @@ echo -e "$(date "+%Y-%m-%d %T")\tCreating build file ($PROFILES_DIR/$profile/bui
 echo -e "$(date "+%Y-%m-%d %T")\tAdding default input datasets from $DEFAULT_INPUTS"
 cat $DEFAULT_INPUTS > $PROFILES_DIR/$profile/builds.yaml
 
-echo -e "$(date "+%Y-%m-%d %T")\tAdding $profile input dataset"
+echo -e "$(date "+%Y-%m-%d %T")\tAdding $profile input dataset ($data)"
 echo -e "\n
   # custom local build
-  - name: $profile
+  - name: $(basename $data)
     type:
       - local
     metadata: $data/metadata.tsv
@@ -154,7 +161,7 @@ echo -e "$(date "+%Y-%m-%d %T")\tCreating build ($profile)"
 cat $DEFAULT_BUILDS >> $PROFILES_DIR/$profile/builds.yaml
 echo -e "
 builds:
-  - name: $profile
+  - name: $(basename $data)
     base_input: $DEFAULT_BASE_INPUT
 " >> $PROFILES_DIR/$profile/builds.yaml
 
