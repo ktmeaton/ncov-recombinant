@@ -200,8 +200,12 @@ def main(
         num_sequences=num_sequences
     )
     for status in RECOMBINANT_STATUS:
+        if status in status_counts:
+            count = status_counts[status]["sequences"]
+        else:
+            count = 0
         summary += "  - {sequences} sequences are {status}.\n".format(
-            sequences=status_counts[status]["sequences"], status=status
+            sequences=count, status=status
         )
 
     body.text_frame.text = summary
