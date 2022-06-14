@@ -6,8 +6,5 @@ no-duplicate-header:
   siblings_only: true
 no-trailing-spaces:
   br_spaces: 2
-no-inline-html:
-  allowed_elements:
-    - img
-    - sup
+no-inline-html: false
 no-bare-urls: false
