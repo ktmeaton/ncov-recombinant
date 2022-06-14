@@ -4,8 +4,7 @@ Testing rule `plot` currently.
 
 ## Priority
 
-1. Use the build merge logic from usher.
-1. Add Vani to credits (see Taxonium).
+1. Add Vani to credits (see allcontributors).
 
 ## Misc
 

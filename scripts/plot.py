@@ -14,10 +14,11 @@ NO_DATA_CHAR = "NA"
 ALPHA_LAG = 0.25
 ALPHA_BAR = 1.00
 WIDTH_BAR = 0.75
-# This is the aspect ratio/dpi for ppt embeds
-DPI = 200
-FIGSIZE = [7, 5]
 EPIWEEK_MAX_BUFF_FACTOR = 1.1
+# This is the aspect ratio/dpi for ppt embeds
+# The dimensions are set in the powerpoint template (resources/template.pttx)
+DPI = 96 * 2
+FIGSIZE = [6.75, 5.33]
 
 
 @click.command()
@@ -376,8 +377,9 @@ def main(
         if "dummy" in plot_df.columns:
             legend.remove()
 
-        plt.savefig(out_path + ".png", bbox_inches="tight")
-        plt.savefig(out_path + ".svg", bbox_inches="tight")
+        plt.tight_layout()
+        plt.savefig(out_path + ".png")
+        plt.savefig(out_path + ".svg")
 
 
 if __name__ == "__main__":
