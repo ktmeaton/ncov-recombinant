@@ -137,6 +137,13 @@ jobs:
           conda activate $CONDA_ENV_NAME;
           snakemake --profile $CI_PROFILE $CI_TARGET;
 
+      # Create an artifact of the powerpoint slides
+      - name: upload report
+        uses: actions/upload-artifact@v3
+        with:
+          name: report-controls-positive
+          path: results/controls-positive/report/report.pptx
+
   #----------------------------------------------------------------------------
   controls-negative:
     name: Controls (Negative)
@@ -193,6 +200,13 @@ jobs:
           conda activate $CONDA_ENV_NAME;
           snakemake --profile $CI_PROFILE $CI_TARGET;
 
+      # Create an artifact of the powerpoint slides
+      - name: upload report
+        uses: actions/upload-artifact@v3
+        with:
+          name: report-controls-negative
+          path: results/controls-negative/report/report.pptx
+
   #----------------------------------------------------------------------------
   controls-all:
     name: Controls (All)
@@ -248,3 +262,10 @@ jobs:
         run: |
           conda activate $CONDA_ENV_NAME;
           snakemake --profile $CI_PROFILE $CI_TARGET;
+
+      # Create an artifact of the powerpoint slides
+      - name: upload report
+        uses: actions/upload-artifact@v3
+        with:
+          name: report-controls-all
+          path: results/controls-all/report/report.pptx
