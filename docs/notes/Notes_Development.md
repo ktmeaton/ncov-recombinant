@@ -15,6 +15,7 @@
 1. Make sure all rules write to a log if possible.
 1. Converted all rule inputs to snakemake rule variables.
 1. Create and document a `create_profile.sh` script.
+1. Use new logic for merging default parameters into a custom build.
 
 ## Continuous Integration
 
