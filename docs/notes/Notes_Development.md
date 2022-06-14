@@ -14,6 +14,14 @@
 1. Move rule outputs to sub-directories.
 1. Make sure all rules write to a log if possible.
 1. Converted all rule inputs to snakemake rule variables.
+1. Create and document a `create_profile.sh` script.
+
+## Continuous Integration
+
+1. Re-rename tutorial action to pipeline, and add different jobs for different profiles:
+
+    - Tutorial
+    - Controls
 
 ## Output
 
