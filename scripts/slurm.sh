@@ -40,7 +40,7 @@ while [[ $# -gt 0 ]]; do
     -h|--help)
       help="true"
       shift # past argument
-      ;;      
+      ;;
     *)
       echo "Unknown option: $1"
       exit 1
@@ -63,9 +63,9 @@ if [[ $help || $num_args -eq 0 ]]; then
   \tOptional arguments:\n
   \t\t--partition PARTITION     \t\t  Partition to submit jobs to with SLURM.\n
   \t\t--conda-env CONDA_ENV     \t\t Conda environment to use. (default: ncov-recombinant)\n
-  \t\t--target TARGET           \t\t Snakemake target(s) to execute (default: all)\n   
+  \t\t--target TARGET           \t\t Snakemake target(s) to execute (default: all)\n
   \t\t--cpus CPUS               \t\t\t CPUS to use for the  main pipeline. (default: 1)\n
-  \t\t--mem MEM                 \t\t\t Memory to use for the  ain pipeline. (default: 4GB)\n   
+  \t\t--mem MEM                 \t\t\t Memory to use for the  ain pipeline. (default: 4GB)\n
   \t\t-h, --help                \t\t\t Show this help message and exit.
   "
   echo -e $usage

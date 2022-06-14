@@ -60,14 +60,14 @@ rule_params:
   # max_parents : Exlude samples with greater than this number of parents
   # max_parents : Exlude samples with greater than this number of breakpoints
   # motifs      : (optional, experimental) Path to a breakpoints motif file
-  - name: sc2rf_recombinants   
+  - name: sc2rf_recombinants
     min_len: 1000
     max_parents: 2
     max_breakpoints: 2
     motifs:
 
   # ---------------------------------------------------------------------------
-  # exclude_false_positives : true if sequences that are false positives (according to sc2rf) should be excluded.  
+  # exclude_false_positives : true if sequences that are false positives (according to sc2rf) should be excluded.
   - name: faToVcf
     exclude_false_positives: false
 

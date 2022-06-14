@@ -23,7 +23,7 @@
 1. Rename linelist output.
 
     - `linelist.tsv`
-    - `positives.tsv`   
+    - `positives.tsv`  
     - `negatives.tsv`
     - `false_positives.tsv`
     - `lineages.tsv`

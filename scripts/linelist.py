@@ -18,7 +18,7 @@ LINELIST_COLS = {
     "strain": "strain",
     "usher_pango_lineage_map": "lineage_usher",
     "sc2rf_lineage": "lineage_sc2rf",
-    "sc2rf_status": "status_sc2rf",   
+    "sc2rf_status": "status_sc2rf",
     "Nextclade_pango": "lineage_nextclade",
     "sc2rf_parents": "parents",
     "sc2rf_breakpoints": "breakpoints",
@@ -118,7 +118,11 @@ def main(
         usher_placements = rec[1]["placements"]
 
         # Check if sc2rf or UShER thinks its a recombinant
-        if breakpoints != NO_DATA_CHAR and status_sc2rf[0] != "false_positive" and status_sc2rf[0] != "negative":
+        if (
+            breakpoints != NO_DATA_CHAR
+            and status_sc2rf[0] != "false_positive"
+            and status_sc2rf[0] != "negative"
+        ):
             is_recombinant = True
 
         if (
@@ -176,17 +180,15 @@ def main(
         if status_sc2rf == "negative":
             status = "negative"
 
-        # False Positives recombinants        
+        # False Positives recombinants
         elif max_placements != -1 and usher_placements > max_placements:
             status = "false_positive"
 
         elif not is_recombinant:
             status = "false_positive"
 
-
         linelist_df.at[rec[0], "status"] = str(status)
         linelist_df.at[rec[0], "issue"] = issue
-      
 
     # -------------------------------------------------------------------------
     # Lineage Grouping
@@ -302,7 +304,9 @@ def main(
     # Save to File
 
     # Drop Unnecessary columns
-    linelist_df.drop(columns=["lineage_sc2rf", "lineage_nextclade", "status_sc2rf"], inplace=True)
+    linelist_df.drop(
+        columns=["lineage_sc2rf", "lineage_nextclade", "status_sc2rf"], inplace=True
+    )
     linelist_df.rename(columns={"lineage_usher": "lineage"}, inplace=True)
 
     # Recode NA
@@ -330,14 +334,15 @@ def main(
 
     # All
     outpath = os.path.join(outdir, "linelist.tsv")
-    linelist_df.to_csv(outpath, sep="\t", index=False)     
+    linelist_df.to_csv(outpath, sep="\t", index=False)
 
     # Positives
     positive_df = linelist_df[
         (linelist_df["status"] != "false_positive")
-        & (linelist_df["status"] != "negative")]
+        & (linelist_df["status"] != "negative")
+    ]
     outpath = os.path.join(outdir, "positives.tsv")
-    positive_df.to_csv(outpath, sep="\t", index=False)    
+    positive_df.to_csv(outpath, sep="\t", index=False)
 
     # False Positives
     false_positive_df = linelist_df[linelist_df["status"] == "false_positive"]

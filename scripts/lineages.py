@@ -25,8 +25,12 @@ RECOMBINANTS_COLS = [
 
 
 @click.command()
-@click.option("--input", help="Input file of recombinant sequences (tsv).", required=True)
-@click.option("--output", help="Output file of recombinant lineages (tsv)", required=True)
+@click.option(
+    "--input", help="Input file of recombinant sequences (tsv).", required=True
+)
+@click.option(
+    "--output", help="Output file of recombinant lineages (tsv)", required=True
+)
 @click.option("--geo", help="Geography column", required=False, default="country")
 def main(
     input,

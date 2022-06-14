@@ -77,7 +77,7 @@ jobs:
       #   uses: actions/upload-artifact@v3
       #   with:
       #     name: report-tutorial
-      #     path: path/to/artifact/ # or path/to/artifact          
+      #     path: path/to/artifact/ # or path/to/artifact
 
   controls:
     name: Controls
@@ -131,4 +131,4 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate $CONDA_ENV_NAME;
-          snakemake --profile $CI_PROFILE all;          
+          snakemake --profile $CI_PROFILE all;

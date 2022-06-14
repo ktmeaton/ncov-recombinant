@@ -55,7 +55,7 @@ inputs:
     type:
       - local
     metadata: data/controls-all/metadata.tsv
-    sequences: data/controls-all/sequences.fasta    
+    sequences: data/controls-all/sequences.fasta
 
 # -----------------------------------------------------------------------------
 # Builds
@@ -76,7 +76,7 @@ builds:
 
     # There are no negatives, this is just for testing
     sc2rf:
-      exclude_negatives: true   
+      exclude_negatives: true
 
     # There are some false positives that will be corrected
     faToVcf:
@@ -95,7 +95,7 @@ builds:
 
     # All sequences are negatives, must keep!
     sc2rf:
-      exclude_negatives: false 
+      exclude_negatives: false
 
     # There are no false positives, this is for testing
     faToVcf:
@@ -114,7 +114,7 @@ builds:
 
     # There are negatives, keep them for testing
     sc2rf:
-      exclude_negatives: false  
+      exclude_negatives: false
 
     # There are false positives that will be corrected, keep them
     faToVcf:
@@ -123,4 +123,4 @@ builds:
     plot:
       min_date: "2022-01-10"
       max_date: "2022-04-25"
-      singletons: true  
+      singletons: true
