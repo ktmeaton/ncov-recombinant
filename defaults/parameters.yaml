@@ -52,7 +52,7 @@ rule_params:
       - "21L" # Omicron
     mutation_threshold: 0.25
     # Note : If you want sc2rf to update its mutation database everytime, add --rebuild-examples to `sc2rf_args`.
-    sc2rf_args: "--ansi --parents 2-4 --breakpoints 0-4 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
+    sc2rf_args: "--ansi --parents 2-4 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
     debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --enable-deletions"
 
   # ---------------------------------------------------------------------------

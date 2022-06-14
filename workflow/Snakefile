@@ -73,26 +73,48 @@ if "builds" not in config:
 
 # End Code: https://github.com/nextstrain/ncov/blob/master/Snakefile
 
-# Set default rule parameters for each build
+default_keys = ["inputs", "builds", "rule_params"]
+default_build_keys = ["name", "base_input"]
+
+# Set rule parameters for each build
 for build in config["builds"]:
+
+  build_final = copy.deepcopy(config["builds"][build])
+
+  # Initialize with defaults
   for rule in config["rule_params"]:
-    # Case 1. There are no params for this rule in the build
-    if rule not in config["builds"][build]:
-      config["builds"][build][rule] = config["rule_params"][rule]
-    # Case 2. There are some params for this rule in the build
-    else:
-      for param in config["rule_params"][rule]:
-        # Case 3. This param has not been specified
-        if param not in config["builds"][build][rule]:
-          config["builds"][build][rule][param] = config["rule_params"][rule][param]
+    build_final[rule] = config["rule_params"][rule]
 
+  # Load custom global params
+  del_keys = []
+  for key in config.keys():
+    if key in default_keys: continue
+    # Convert to an ordered dict, Add a new name element to the dictionary
+    config[key].update({"name": key})
+    config[key] = OrderedDict(config[key])
 
+    for param in config[key]:
+      build_final[key][param] = config[key][param]
+
+    del_keys.append(key)
+
+  # Delete these keys, they've been put into rule params
+  for key in del_keys:
+    del config[key]
+
+  # Load build specific params
+  for key in config["builds"][build]:
+    if key in default_build_keys: continue
+    for param in config["builds"][build][key]:
+      build_final[key][param] = config["builds"][build][key][param]
+
+  config["builds"][build] = build_final
+
+# Store list of builds and inputs for rule wildcard constraints
 BUILDS = list(config["builds"].keys())
 USHER_INPUTS = [input for input in config["inputs"] if "usher" in config["inputs"][input]["type"]]
 LOCAL_INPUTS = [input for input in config["inputs"] if "local" in config["inputs"][input]["type"]]
 
-# Delete generic params (they've all been added to each build at this point)
-config.pop("rule_params", None)
 
 # -----------------------------------------------------------------------------#
 #  Default Target
@@ -998,7 +1020,7 @@ rule linelist:
     lineages        = "results/{build}/linelists/lineages.tsv",
     parents         = "results/{build}/linelists/parents.tsv",
   params:
-    outdir         = "results/{build}/report",
+    outdir         = "results/{build}/linelists",
     extra_cols     = lambda wildcards: _params_usher_metadata(wildcards.build)["extra_cols"],
     geo            = lambda wildcards: _params_linelist()["geo"],
     max_placements = lambda wildcards: _params_linelist()["max_placements"],

@@ -105,6 +105,7 @@ def main(
     linelist_df.insert(3, "issue", [NO_DATA_CHAR] * len(linelist_df))
 
     for rec in linelist_df.iterrows():
+        strain = rec[0]
         lineage = NO_DATA_CHAR
         issue = NO_DATA_CHAR
         is_recombinant = False
@@ -131,6 +132,8 @@ def main(
             or lineage_usher.startswith("misc")
         ):
             is_recombinant = True
+
+        print(strain, is_recombinant, lineage_usher)
 
         # Use UShER as the definitive lineage caller
         lineage = lineage_usher
@@ -335,6 +338,7 @@ def main(
     # All
     outpath = os.path.join(outdir, "linelist.tsv")
     linelist_df.to_csv(outpath, sep="\t", index=False)
+    print(linelist_df)
 
     # Positives
     positive_df = linelist_df[
