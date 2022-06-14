@@ -37,14 +37,14 @@ inputs:
     ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.version.txt
 
   # Positive recombinant controls
-  - name: controls-positives
+  - name: controls-positive
     type:
       - local
     metadata: data/controls-positive/metadata.tsv
     sequences: data/controls-positive/sequences.fasta
 
   # Negative recombinant controls
-  - name: controls-negatives
+  - name: controls-negative
     type:
       - local
     metadata: data/controls-negative/metadata.tsv
