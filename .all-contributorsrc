@@ -1,0 +1,24 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "lenaschimmel",
+      "name": "Lena Schimmel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1325019?v=4",
+      "profile": "http://lenaschimmel.de",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "ncov-recombinant",
+  "projectOwner": "ktmeaton",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
