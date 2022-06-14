@@ -18,7 +18,7 @@ FONT_SIZE_PARAGRAPH = 20
 RECOMBINANT_STATUS = {
     "designated": "X.*",
     "proposed": "proposed.*",
-    "unpublished": "misc.*",
+    "unpublished": "^(?!X|proposed).*",
 }
 
 # Concise names for report
@@ -144,6 +144,7 @@ def main(
 
     plot_path = plot_dict["lineage"]["plot_path"]
     lineage_df = plot_dict["lineage"]["df"]
+
     lineages = list(lineage_df.columns)
     lineages.remove("epiweek")
 
@@ -162,6 +163,7 @@ def main(
         if status.lower() in RECOMBINANT_STATUS:
             regex = RECOMBINANT_STATUS[status.lower()]
             for lineage in lineages:
+                print(status, regex, lineage, re.match(regex, lineage))
                 if re.match(regex, lineage):
 
                     seq_count = sum(lineage_df[lineage].dropna())

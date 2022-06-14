@@ -63,6 +63,7 @@
 ## Programs
 
 1. Upgrade UShER to v0.5.4 (possible was in ver prior?)
+1. Remove `taxonium` and `chronumental` from the conda env.
 
 ## Data
 
