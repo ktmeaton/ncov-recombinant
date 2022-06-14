@@ -22,7 +22,9 @@
 1. Re-rename tutorial action to pipeline, and add different jobs for different profiles:
 
     - Tutorial
-    - Controls
+    - Controls (Positive)
+    - Controls (Negative)
+    - Controls (All)
 
 ## Output
 
@@ -69,3 +71,7 @@
     - X sequences from https://nextstrain.org/ncov/open/reference
 1. Rename `data/controls` to `data/positives`.
 1. Consolidate `positive` and `negative` builds into `profiles/controls`.
+
+## Bug Fixes
+
+1. Properly control the dimensions of plots for powerpoint embed.
