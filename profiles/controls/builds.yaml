@@ -1,4 +1,4 @@
-# TIP: To check your parameters before running, use: `snakemake -c 1 print_config`
+# TIP: To check your parameters before running, use: snakemake --profile profiles/controls print_config
 
 # -----------------------------------------------------------------------------
 # Inputs
@@ -17,30 +17,45 @@
 inputs:
 
   # An UShER base phylogeny of all publicly available samples (genbank).
+  # The protobuf will be downloaded to: `data/public-latest/usher.pb.gz
+  # The metadata will be downloaded to: `data/public-latest/usher.metadata.tsv
+  - name: public-latest
+    type:
+      - usher
+    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.all.masked.pb.gz
+    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.metadata.tsv.gz
+    ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.version.txt
+
+  # A time-stamped UShER base phylogeny of all publicly available samples (genbank) available on 2022-04-17
   # The protobuf will be downloaded to: `data/public-20220417/usher.pb.gz
   # The metadata will be downloaded to: `data/public-20220417/usher.metadata.tsv
   - name: public-20220417
     type:
       - usher
-
-    # Version controlled to 2022-04-17
     pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.all.masked.pb.gz
     metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.metadata.tsv.gz
     ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.version.txt
 
-  # Positives (recombinant) sequences and metadata
-  - name: positives
+  # Positive recombinant controls
+  - name: controls-positives
     type:
       - local
-    metadata: data/positives/metadata.tsv
-    sequences: data/positives/sequences.fasta
+    metadata: data/controls-positive/metadata.tsv
+    sequences: data/controls-positive/sequences.fasta
 
-  # Negatives (non-recombinant) sequences and metadata
-  - name: negatives
+  # Negative recombinant controls
+  - name: controls-negatives
     type:
       - local
-    metadata: data/negatives/metadata.tsv
-    sequences: data/negatives/sequences.fasta
+    metadata: data/controls-negative/metadata.tsv
+    sequences: data/controls-negative/sequences.fasta
+
+  # All recombinant controls (positive + negative)
+  - name: controls-all
+    type:
+      - local
+    metadata: data/controls-all/metadata.tsv
+    sequences: data/controls-all/sequences.fasta    
 
 # -----------------------------------------------------------------------------
 # Builds
@@ -61,7 +76,16 @@ builds:
 
     # There are no negatives, this is just for testing
     sc2rf:
-      exclude_negatives: true
+      exclude_negatives: true   
+
+    # There are some false positives that will be corrected
+    faToVcf:
+      exclude_false_positives: false
+
+    plot:
+      weeks: 16
+      max_date: "2022-04-25"
+      singletons: true
 
   # ---------------------------------------------------------------------------
   # `negatives` uses sequences that ARE NOT recombinants
@@ -69,6 +93,34 @@ builds:
   - name: negatives
     base_input: public-20220417
 
-    # There are no false positives, this is just for testing
+    # All sequences are negatives, must keep!
+    sc2rf:
+      exclude_negatives: false 
+
+    # There are no false positives, this is for testing
     faToVcf:
       exclude_false_positives: true
+
+    plot:
+      weeks: 16
+      max_date: "2022-05-20"
+      singletons: true
+
+  # ---------------------------------------------------------------------------
+  # `controls` uses a mixture of positive and negative recombinants
+
+  - name: controls
+    base_input: public-20220417
+
+    # There are negatives, keep them for testing
+    sc2rf:
+      exclude_negatives: false  
+
+    # There are false positives that will be corrected, keep them
+    faToVcf:
+      exclude_false_positives: false
+
+    plot:
+      min_date: "2022-01-10"
+      max_date: "2022-04-25"
+      singletons: true  

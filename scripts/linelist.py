@@ -34,7 +34,7 @@ LINELIST_COLS = {
 
 
 @click.command()
-@click.option("--summary", help="Summary (tsv).", required=True)
+@click.option("--input", help="Summary (tsv).", required=True)
 @click.option(
     "--issues",
     help="pango-designation issues table",
@@ -58,7 +58,7 @@ LINELIST_COLS = {
     required=True,
 )
 def main(
-    summary,
+    input,
     issues,
     extra_cols,
     max_placements,
@@ -75,7 +75,7 @@ def main(
         os.mkdir(outdir)
 
     # Import Summary Dataframe
-    summary_df = pd.read_csv(summary, sep="\t")
+    summary_df = pd.read_csv(input, sep="\t")
     summary_df.fillna(NO_DATA_CHAR, inplace=True)
 
     # Import Issues Summary Dataframe
@@ -269,6 +269,9 @@ def main(
 
         # By default use cluster ID for curated lineage
         linelist_df.at[rec[0], "recombinant_lineage_curated"] = cluster_id
+
+        if status == "negative":
+            linelist_df.at[rec[0], "recombinant_lineage_curated"] = "negative"
 
         # If designated, override with actual lineage
         if status == "designated":
