@@ -74,11 +74,12 @@ jobs:
           conda activate $CONDA_ENV_NAME;
           snakemake --profile $CI_PROFILE all;
 
-      # - name: upload tutorial report
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: report-tutorial
-      #     path: path/to/artifact/ # or path/to/artifact
+      # Create an artifact of the powerpoint slides
+      - name: upload report
+        uses: actions/upload-artifact@v3
+        with:
+          name: report-tutorial
+          path: results/tutorial/report/report.pptx
 
   #----------------------------------------------------------------------------
   controls-positive:
