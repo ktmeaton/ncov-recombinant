@@ -1,4 +1,4 @@
-# TIP: To check your parameters before running, use: `snakemake -c 1 print_config`
+# TIP: To check your parameters before running, use: snakemake --profile profiles/tutorial print_config
 
 # -----------------------------------------------------------------------------
 # Inputs
@@ -16,14 +16,12 @@
 
 inputs:
 
-  # An UShER base phylogeny of all publicly available samples (genbank).
+  # A time-stamped UShER base phylogeny of all publicly available samples (genbank) available on 2022-04-17
   # The protobuf will be downloaded to: `data/public-20220417/usher.pb.gz
   # The metadata will be downloaded to: `data/public-20220417/usher.metadata.tsv
   - name: public-20220417
     type:
       - usher
-
-    # Version controlled to 2022-04-17
     pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.all.masked.pb.gz
     metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.metadata.tsv.gz
     ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/2022/04/17/public-2022-04-17.version.txt
@@ -54,4 +52,18 @@ builds:
 
     # Universal rule parameters can (optionally) be overridden for a specific build.
     usher_metadata:
-      extra_cols: "genbank_accession"
+      extra_cols:
+        - genbank_accession
+
+    # There are no negatives, this is for testing
+    sc2rf:
+      exclude_negatives: true 
+
+    # There are no false positives, this is for testing
+    faToVcf:
+      exclude_false_positives: true
+
+    plot:
+      min_date: "2022-01-03"    
+      max_date: "2022-04-25"
+      singletons: true

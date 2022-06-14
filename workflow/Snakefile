@@ -104,25 +104,26 @@ rule all:
   """
     input:
         # Stage 1: Nextclade
-        expand("results/{build_name}/nextclade/recombinants.fasta",
+        expand("results/{build_name}/nextclade/alignment.fasta",
           build_name=BUILDS,
           ),
         # Stage 2: sc2rf
-        expand("results/{build_name}/sc2rf/recombinants.tsv",
+        expand("results/{build_name}/sc2rf/stats.tsv",
           build_name=BUILDS,
           ),
         # Stage 3: UShER
-        expand("results/{build_name}/subtrees_collapse",
+        expand("results/{build_name}/subtrees",
           build_name=BUILDS,
           ),
-        # # Stage 4: Linelist
-        # expand("results/{build_name}/linelist.positives.tsv",
-        #   build_name=BUILDS,
-        #   ),
-        # # Stage 5: Report
-        # expand("results/{build_name}/report.pptx",
-        #   build_name=BUILDS,
-        #   ),
+        # Stage 4: Linelist
+        expand("results/{build_name}/linelists/positives.tsv",
+          build_name=BUILDS,
+          ),
+        # Stage 5: Report
+        expand("results/{build_name}/report/report.pptx",
+          build_name=BUILDS,
+          ),
+          
 # -----------------------------------------------------------------------------#
 #  Accessory Rules
 # -----------------------------------------------------------------------------#
@@ -265,15 +266,12 @@ rule nextclade:
     sequences     = "data/{build}/sequences.fasta",
     metadata      = "data/{build}/metadata.tsv",
   output:
-    alignment_tmp = temp("results/{build}/nextclade/alignment.fasta.tmp"),
     alignment     = "results/{build}/nextclade/alignment.fasta",
     qc            = "results/{build}/nextclade/qc.tsv",
     metadata      = "results/{build}/nextclade/metadata.tsv",
   params:
     outdir        = "results/{build}/nextclade",
     basename      = "nextclade",
-    nextclade_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["nextclade_ref"],
-    custom_ref    = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
   benchmark:
     "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
   log:
@@ -285,18 +283,16 @@ rule nextclade:
       --jobs {resources.cpus} \
       --input-fasta {input.sequences} \
       --input-dataset {input.dataset} \
-      --include-reference \
       --output-dir {params.outdir} \
       --output-tsv {output.qc} \
-      --output-fasta {output.alignment_tmp} \
+      --output-fasta {output.alignment} \
       --output-basename {params.basename} \
       > {log} 2>&1;
 
-    # Rename ref strain
-    seqkit replace -p "{params.nextclade_ref}" -r "{params.custom_ref}" {output.alignment_tmp} 1> {output.alignment} 2>> {log};
-
     # Merge QC output with metadata
-    csvtk rename -t -f "seqName" -n "strain" {output.qc} 2>> {log} | csvtk merge -t -f "strain" {input.metadata} - > {output.metadata} 2>> {log};
+    csvtk rename -t -f "seqName" -n "strain" {output.qc} 2>> {log} \
+      | csvtk merge -t -f "strain" {input.metadata} - \
+      1> {output.metadata} 2>> {log};
     """
 
 # ----------------------------------------------------------------------------#
@@ -312,13 +308,12 @@ rule nextclade_recombinants:
   """
 
   input:
-    alignment      = "results/{build}/nextclade/alignment.fasta",
-    qc             = "results/{build}/nextclade/qc.tsv",
+    alignment      = rules.nextclade.output.alignment,
+    qc             = rules.nextclade.output.qc,
   output:
     alignment      = "results/{build}/nextclade/recombinants.fasta",
     strains        = "results/{build}/nextclade/recombinants.txt",
   params:
-    custom_ref     = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
     exclude_clades = lambda wildcards: "|".join(config["builds"][wildcards.build]["nextclade_recombinants"]["exclude_clades"]),
     fields         = "clade,Nextclade_pango,qc.overallStatus",
     values         = ".*(recombinant|X|bad|mediocre).*",
@@ -339,8 +334,7 @@ rule nextclade_recombinants:
       > {output.strains};
 
     # Extract recombinant sequences
-    seqkit grep -p "{params.custom_ref}" {input.alignment} 1> {output.alignment}  2>> {log};
-    seqkit grep -f "{output.strains}"    {input.alignment} 1>> {output.alignment} 2>> {log};
+    seqkit grep -f "{output.strains}"    {input.alignment} 1> {output.alignment} 2>> {log};
     """
 
 # -----------------------------------------------------------------------------#
@@ -354,15 +348,19 @@ def _inputs_sc2rf(build):
   """Parse conditional inputs for rule sc2rf."""
 
   inputs = {}
-  # exclude_negatives = True. Use alignment from nextclade_recombinants
-  # exclude_negatives = False. Use alignment from nextclade
   exclude_negatives = config["builds"][build]["sc2rf"]["exclude_negatives"]
-  if exclude_negatives:
-    inputs["alignment"] = "results/{build}/nextclade/recombinants.fasta".format(
-      build=build)
+
+  # nextclade/alignment.fasta: positives, negatives, and false_positives
+  # nextclade/recombinants.fasta: positives (and false_positives)
+  
+  # Option 1: Everything (positives, negatives, false_positives)
+  if not exclude_negatives:
+    inputs["alignment"] = "results/{build}/nextclade/alignment.fasta".format(build=build)
+
+  # Option 2: Positives only
   else:
-    inputs["alignment"] = "results/{build}/nextclade/alignment.fasta".format(
-      build=build)
+    inputs["alignment"] = "results/{build}/nextclade/recombinants.fasta".format(build=build)
+
 
   return inputs
 
@@ -451,25 +449,24 @@ rule sc2rf_recombinants:
   message: """Post process the sc2rf output to identify recombinants.\n
   build:       {wildcards.build}
   log:         {log}
-  stats:       {output.tsv}
+  stats:       {output.stats}
   ansi:        {output.ansi}
   alignment:   {output.alignment}
   """
 
   input:
-    ansi            = "results/{build}/sc2rf/ansi.txt",
-    csv             = "results/{build}/sc2rf/stats.csv",
-    issues          = "resources/issues.tsv",
+    ansi            = rules.sc2rf.output.ansi,
+    csv             = rules.sc2rf.output.csv,
+    issues          = rules.issues_download.output.issues,
     alignment       = lambda wildcards: _inputs_sc2rf(wildcards.build)["alignment"],
   output:
+    stats           = "results/{build}/sc2rf/stats.tsv",
     strains         = "results/{build}/sc2rf/recombinants.txt",
     alignment       = "results/{build}/sc2rf/recombinants.fasta",  
-    tsv             = "results/{build}/sc2rf/recombinants.tsv",
     ansi            = "results/{build}/sc2rf/recombinants.ansi.txt",
   params:
     outdir          = "results/{build}/sc2rf",
     prefix          = "recombinants",
-    custom_ref      = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
     min_len         = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["min_len"],    
     max_parents     = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_parents"],
     max_breakpoints = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_breakpoints"],
@@ -492,30 +489,32 @@ rule sc2rf_recombinants:
       --max-breakpoints {params.max_breakpoints} \
       --outdir {params.outdir} \
       --aligned {input.alignment} \
-      --custom-ref "{params.custom_ref}" \
       --issues {input.issues} \
       {params.motifs} \
       2> {log};
+
+    # Cleanup
+    mv -f {params.outdir}/recombinants.tsv {params.outdir}/stats.tsv
+    rm -f {params.outdir}/recombinants.exclude.tsv;
     """
 
 # -----------------------------------------------------------------------------
-rule_name = "sc2rf_exclude_false_positives"
-rule sc2rf_exclude_false_positives:
-  """Exclude false positives from the sc2rf alignment."""
 
-  message: """Excluding false positives from the sc2rf alignment.\n
+rule_name = "nextclade_exclude_false_positives"
+rule nextclade_exclude_false_positives:
+  """Exclude false positives from the nextclade alignment."""
+
+  message: """Excluding false positives from the nextclade alignment.\n
   build:       {wildcards.build}
   log:         {log}
   alignment:   {output.alignment}
   """
 
   input:
-    alignment = "results/{build}/sc2rf/recombinants.fasta",  
-    stats     = "results/{build}/sc2rf/recombinants.tsv",
+    alignment = rules.nextclade.output.alignment, 
+    stats     = rules.sc2rf_recombinants.output.stats,
   output:
-    alignment = "results/{build}/sc2rf/recombinants.exclude_false_positives.fasta",
-  params:
-    custom_ref = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
+    alignment = "results/{build}/nextclade/alignment.exclude_false_positives.fasta",
   threads: 1
   resources:
     cpus = 1,
@@ -525,12 +524,10 @@ rule sc2rf_exclude_false_positives:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    seqkit grep -p "{params.custom_ref}" {input.alignment} 1> {output.alignment}  2> {log};
-
-    csvtk grep -t -f "sc2rf_status" -p "false_positive" -v {input.stats} 2>> {log} \
+    csvtk grep -t -f "sc2rf_status" -p "false_positive" -v {input.stats} 2> {log} \
       | csvtk cut -t -f "strain" \
       | tail -n+2  \
-      | seqkit grep -f - {input.alignment} 1>> {output.alignment} 2>> {log} ;
+      | seqkit grep -f - {input.alignment} 1> {output.alignment} 2>> {log} ;
     """
 
 # -----------------------------------------------------------------------------#
@@ -544,12 +541,34 @@ def _inputs_faToVcf(build):
   """Parse conditional inputs for rule faToVcf."""
 
   inputs = {}
+  exclude_negatives = config["builds"][build]["sc2rf"]["exclude_negatives"]
   exclude_false_positives = config["builds"][build]["faToVcf"]["exclude_false_positives"]
 
-  if exclude_false_positives:
-    inputs["alignment"] = "results/{build}/sc2rf/recombinants.exclude_false_positives.fasta".format(build=build)  
-  else:
+  # nextclade/alignment.fasta: positives, negatives, and false_positives
+  # nextclade/recombinants.fasta: positives and false_positives
+  # sc2rf/recombinants.fasta: positives
+  
+  # Option 1: Everything (positives, negatives, false_positives)
+  # nextclade/alignment.fasta
+  if not exclude_false_positives and not exclude_negatives:
+    inputs["alignment"] = "results/{build}/nextclade/alignment.fasta".format(build=build)
+
+  # Option 2: Positives and false_positives
+  elif not exclude_false_positives and exclude_negatives:
+    inputs["alignment"] = "results/{build}/nextclade/recombinants.fasta".format(build=build)
+
+  # Option 3: Positives and negatives (no false_positives)
+  elif exclude_false_positives and not exclude_negatives:
+    inputs["alignment"] = "results/{build}/nextclade/alignment.exclude_false_positives.fasta".format(build=build)
+
+  # Option 4: Positives only
+  elif exclude_false_positives and exclude_negatives:
     inputs["alignment"] = "results/{build}/sc2rf/recombinants.fasta".format(build=build)
+
+  # I think that covers it?
+  else:
+    print("ERROR: Unhandled exception in _inputs_faToVcf")
+    quit()
 
   return inputs
 
@@ -565,15 +584,15 @@ rule faToVcf:
   """
 
   input:
-    stats                   = "results/{build}/sc2rf/recombinants.tsv",
+    reference               = "data/reference/reference.fasta",
+    stats                   = rules.sc2rf_recombinants.output.stats,
     alignment               = lambda wildcards: _inputs_faToVcf(wildcards.build)["alignment"],
     prob_sites              = "data/reference/problematic_sites.vcf",
   output: 
-    vcf                     = "results/{build}/sc2rf/recombinants.vcf.gz",
+    alignment               = "results/{build}/faToVcf/alignment.fasta",
+    vcf                     = "results/{build}/faToVcf/alignment.vcf.gz",
   params:
-    prefix                  = "results/{build}/sc2rf/recombinants.vcf",
-    exclude_false_positives = lambda wildcards: config["builds"][wildcards.build]["faToVcf"]["exclude_false_positives"],
-    custom_ref              = lambda wildcards: config["builds"][wildcards.build]["nextclade"]["custom_ref"],
+    prefix                  = "results/{build}/faToVcf/alignment.vcf",
   threads: 1
   resources:
     cpus = 1,
@@ -583,8 +602,11 @@ rule faToVcf:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
+    # Add the reference genome
+    cat {input.reference} {input.alignment} > {output.alignment};
+
     # Construct VCF
-    faToVcf -ambiguousToN -maskSites={input.prob_sites} -ref='{params.custom_ref}' {input.alignment} {params.prefix} >> {log} 2>&1;
+    faToVcf -ambiguousToN -maskSites={input.prob_sites} {output.alignment} {params.prefix} >> {log} 2>&1;
 
     # Compress Output
     gzip -f {params.prefix} >> {log} 2>&1;
@@ -643,6 +665,7 @@ def _inputs_usher(build):
   inputs = {}
   base_input = config["builds"][build]["base_input"]
   base_pb = "data/{base_input}/usher.pb.gz".format(base_input=base_input)
+  inputs["base_input"] = base_input
   inputs["base_pb"] = base_pb
   return inputs
 
@@ -658,7 +681,7 @@ rule usher:
   """
 
   input:
-    vcf             = "results/{build}/sc2rf/recombinants.vcf.gz",
+    vcf             = rules.faToVcf.output.vcf,
     pb              = lambda wildcards: _inputs_usher(wildcards.build)["base_pb"],
   output:
     pb              = "results/{build}/usher/usher.pb.gz",
@@ -698,15 +721,15 @@ rule usher_stats:
   """
 
   input:
-    placement_stats = "results/{build}/usher/placement_stats.tsv",
-    clades          = "results/{build}/usher/clades.txt",
-    mut_paths       = "results/{build}/usher/mutation-paths.txt",
-    issue_to_lineage = "resources/issue_to_lineage.tsv",
+    placement_stats  = rules.usher.output.placement_stats,
+    clades           = rules.usher.output.clades,
+    mut_paths        = rules.usher.output.mut_paths,
+    issue_to_lineage = rules.issues_download.output.issue_to_lineage,
   output:
-    placement_stats = "results/{build}/usher/usher.placement_stats.tsv",
-    mut_paths       = "results/{build}/usher/usher.mutation_paths.tsv",
-    clades          = "results/{build}/usher/usher.clades.tsv",
-    strains         = "results/{build}/usher/usher.strains.txt",    
+    placement_stats  = "results/{build}/usher/usher.placement_stats.tsv",
+    mut_paths        = "results/{build}/usher/usher.mutation_paths.tsv",
+    clades           = "results/{build}/usher/usher.clades.tsv",
+    strains          = "results/{build}/usher/usher.strains.txt",    
   params:
     outdir = "results/{build}/usher",
   benchmark:
@@ -777,7 +800,7 @@ rule usher_metadata:
     base_metadata  = lambda wildcards: "data/{base_input}/metadata.tsv".format(
             base_input=config["builds"][wildcards.build]["base_input"]
           ),
-    clades          = "results/{build}/usher/usher.clades.tsv",
+    clades          = rules.usher_stats.output.clades,
   output:
     metadata        = "results/{build}/usher/usher.metadata.tsv",
     decimal_date    = "results/{build}/usher/usher.metadata.decimal_date.tsv",
@@ -820,9 +843,9 @@ rule usher_subtree:
   """
 
   input:
-    pb       = "results/{build}/usher/usher.pb.gz",
-    strains  = "results/{build}/usher/usher.strains.txt",   
-    metadata = "results/{build}/usher/usher.metadata.decimal_date.tsv",
+    pb       = rules.usher.output.pb,
+    strains  = rules.usher_stats.output.strains,
+    metadata = rules.usher_metadata.output.decimal_date,
   output:
     subtrees_dir = directory("results/{build}/usher/subtrees"),
   params:
@@ -863,7 +886,6 @@ rule usher_subtree_collapse:
     build = "|".join(BUILDS),  
 
   input:
-    #subtrees_dir = directory("results/{build}/usher/subtrees"),
     subtrees_dir  = rules.usher_subtree.output.subtrees_dir,
   output:
     collapse_dir = directory("results/{build}/subtrees"),
@@ -895,17 +917,17 @@ rule summary:
   """
 
   input:
-    nextclade        = "results/{build}/nextclade/metadata.tsv",
-    sc2rf            = "results/{build}/sc2rf/recombinants.tsv",
-    usher_clades     = "results/{build}/usher/usher.clades.tsv",
-    usher_placements = "results/{build}/usher/usher.placement_stats.tsv",
-    subtrees         = "results/{build}/subtrees/metadata.tsv",
+    nextclade        = rules.nextclade.output.metadata,
+    sc2rf            = rules.sc2rf_recombinants.output.stats,
+    usher_clades     = rules.usher_stats.output.clades,
+    usher_placements = rules.usher_stats.output.placement_stats,
+    subtrees         = rules.usher_subtree_collapse.output.metadata,
     usher_ver        = lambda wildcards: "data/{base_input}/version.txt".format(
                         base_input=config["builds"][wildcards.build]["base_input"]
                       ),
 
   output:
-    summary = "results/{build}/report/summary.tsv",
+    summary = "results/{build}/linelists/summary.tsv",
   params:
     extra_cols         = lambda wildcards: _params_usher_metadata(wildcards.build)["extra_cols"],
     nextclade_dataset  = lambda wildcards: config["builds"][wildcards.build]["nextclade_dataset"]["dataset"],
@@ -936,7 +958,7 @@ rule summary:
 
 # Parameters Function
 def _params_linelist():
-  """Parse parameters from wildcards for rule plot."""
+  """Parse parameters from wildcards for rule linelist."""
 
   params = {}
 
@@ -955,7 +977,7 @@ rule_name = "linelist"
 rule linelist:
   """Create linelists of recombinant sequences, lineages, and parents."""
 
-  message: """Creating a linelist of recombinant sequences, lineages, and parents..\n
+  message: """Creating linelists of recombinant sequences, lineages, and parents.\n
   build:             {wildcards.build}
   log:               {log}
   positives:         {output.positives}
@@ -966,15 +988,15 @@ rule linelist:
   """
 
   input:
-    summary         = "results/{build}/report/summary.tsv",
-    issues          = "resources/issues.tsv",
+    summary         = rules.summary.output.summary,
+    issues          = rules.issues_download.output.issues,
   output:
-    linelist        = "results/{build}/report/linelist.tsv",  
-    positives       = "results/{build}/report/positives.tsv",
-    negatives       = "results/{build}/report/negatives.tsv",
-    false_positives = "results/{build}/report/false_positives.tsv",
-    lineages        = "results/{build}/report/lineages.tsv",
-    parents         = "results/{build}/report/parents.tsv",
+    linelist        = "results/{build}/linelists/linelist.tsv",  
+    positives       = "results/{build}/linelists/positives.tsv",
+    negatives       = "results/{build}/linelists/negatives.tsv",
+    false_positives = "results/{build}/linelists/false_positives.tsv",
+    lineages        = "results/{build}/linelists/lineages.tsv",
+    parents         = "results/{build}/linelists/parents.tsv",
   params:
     outdir         = "results/{build}/report",
     extra_cols     = lambda wildcards: _params_usher_metadata(wildcards.build)["extra_cols"],
@@ -990,7 +1012,7 @@ rule linelist:
   shell:
     """
     # Create the strain tables
-    python3 scripts/linelist.py --summary {input.summary} --issues {input.issues} --outdir {params.outdir} {params.max_placements} {params.extra_cols} > {log} 2>&1;
+    python3 scripts/linelist.py --input {input.summary} --issues {input.issues} --outdir {params.outdir} {params.max_placements} {params.extra_cols} > {log} 2>&1;
 
     # Create the lineages table
     python3 scripts/lineages.py --input {output.positives} --output {output.lineages} {params.geo} >> {log} 2>&1;
@@ -1018,13 +1040,13 @@ def _params_plot(wildcards):
   if min_date: params["min_date"] = "--min-date {}".format(min_date)
   else: params["min_date"] = ""
 
+  max_date = config["builds"][wildcards.build]["plot"]["max_date"]
+  if max_date: params["max_date"] = "--max-date {}".format(max_date)
+  else: params["max_date"] = ""  
+
   singletons = config["builds"][wildcards.build]["plot"]["singletons"]
   if singletons: params["singletons"] = "--singletons"
   else: params["singletons"] = ""
-
-  geo = config["builds"][wildcards.build]["linelist"]["geo"]
-  if geo: params["geo"] = "--geo {}".format(geo)
-  else: params["geo"] = ""
 
   lag = config["builds"][wildcards.build]["plot"]["lag"]
   if lag: params["lag"] = "--lag {}".format(lag)
@@ -1039,19 +1061,20 @@ rule plot:
   message: """Plotting results.\n
   build:   {wildcards.build}
   log:     {log}
-  plots:   {output.outdir}
+  plots:   {output.plots}
   """
 
   input:
-    linelist   = "results/{build}/linelist.tsv",
+    positives  = rules.linelist.output.positives,
   output:
     plots      = directory("results/{build}/plots"),
   params:
     outdir     = "results/{build}/plots",
+    geo        = lambda wildcards: _params_linelist()["geo"],
     weeks      = lambda wildcards: _params_plot(wildcards)["weeks"],
     min_date   = lambda wildcards: _params_plot(wildcards)["min_date"],
+    max_date   = lambda wildcards: _params_plot(wildcards)["max_date"],
     lag        = lambda wildcards: _params_plot(wildcards)["lag"],
-    geo        = lambda wildcards: _params_plot(wildcards)["geo"],
     singletons = lambda wildcards: _params_plot(wildcards)["singletons"],   
   threads: 1
   resources:
@@ -1063,12 +1086,13 @@ rule plot:
   shell:
     """
     python3 scripts/plot.py \
-      --linelist {input.linelist} \
+      --input {input.positives} \
       --outdir {params.outdir} \
       {params.lag} \
       {params.geo} \
       {params.weeks} \
       {params.min_date} \
+      {params.max_date} \
       {params.singletons} \
       > {log} 2>&1;
     """
@@ -1108,16 +1132,20 @@ rule report:
   """
 
   input:
-    linelist        = "results/{build}/linelist.tsv",
-    recombinants    = "results/{build}/recombinants.tsv",
-    parents         = "results/{build}/parents.tsv",
-    false_positives = "results/{build}/false_positives.tsv",
-    issues          = "resources/issues.tsv",
-    #plots           = directory("results/{build}/plots"),
-    plots           = rules.plot.output.plots,
+    plots           = rules.plot.output.plots,  
+    tables          = [
+                      rules.linelist.output.lineages,
+                      rules.linelist.output.parents,
+                      rules.linelist.output.linelist,
+                      rules.linelist.output.positives,
+                      rules.linelist.output.negatives,
+                      rules.linelist.output.false_positives,
+                      rules.summary.output.summary,         
+                      rules.issues_download.output.issues,                  
+                      ],
   output:
-    pptx = "results/{build}/report.pptx",
-    xlsx   = "results/{build}/report.xlsx",
+    pptx            = "results/{build}/report/report.pptx",
+    xlsx            = "results/{build}/report/report.xlsx",
   params:
     geo       = lambda wildcards: _params_report(wildcards)["geo"],
     changelog = lambda wildcards: _params_report(wildcards)["changelog"],
@@ -1133,7 +1161,7 @@ rule report:
   shell:
     """
     # Create the excel report
-    csvtk csv2xlsx -t -o {output.xlsx} {input.recombinants} {input.linelist} {input.parents} {input.false_positives} {input.issues} > {log} 2>&1;
+    csvtk csv2xlsx -t -o {output.xlsx} {input.tables} > {log} 2>&1;
 
     # Create the powerpoint slides
     python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.changelog} {params.template} >> {log} 2>&1;

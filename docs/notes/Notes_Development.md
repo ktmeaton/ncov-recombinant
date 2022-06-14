@@ -13,6 +13,7 @@
 1. Use sub-functions to better control optional parameters.
 1. Move rule outputs to sub-directories.
 1. Make sure all rules write to a log if possible.
+1. Converted all rule inputs to snakemake rule variables.
 
 ## Output
 
@@ -28,12 +29,24 @@
     - `lineages.tsv`
     - `parents.tsv`
 
+1. The `report.xlsx` now includes the following tables:
+
+    - lineages
+    - parents
+    - linelist
+    - positives
+    - negatives
+    - false_positives
+    - summary
+    - issues
+
 ## Params
 
 1. Add new optional param `max_placements` to rule `linelist`.
 1. Remove `--show-private-mutations` from `debug_args` of rule `sc2rf`.
 1. Add optional param `--sc2rf-dir` to `sc2rf` to enable execution outside of `sc2rf` dir.
 1. Add params `--output-csv` and `--output-ansi` to the wrapper `scripts/sc2rf.sh`.
+1. Remove params `nextclade_ref` and `custom_ref` from rule `nextclade`.
 
 ## Programs
 
@@ -41,5 +54,8 @@
 
 ## Data
 
+1. Create new dataset `negatives`:
+
+    - X sequences from https://nextstrain.org/ncov/open/reference
 1. Rename `data/controls` to `data/positives`.
 1. Consolidate `positive` and `negative` builds into `profiles/controls`.
