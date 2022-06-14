@@ -11,6 +11,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 1. Align sequences and perform clade/lineage assignments with [Nextclade](https://github.com/nextstrain/nextclade).
 1. Identify parental clades and plot recombination breakpoints with [sc2rf](https://github.com/lenaschimmel/sc2rf).
 1. Phylogenetically place recombinant sequences with [UShER](https://github.com/yatisht/usher).
+1. Create spreadssheets and powerpoint slides for reporting.
 
 ## Table of Contents
 
@@ -27,7 +28,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 
 ### Tables
 
-Tables collated into a spreadsheet for excel/google sheets:
+Linelists are collated into a spreadsheet for excel/google sheets:
 
 1. `recombinants`: Per-lineage summary statistics.
 1. `linelist`: Per-sequence statistics.
@@ -74,10 +75,10 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 
 > Tip: Remember to run `conda activate ncov-recombinant` first!
 
-1. Preview the commands that are going to be run.
+1. Preview the steps that are going to be run.
 
     ```bash
-    snakemake --profile profiles/tutorial --dryrun --printshellcmds
+    snakemake --profile profiles/tutorial --dryrun
     ```
 
 1. Run the workflow.
@@ -86,60 +87,57 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
     snakemake --profile profiles/tutorial
     ```
 
-1. Inspect the output
+1. Explore the graphic output:
 
-    - Slides | `results/tutorial/report.pptx`
-    - Tables | `results/tutorial/report.xlsx`
-    - Breakpoints<sup>*</sup> | `results/tutorial/sc2rf.recombinants.ansi.txt`
-    - Trees<sup>†</sup> | `results/tutorial/subtrees_collapse`
+    - Slides | `results/tutorial/report/report.pptx`
+    - Tables<sup>*</sup> | `results/tutorial/report/report.xlsx`
+    - Breakpoints<sup>*</sup> | `results/tutorial/sc2rf/recombinants.ansi.txt`
+    - Trees<sup>†</sup> | `results/tutorial/subtrees`
 
-<sup>*</sup> Visualize breakpoints with `less -S` or [Visual Studio ANSI Colors](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi).  
-<sup>†</sup> Upload Auspice JSON trees to <https://auspice.us/>.
-
+<sup>*</sup> Individual tables are available as TSV linelists in `results/tutorial/linelists`.  
+<sup>†</sup> Visualize breakpoints with `less -S` or [Visual Studio ANSI Colors](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi).  
+<sup>‡</sup>  Upload Auspice JSON trees to <https://auspice.us/>.
 ## Custom Configuration
 
-### Data
-
-1. Create new directories for your data, system configuration, and run parameters.
+1. Create a new directory for your data.
 
     ```bash
-    mkdir -p my_profiles/custom
     mkdir -p data/custom
     ```
 
 1. Copy over your `metadata.tsv` and unaligned `sequences.fasta` to `data/custom`.
 
-    > Note: `metadata.tsv` MUST have at minimum the columns `strain`, `date`, `country`.
+    > Note: `metadata.tsv` MUST have at minimum the columns `strain`, `date`, `country`.  
+    > Note: The first column MUST be `strain`.
 
-### Setting up a template
-
-1. Copy over the default build parameters to get started.
-
-    ```bash
-    cp defaults/parameters.yaml my_profiles/custom/builds.yaml
-    ```
-
-1. Copy over the minimal system configuration (`laptop`) to get started.
+1. Create a profile for your custom build.
 
     ```bash
-    cp profiles/laptop/config.yaml my_profiles/custom/config.yaml
+    bash scripts/create_profile.sh --data data/custom
     ```
 
-### Editing the template
+    ```text
+    2022-06-14 15:19:43     Searching for metadata (data/custom/metadata.tsv)
+                            SUCCESS: metadata found
+    2022-06-14 15:19:43     Checking for 3 required metadata columns (strain|date|country)
+    2022-06-14 15:19:43     SUCCESS: 3 columns found.
+    2022-06-14 15:19:43     Searching for sequences (data/custom/sequences.fasta)
+                            SUCCESS: Sequences found
+    2022-06-14 15:19:43     Checking that the strain column matches the sequence names
+                            SUCCESS: Strain column matches sequence names
+    2022-06-14 15:19:43     Creating new profile directory (my_profiles/custom)
+    2022-06-14 15:19:43     Creating build file (my_profiles/custom/builds.yaml)
+    2022-06-14 15:19:43     Adding default input datasets from defaults/inputs.yaml
+    2022-06-14 15:19:43     Adding custom input dataset (data/custom)
+    2022-06-14 15:19:43     Creating system configuration (my_profiles/custom/config.yaml)
+    2022-06-14 15:19:43     Adding default system resources
+    2022-06-14 15:19:43     Creating build (custom)
+    2022-06-14 15:19:43     Done! The custom profile is ready to be run with:
 
-1. Add your build file to the `configfile` element of `my_profiles/custom/config.yaml`:
-
-    ```yaml
-    #------------------------------------------------------------------------------#
-    # Build Config
-    #------------------------------------------------------------------------------#
-
-    configfile:
-      - defaults/parameters.yaml
-      - my_profiles/custom/builds.yaml
+                            snakemake --profile my_profiles/custom
     ```
 
-1. Edit the `jobs` and `default-resources` to match your system.
+1. Edit `my_profiles/custom/config.yaml`, so that the `jobs` and `default-resources` match your system.
 
     > Note: For HPC environments, see the [High Performance Computing](https://github.com/ktmeaton/ncov-recombinant#high-performance-computing) section.
 
@@ -158,32 +156,9 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
     - time_min=120
     ```
 
-1. Create a new **input** entry for your data in `my_profiles/custom/builds.yaml`.
-
-    ```yaml
-    inputs:
-
-        # Custom sequences and metadata
-        - name: custom
-            type:
-            - local
-            metadata: data/custom/metadata.tsv
-            sequences: data/custom/sequences.fasta
-    ```
-
-1. Create a new **build** entry in `my_profiles/custom/builds.yaml`, using the latest public data as the UShER base phylogeny.
-
-    ```yaml
-    builds:
-
-        - name: custom
-            base_input: public-latest
-    ```
-
 1. Do a dry run to confirm setup.
 
     ```bash
-    snakemake --profile my_profiles/custom print_config
     snakemake --profile my_profiles/custom --dry-run
     ```
 
@@ -195,51 +170,80 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 
 ## High Performance Computing (HPC)
 
-`ncov-recombinant` workflows can alternatively be dispatched using the SLURM job submission system. 
+`ncov-recombinant` can alternatively be dispatched using the SLURM job submission system.
 
+    
 ### Tutorial
 
-Edit `profiles/tutorial-hpc/config.yaml` to specify the number of `jobs` and `default-resources` to use.
+1. Create an HPC-compatible profile to store your build configuration.
 
-```yaml
-# Maximum number of jobs to run
-jobs : 2
+    ```bash
+    bash scripts/create_profile.sh --data data/tutorial --hpc
+    ```
+    
+    ```text
+    2022-06-14 15:24:51     Searching for metadata (data/tutorial/metadata.tsv)
+                            SUCCESS: metadata found
+    2022-06-14 15:24:51     Checking for 3 required metadata columns (strain|date|country)
+    2022-06-14 15:24:51     SUCCESS: 3 columns found.
+    2022-06-14 15:24:51     Searching for sequences (data/tutorial/sequences.fasta)
+                            SUCCESS: Sequences found
+    2022-06-14 15:24:51     Checking that the strain column matches the sequence names
+                            SUCCESS: Strain column matches sequence names
+    2022-06-14 15:24:51     Creating new profile directory (my_profiles/tutorial-hpc)
+    2022-06-14 15:24:51     Creating build file (my_profiles/tutorial-hpc/builds.yaml)
+    2022-06-14 15:24:51     Adding default input datasets from defaults/inputs.yaml
+    2022-06-14 15:24:51     Adding tutorial-hpc input dataset (data/tutorial)
+    2022-06-14 15:24:51     Creating system configuration (my_profiles/tutorial-hpc/config.yaml)
+    2022-06-14 15:24:51     Adding default HPC system resources
+    2022-06-14 15:24:51     Creating build (tutorial-hpc)
+    2022-06-14 15:24:51     Done! The tutorial-hpc profile is ready to be run with:
 
-# Default resources for a SINGLE JOB
-default-resources:
-  - cpus=32
-  - mem_mb=32000
-  - time_min=720
-```
+                            snakemake --profile my_profiles/tutorial-hpc    
+    ```
 
-Then dispatch the workflow using the following command:
 
-```bash
-bash scripts/slurm.sh --profile profiles/controls-hpc
-```
+2. Edit `my_profiles/tutorial-hpc/config.yaml` to specify the number of `jobs` and `default-resources` to use.
 
-Use the `--help` parameter to get additional options for SLURM dispatch.
+    ```yaml
+    # Maximum number of jobs to run
+    jobs : 4
 
-```bash
-bash scripts/slurm.sh --help
-```
+    # Default resources for a SINGLE JOB
+    default-resources:
+    - cpus=64
+    - mem_mb=64000
+    - time_min=720
+    ```
 
-```text
-usage: bash slurm.sh [-h] [--profile PROFILE] [--conda-env CONDA_ENV] [--target TARGET] [--partition PARTITION] [--cpus CPUS] [--mem MEM]
+3. Dispatch the workflow using the slurm wrapper script:
 
-        Dispatch a Snakemake pipeline using SLURM.
+    ```bash
+    bash scripts/slurm.sh --profile my_profiles/tutorial-hpc
+    ```
 
-        Required arguments:
-                --profile PROFILE                Snakemake profile to execute (ex. profiles/tutorial-hpc)
+4. Use the `--help` parameter to get additional options for SLURM dispatch.
 
-        Optional arguments:
-                --partition PARTITION            Partition to submit jobs to with SLURM.
-                --conda-env CONDA_ENV            Conda environment to use. (default: ncov-recombinant)
-                --target TARGET                  Snakemake target(s) to execute (default: all)
-                --cpus CPUS                      CPUS to use for the main pipeline. (default: 1)
-                --mem MEM                        Memory to use for the ain pipeline. (default: 4GB)
-                -h, --help                       Show this help message and exit.
-```
+    ```bash
+    bash scripts/slurm.sh --help
+    ```
+
+    ```text
+    usage: bash slurm.sh [-h] [--profile PROFILE] [--conda-env CONDA_ENV] [--target TARGET] [--partition PARTITION] [--cpus CPUS] [--mem MEM]
+
+            Dispatch a Snakemake pipeline using SLURM.
+
+            Required arguments:
+                    --profile PROFILE                Snakemake profile to execute (ex. profiles/tutorial-hpc)
+
+            Optional arguments:
+                    --partition PARTITION            Partition to submit jobs to with SLURM.
+                    --conda-env CONDA_ENV            Conda environment to use. (default: ncov-recombinant)
+                    --target TARGET                  Snakemake target(s) to execute (default: all)
+                    --cpus CPUS                      CPUS to use for the main pipeline. (default: 1)
+                    --mem MEM                        Memory to use for the ain pipeline. (default: 4GB)
+                    -h, --help                       Show this help message and exit.
+    ```
 
 ## Troubleshooting
 
