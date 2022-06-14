@@ -93,7 +93,7 @@ def main(
         if label.startswith("largest_"):
 
             largest_lineage = label.split("_")[1]
-            largest_cluster_id = label.split("_")[2]
+            largest_cluster_id = label.split("_")[2].replace("-DELIM-","/")
 
             plot_dict["largest"] = plot_dict[label]
             plot_dict["largest"]["lineage"] = largest_lineage
@@ -184,8 +184,12 @@ def main(
         num_lineages=num_lineages
     )
     for status in RECOMBINANT_STATUS:
+        if status in status_counts:
+            count = status_counts[status]["lineages"]
+        else:
+            count = 0
         summary += "  - {lineages} lineages are {status}.\n".format(
-            lineages=status_counts[status]["lineages"], status=status
+            lineages=count, status=status
         )
     summary += "\n"
     summary += "There are {num_sequences} recombinant sequences.\n".format(

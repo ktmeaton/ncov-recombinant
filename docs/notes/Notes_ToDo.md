@@ -4,7 +4,7 @@ Testing rule `plot` currently.
 
 ## Priority
 
-1. Adjust all rule targets.
+1. Create a `template_build.sh` script.
 1. Use the build merge logic from usher.
 1. Add Vani to credits (see Taxonium).
 1. Re-rename tutorial action to pipeline, and add different jobs for different profiles.
