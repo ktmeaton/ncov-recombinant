@@ -1,61 +1,61 @@
-strain	date	country	pango_lineage	clade_membership	division	region	genbank_accession	author	submitting_lab	originating_lab
+strain	date	country	pango_lineage	clade_membership	division	region	genbank_accession	author
 USA/MD-CDC-ASC210277356/2021	2021-08-05	USA	B	19A	Maryland	North America	OK079939	Howard et al C
 GHA/1651_S3/2020	2020-03-25	Ghana	A.11	19B	Ghana	Africa	MT890220	Ngoi et al
-England/MILK-1567218/2021	2021-05-08	United Kingdom	B.1.620	20A	England	Europe	OU278597	The Lighthouse Lab in Milton et al A	Wellcome Sanger Institute	Lighthouse Lab in Milton Keynes
-Estonia/Cov0319/2020	2020-09-17	Estonia	B.1.1.10	20B	Estonia	Europe	OU278317	Avi et al	Institute of Biomedicine and Translational Medicine, University of Tartu
-Iceland/1173/2020	2020-03-30	Iceland	B.1	20C	Iceland	Europe	OU181114	Jonsson et al A	DECODE GENETICS	The National University Hospital of Iceland
+England/MILK-1567218/2021	2021-05-08	United Kingdom	B.1.620	20A	England	Europe	OU278597	The Lighthouse Lab in Milton et al A
+Estonia/Cov0319/2020	2020-09-17	Estonia	B.1.1.10	20B	Estonia	Europe	OU278317	Avi et al
+Iceland/1173/2020	2020-03-30	Iceland	B.1	20C	Iceland	Europe	OU181114	Jonsson et al A
 EGY/CUNCI-HGC09I030/2020	2020-12-25	Egypt	C.36	20D	Egypt	Africa	MW547502	Zekri et al
-NZL/20CV0589/2020	2020-11-18	New Zealand	B.1.177.51	20E (EU1)	Auckland	Oceania	OK426660	Ren et al	Institute of Environmental Science and Research	LabPLUS
-AUS/VIC3454/2020	2020-07-05	Australia	D.2	20F	Victoria	Oceania	MT972589	Sait et al C	The Peter Doherty Institute for Infection and Immunity	Victorian Infectious Diseases Reference Laboratory (VIDRL)
+NZL/20CV0589/2020	2020-11-18	New Zealand	B.1.177.51	20E (EU1)	Auckland	Oceania	OK426660	Ren et al
+AUS/VIC3454/2020	2020-07-05	Australia	D.2	20F	Victoria	Oceania	MT972589	Sait et al C
 USA/JDYI/2020	2020-10-27	USA	B.1.2	20G	Alabama	North America	MW923885	Grimwood et al
 FRA/IHUCOVID-036058-NovaE/2021	2021-04-09	France	B.1.351.2	20H (Beta, V2)	France	Europe	ON279241	Levasseur et al B
-England/MILK-BDC2A2/2020	2020-11-26	United Kingdom	B.1.1.7	20I (Alpha, V1)	England	Europe	OD905376	The Lighthouse Lab in Milton et al B	Wellcome Sanger Institute	Lighthouse Lab in Milton Keynes
+England/MILK-BDC2A2/2020	2020-11-26	United Kingdom	B.1.1.7	20I (Alpha, V1)	England	Europe	OD905376	The Lighthouse Lab in Milton et al B
 BRA/PR-NVBS936GENOV827686254257/2021	2021-06-09	Brazil	P.1	20J (Gamma, V3)	Brazil	South America	ON577540	Guarischi et al
-USA/CA-CDC-QDX26400331/2021	2021-06-28	USA	B.1.617.2	21A (Delta)	California	North America	MZ590769	Howard et al R	CDC-OAMD	Quest Diagnostics Incorporated
-England/MILK-1564EF9/2021	2021-05-07	United Kingdom	B.1.617.1	21B (Kappa)	England	Europe	OU279226	The Lighthouse Lab in Milton et al A	Wellcome Sanger Institute	Lighthouse Lab in Milton Keynes
-USA/CA-CZB-22906/2021	2021-01-04	USA	B.1.429	21C (Epsilon)	California	North America	MW701160	Consortium et al	Chan Zuckerberg Biohub	Orange County Public Health Lab
-England/CAMC-1395ED3/2021	2021-03-03	United Kingdom	B.1.525	21D (Eta)	England	Europe	OU054628	Howes et al A	Wellcome Sanger Institute	Lighthouse Lab in Cambridge
+USA/CA-CDC-QDX26400331/2021	2021-06-28	USA	B.1.617.2	21A (Delta)	California	North America	MZ590769	Howard et al R
+England/MILK-1564EF9/2021	2021-05-07	United Kingdom	B.1.617.1	21B (Kappa)	England	Europe	OU279226	The Lighthouse Lab in Milton et al A
+USA/CA-CZB-22906/2021	2021-01-04	USA	B.1.429	21C (Epsilon)	California	North America	MW701160	Consortium et al
+England/CAMC-1395ED3/2021	2021-03-03	United Kingdom	B.1.525	21D (Eta)	England	Europe	OU054628	Howes et al A
 USA/GU-CDC-2-3906074/2021	2021-01-31	USA	P.3	21E (Theta)	Guam	North America	MZ779587	Sheth et al C
 USA/NY-CDC-LC0031214/2021	2021-03-15	USA	B.1.526	21F (Iota)	New York	North America	MW987419	Howard et al Z
-Switzerland/ZH-UZH-IMV-3ba4d945/2021	2021-08-02	Switzerland	C.37.1	21G (Lambda)	Zürich	Europe	OU576905	? F	Institute of Medical Virology, Zürich, Switzerland	Kantonsspital Winterthur, Winterthur 1, Switzerland
+Switzerland/ZH-UZH-IMV-3ba4d945/2021	2021-08-02	Switzerland	C.37.1	21G (Lambda)	Zürich	Europe	OU576905	? F
 USA/FL-CDC-FG-022848/2021	2021-04-12	USA	B.1.621	21H (Mu)	Florida	North America	OK213902	Howard et al AQ
-England/MILK-1622A3E/2021	2021-06-03	United Kingdom	AY.11	21I (Delta)	England	Europe	OU314327	The Lighthouse Lab in Milton et al A	Wellcome Sanger Institute	Lighthouse Lab in Milton Keynes
+England/MILK-1622A3E/2021	2021-06-03	United Kingdom	AY.11	21I (Delta)	England	Europe	OU314327	The Lighthouse Lab in Milton et al A
 USA/FL-CDC-QDX26157271/2021	2021-06-22	USA	AY.75	21I (Delta)	Florida	North America	MZ535087	Howard et al S
-USA/TX-CDC-ASC210111920/2021	2021-07-07	USA	AY.44	21J (Delta)	Texas	North America	MZ705780	Howard et al Q	CDC-OAMD	Aegis Sciences Corporation
-England/QEUH-173F5F0/2021	2021-06-18	United Kingdom	AY.4	21J (Delta)	England	Europe	OU358465	VanSteenhouse et al A	Wellcome Sanger Institute	Lighthouse Lab in Glasgow
-Switzerland/AG-ETHZ-35947998/2022	2022-01-23	Switzerland	BA.1.1	21K (Omicron)	Aargau	Europe	OV882645	? G	ETH ZURICH D-BSSE	Viollier AG; Hagmattstrasse 14, 4123 Allschwil
+USA/TX-CDC-ASC210111920/2021	2021-07-07	USA	AY.44	21J (Delta)	Texas	North America	MZ705780	Howard et al Q
+England/QEUH-173F5F0/2021	2021-06-18	United Kingdom	AY.4	21J (Delta)	England	Europe	OU358465	VanSteenhouse et al A
+Switzerland/AG-ETHZ-35947998/2022	2022-01-23	Switzerland	BA.1.1	21K (Omicron)	Aargau	Europe	OV882645	? G
 USA/GA-GPHL-2867/2021	2021-12-27	USA	BA.1.1.18	21K (Omicron)	Georgia	North America	OM201100	Parrott et al
-Denmark/DCGC-323445/2022	2022-01-15	Denmark	BA.2	21L (Omicron)	Hovedstaden	Europe	OW783991	Danish Covid-19 Genome et al	statens serum institut and the danish covid19 genome consortium (dcgc)	Department of Bacteria, Parasites and Fungi, Statens Serum Institut, Copenhagen, Denmark
-USA/NY-Broad-CRSP_JYXB4KKAEDIB5CUN/2022	2022-03-07	USA	BA.2.7	21L (Omicron)	New York	North America	ON066513	Lemieux et al G	Broad Institute Genomic Center for Infectious Diseases	Broad Institute Clinical Research Sequencing Platform
-USA/PA-CDC-QDX34289597/2022	2022-02-25	USA	BA.3.1	21M (Omicron)	Pennsylvania	North America	OM998782	Howard et al BM	CDC-OAMD	Quest Diagnostics Incorporated
-USA/NC-CDC-LC0597531/2022	2022-04-22	USA	BA.4	22A (Omicron)	North Carolina	North America	ON465569	Howard et al CK	CDC-OAMD	Laboratory Corporation of America
-USA/CA-CDC-LC0603479/2022	2022-04-29	USA	BA.4	22A (Omicron)	California	North America	ON468185	Howard et al CO	CDC-OAMD	Laboratory Corporation of America
-USA/FL-BPHL-8585/2022	2022-05-12	USA	BA.5	22B (Omicron)	Florida	North America	ON729631	Schmedes et al D	FLDOH	Florida Bureau of Public Health Laboratories
+Denmark/DCGC-323445/2022	2022-01-15	Denmark	BA.2	21L (Omicron)	Hovedstaden	Europe	OW783991	Danish Covid-19 Genome et al
+USA/NY-Broad-CRSP_JYXB4KKAEDIB5CUN/2022	2022-03-07	USA	BA.2.7	21L (Omicron)	New York	North America	ON066513	Lemieux et al G
+USA/PA-CDC-QDX34289597/2022	2022-02-25	USA	BA.3.1	21M (Omicron)	Pennsylvania	North America	OM998782	Howard et al BM
+USA/NC-CDC-LC0597531/2022	2022-04-22	USA	BA.4	22A (Omicron)	North Carolina	North America	ON465569	Howard et al CK
+USA/CA-CDC-LC0603479/2022	2022-04-29	USA	BA.4	22A (Omicron)	California	North America	ON468185	Howard et al CO
+USA/FL-BPHL-8585/2022	2022-05-12	USA	BA.5	22B (Omicron)	Florida	North America	ON729631	Schmedes et al D
 BHR/22920323375_S6_L001/2022	2022-05-11	Bahrain	BA.5	22B (Omicron)	Bahrain	Asia	ON627314	Marhoon et al A
-USA/VT-Broad-CRSP_HCJQO5WTVP7AY6KK/2022	2022-03-28	USA	BA.2.12.1	22C (Omicron)	Vermont	North America	ON199482	Lemieux et al H	Broad Institute Genomic Center for Infectious Diseases	Broad Institute Clinical Research Sequencing Platform
-USA/RI-CDC-LC0586837/2022	2022-04-13	USA	BA.2.12.1	22C (Omicron)	Rhode Island	North America	ON395248	Howard et al BZ	CDC-OAMD	Laboratory Corporation of America
-FRA/IHUMI-6070VR/2022	2022-02-09	France	XD			Europe	OM990739.1
-FRA/IHUCOVID-64762/2022	2022-02-09	France	XD			Europe	OM990851.1
-England/MILK-3729AD6/2022	2022-02-16	England	XE			Europe	OW016842.1
-England/BRBR-3899D04/2022	2022-02-27	England	XE			Europe	OW137497.1
-England/MILK-36E1AF9/2022	2022-02-14	England	XF			Europe	OW002725.1
-England/MILK-327F0C5/2022	2022-01-14	England	XF			Europe	OV738853.1
-England/MILK-3795589/2022	2022-02-19	England	XG			Europe	OW091023.1
-Scotland/QEUH-37E04A0/2022	2022-02-21	Scotland	XG			Europe	OW084783.1
-England/MILK-37D141B/2022	2022-02-20	England	XH			Europe	OW042525.1
-England/MILK-385C31A/2022	2022-02-24	England	XH			Europe	OW126705.1
-England/MILK-393A26F/2022	2022-03-04	England	XJ			Europe	OW197337.1
-England/MILK-3BFC759/2022	2022-03-23	England	XL			Europe	OW360896.1
-England/LSPA-3CC763B/2022	2022-03-28	England	XL			Europe	OW490144.1
-USA/NY-Broad-CRSP_WH5TJZ42BYV4BC3T/2022	2022-03-28	USA	XM			North America	ON199453.1
-England/MILK-3796834/2022	2022-02-19	England	XM			Europe	OW090848.1
-England/LSPA-3B89478/2022	2022-03-20	England	XN			Europe	OW322926.1
-England/MILK-3B62C6E/2022	2022-03-19	England	XN			Europe	OW320124.1
-Wales/LSPA-3A9969E/2022	2022-03-13	Wales	XR			Europe	OW286587.1
-England/LSPA-3B0E8AC/2022	2022-03-15	England	XR			Europe	OW288317.1
-Scotland/QEUH-38D11C8/2022	2022-03-02	Scotland	XP			Europe	OW159779.1
-Scotland/QEUH-38CEA2D/2022	2022-03-02	Scotland	XP			Europe	OW156660.1
-USA/OH-CDC-MMB14658183/2022	2022-03-07	USA	XS			North America	OM981060.1
-USA/CO-CDC-FG-248528/2022	2022-01-19	USA	XS			North America	OM477123.1
-England/MILK-38AA91B/2022	2022-02-28	England	XQ			Europe	OW192527.1
-England/LSPA-3943EF6/2022	2022-03-05	England	XQ			Europe	OW142543.1
+USA/VT-Broad-CRSP_HCJQO5WTVP7AY6KK/2022	2022-03-28	USA	BA.2.12.1	22C (Omicron)	Vermont	North America	ON199482	Lemieux et al H
+USA/RI-CDC-LC0586837/2022	2022-04-13	USA	BA.2.12.1	22C (Omicron)	Rhode Island	North America	ON395248	Howard et al BZ
+FRA/IHUMI-6070VR/2022	2022-02-09	France	XD			Europe	OM990739.1	NA
+FRA/IHUCOVID-64762/2022	2022-02-09	France	XD			Europe	OM990851.1	NA
+England/MILK-3729AD6/2022	2022-02-16	England	XE			Europe	OW016842.1	NA
+England/BRBR-3899D04/2022	2022-02-27	England	XE			Europe	OW137497.1	NA
+England/MILK-36E1AF9/2022	2022-02-14	England	XF			Europe	OW002725.1	NA
+England/MILK-327F0C5/2022	2022-01-14	England	XF			Europe	OV738853.1	NA
+England/MILK-3795589/2022	2022-02-19	England	XG			Europe	OW091023.1	NA
+Scotland/QEUH-37E04A0/2022	2022-02-21	Scotland	XG			Europe	OW084783.1	NA
+England/MILK-37D141B/2022	2022-02-20	England	XH			Europe	OW042525.1	NA
+England/MILK-385C31A/2022	2022-02-24	England	XH			Europe	OW126705.1	NA
+England/MILK-393A26F/2022	2022-03-04	England	XJ			Europe	OW197337.1	NA
+England/MILK-3BFC759/2022	2022-03-23	England	XL			Europe	OW360896.1	NA
+England/LSPA-3CC763B/2022	2022-03-28	England	XL			Europe	OW490144.1	NA
+USA/NY-Broad-CRSP_WH5TJZ42BYV4BC3T/2022	2022-03-28	USA	XM			North America	ON199453.1	NA
+England/MILK-3796834/2022	2022-02-19	England	XM			Europe	OW090848.1	NA
+England/LSPA-3B89478/2022	2022-03-20	England	XN			Europe	OW322926.1	NA
+England/MILK-3B62C6E/2022	2022-03-19	England	XN			Europe	OW320124.1	NA
+Wales/LSPA-3A9969E/2022	2022-03-13	Wales	XR			Europe	OW286587.1	NA
+England/LSPA-3B0E8AC/2022	2022-03-15	England	XR			Europe	OW288317.1	NA
+Scotland/QEUH-38D11C8/2022	2022-03-02	Scotland	XP			Europe	OW159779.1	NA
+Scotland/QEUH-38CEA2D/2022	2022-03-02	Scotland	XP			Europe	OW156660.1	NA
+USA/OH-CDC-MMB14658183/2022	2022-03-07	USA	XS			North America	OM981060.1	NA
+USA/CO-CDC-FG-248528/2022	2022-01-19	USA	XS			North America	OM477123.1	NA
+England/MILK-38AA91B/2022	2022-02-28	England	XQ			Europe	OW192527.1	NA
+England/LSPA-3943EF6/2022	2022-03-05	England	XQ			Europe	OW142543.1	NA
