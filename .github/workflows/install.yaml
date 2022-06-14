@@ -32,7 +32,7 @@ jobs:
           echo "CONDA_PKGS_DIRS=/home/runner/miniconda/pkgs" >> $GITHUB_ENV
           echo "CONDA_ENV_FILE=workflow/envs/environment.yaml" >> $GITHUB_ENV
           echo "CONDA_ENV_NAME=ncov-recombinant" >> $GITHUB_ENV
-          echo "CI_PROFILE=profiles/ci" >> $GITHUB_ENV
+          echo "CI_PROFILE=profiles/tutorial" >> $GITHUB_ENV
 
       # checkout repository
       - name: checkout repo
