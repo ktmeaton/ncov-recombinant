@@ -18,8 +18,12 @@ PARENTS_COLS = [
 
 
 @click.command()
-@click.option("--input", help="Input file of recombinant sequences (tsv).", required=True)
-@click.option("--output", help="Output file of recombinant lineages (tsv)", required=True)
+@click.option(
+    "--input", help="Input file of recombinant sequences (tsv).", required=True
+)
+@click.option(
+    "--output", help="Output file of recombinant lineages (tsv)", required=True
+)
 def main(
     input,
     output,

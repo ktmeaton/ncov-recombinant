@@ -41,7 +41,7 @@ while [[ $# -gt 0 ]]; do
       output_csv=$2
       shift # past argument
       shift # past value
-      ;;      
+      ;;
     --log)
       log=$2
       shift # past argument

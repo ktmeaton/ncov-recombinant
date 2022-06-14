@@ -97,6 +97,7 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 <sup>*</sup> Individual tables are available as TSV linelists in `results/tutorial/linelists`.  
 <sup>†</sup> Visualize breakpoints with `less -S` or [Visual Studio ANSI Colors](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi).  
 <sup>‡</sup>  Upload Auspice JSON trees to <https://auspice.us/>.
+
 ## Custom Configuration
 
 1. Create a new directory for your data.
@@ -172,7 +173,6 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 
 `ncov-recombinant` can alternatively be dispatched using the SLURM job submission system.
 
-    
 ### Tutorial
 
 1. Create an HPC-compatible profile to store your build configuration.
@@ -180,7 +180,7 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
     ```bash
     bash scripts/create_profile.sh --data data/tutorial --hpc
     ```
-    
+
     ```text
     2022-06-14 15:24:51     Searching for metadata (data/tutorial/metadata.tsv)
                             SUCCESS: metadata found
@@ -199,9 +199,8 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
     2022-06-14 15:24:51     Creating build (tutorial-hpc)
     2022-06-14 15:24:51     Done! The tutorial-hpc profile is ready to be run with:
 
-                            snakemake --profile my_profiles/tutorial-hpc    
+                            snakemake --profile my_profiles/tutorial-hpc  
     ```
-
 
 2. Edit `my_profiles/tutorial-hpc/config.yaml` to specify the number of `jobs` and `default-resources` to use.
 

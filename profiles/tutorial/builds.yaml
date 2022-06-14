@@ -57,13 +57,13 @@ builds:
 
     # There are no negatives, this is for testing
     sc2rf:
-      exclude_negatives: true 
+      exclude_negatives: true
 
     # There are no false positives, this is for testing
     faToVcf:
       exclude_false_positives: true
 
     plot:
-      min_date: "2022-01-03"    
+      min_date: "2022-01-03"
       max_date: "2022-04-25"
       singletons: true
