@@ -55,6 +55,7 @@
 1. Add optional param `--sc2rf-dir` to `sc2rf` to enable execution outside of `sc2rf` dir.
 1. Add params `--output-csv` and `--output-ansi` to the wrapper `scripts/sc2rf.sh`.
 1. Remove params `nextclade_ref` and `custom_ref` from rule `nextclade`.
+1. Change `--breakpoints 0-10` in `sc2rf`.
 
 ## Programs
 
