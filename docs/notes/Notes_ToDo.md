@@ -1,7 +1,5 @@
 # To Do
 
-Testing rule `plot` currently.
-
 ## Priority
 
 1. Add Vani to credits (see allcontributors).
