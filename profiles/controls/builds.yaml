@@ -71,7 +71,7 @@ builds:
   # ---------------------------------------------------------------------------
   # `positives` uses sequences that ARE recombinants
 
-  - name: positives
+  - name: controls-positive
     base_input: public-20220417
 
     # There are no negatives, this is just for testing
@@ -90,7 +90,7 @@ builds:
   # ---------------------------------------------------------------------------
   # `negatives` uses sequences that ARE NOT recombinants
 
-  - name: negatives
+  - name: controls-negative
     base_input: public-20220417
 
     # All sequences are negatives, must keep!
@@ -109,7 +109,7 @@ builds:
   # ---------------------------------------------------------------------------
   # `controls` uses a mixture of positive and negative recombinants
 
-  - name: controls
+  - name: controls-all
     base_input: public-20220417
 
     # There are negatives, keep them for testing
