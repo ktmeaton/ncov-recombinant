@@ -98,7 +98,7 @@ jobs:
           echo "CONDA_ENV_FILE=workflow/envs/environment.yaml" >> $GITHUB_ENV
           echo "CONDA_ENV_NAME=ncov-recombinant" >> $GITHUB_ENV
           echo "CI_PROFILE=profiles/controls" >> $GITHUB_ENV
-          echo "CI_TARGET=results/controls-positive/report/report.pptx" >> $GITHUB_ENV          
+          echo "CI_TARGET=results/controls-positive/report/report.pptx" >> $GITHUB_ENV
 
       # checkout repository
       - name: checkout repo
@@ -154,7 +154,7 @@ jobs:
           echo "CONDA_ENV_FILE=workflow/envs/environment.yaml" >> $GITHUB_ENV
           echo "CONDA_ENV_NAME=ncov-recombinant" >> $GITHUB_ENV
           echo "CI_PROFILE=profiles/controls" >> $GITHUB_ENV
-          echo "CI_TARGET=results/controls-negative/report/report.pptx" >> $GITHUB_ENV          
+          echo "CI_TARGET=results/controls-negative/report/report.pptx" >> $GITHUB_ENV
 
       # checkout repository
       - name: checkout repo
@@ -210,7 +210,7 @@ jobs:
           echo "CONDA_ENV_FILE=workflow/envs/environment.yaml" >> $GITHUB_ENV
           echo "CONDA_ENV_NAME=ncov-recombinant" >> $GITHUB_ENV
           echo "CI_PROFILE=profiles/controls" >> $GITHUB_ENV
-          echo "CI_TARGET=results/controls-all/report/report.pptx" >> $GITHUB_ENV          
+          echo "CI_TARGET=results/controls-all/report/report.pptx" >> $GITHUB_ENV
 
       # checkout repository
       - name: checkout repo
@@ -246,4 +246,4 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate $CONDA_ENV_NAME;
-          snakemake --profile $CI_PROFILE $CI_TARGET;                
+          snakemake --profile $CI_PROFILE $CI_TARGET;
