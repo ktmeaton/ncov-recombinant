@@ -64,6 +64,6 @@ builds:
       exclude_false_positives: true
 
     plot:
-      min_date: "2022-01-03"
+      weeks: 16
       max_date: "2022-04-25"
       singletons: true
