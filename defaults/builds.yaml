@@ -1,0 +1,8 @@
+# -----------------------------------------------------------------------------
+# Builds
+# -----------------------------------------------------------------------------
+
+# These are the analyses, you want to run.
+
+# name       : A directory will be created as results/{name}
+# base_input : The base phylogeny for UShER, must be an input with type "usher"
