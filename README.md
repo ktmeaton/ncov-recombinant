@@ -21,7 +21,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 1. [Output](https://github.com/ktmeaton/ncov-recombinant#output)
 1. [Install](https://github.com/ktmeaton/ncov-recombinant#install)
 1. [Tutorial](https://github.com/ktmeaton/ncov-recombinant#tutorial)
-1. [Custom Configuration](https://github.com/ktmeaton/ncov-recombinant#custom-configuration)
+1. [Configuration](https://github.com/ktmeaton/ncov-recombinant#configuration)
 1. [High Performance Computing](https://github.com/ktmeaton/ncov-recombinant#high-performance-computing)
 1. [Troubleshooting](https://github.com/ktmeaton/ncov-recombinant#troubleshooting)
 1. [Credits](https://github.com/ktmeaton/ncov-recombinant#credits)
@@ -89,18 +89,18 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
     snakemake --profile profiles/tutorial
     ```
 
-1. Explore the graphic output:
+1. Explore the output:
 
     - Slides | `results/tutorial/report/report.pptx`
     - Tables<sup>*</sup> | `results/tutorial/report/report.xlsx`
-    - Breakpoints<sup>*</sup> | `results/tutorial/sc2rf/recombinants.ansi.txt`
-    - Trees<sup>†</sup> | `results/tutorial/subtrees`
+    - Breakpoints<sup>†</sup> | `results/tutorial/sc2rf/recombinants.ansi.txt`
+    - Trees<sup>‡</sup> | `results/tutorial/subtrees`
 
 <sup>*</sup> Individual tables are available as TSV linelists in `results/tutorial/linelists`.  
 <sup>†</sup> Visualize breakpoints with `less -S` or [Visual Studio ANSI Colors](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi).  
 <sup>‡</sup>  Upload Auspice JSON trees to <https://auspice.us/>.
 
-## Custom Configuration
+## Configuration
 
 1. Create a new directory for your data.
 
@@ -120,22 +120,23 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
     ```
 
     ```text
-    2022-06-14 15:19:43     Searching for metadata (data/custom/metadata.tsv)
-                            SUCCESS: metadata found
-    2022-06-14 15:19:43     Checking for 3 required metadata columns (strain|date|country)
-    2022-06-14 15:19:43     SUCCESS: 3 columns found.
-    2022-06-14 15:19:43     Searching for sequences (data/custom/sequences.fasta)
-                            SUCCESS: Sequences found
-    2022-06-14 15:19:43     Checking that the strain column matches the sequence names
-                            SUCCESS: Strain column matches sequence names
-    2022-06-14 15:19:43     Creating new profile directory (my_profiles/custom)
-    2022-06-14 15:19:43     Creating build file (my_profiles/custom/builds.yaml)
-    2022-06-14 15:19:43     Adding default input datasets from defaults/inputs.yaml
-    2022-06-14 15:19:43     Adding custom input dataset (data/custom)
-    2022-06-14 15:19:43     Creating system configuration (my_profiles/custom/config.yaml)
-    2022-06-14 15:19:43     Adding default system resources
-    2022-06-14 15:19:43     Creating build (custom)
-    2022-06-14 15:19:43     Done! The custom profile is ready to be run with:
+    2022-06-15 12:07:53     Searching for metadata (data/custom/metadata.tsv)
+    2022-06-15 12:07:53     SUCCESS: metadata found
+    2022-06-15 12:07:53     Checking for 3 required metadata columns (strain date country)
+    2022-06-15 12:07:53     SUCCESS: 3 columns found.
+    2022-06-15 12:07:53     Searching for sequences (data/custom/sequences.fasta)
+    2022-06-15 12:07:53     SUCCESS: Sequences found
+    2022-06-15 12:07:53     Checking that the metadata strains match the sequence names
+    2022-06-15 12:07:53     SUCCESS: Strain column matches sequence names
+    2022-06-15 12:07:53     Creating new profile directory (my_profiles/custom)
+    2022-06-15 12:07:53     Creating build file (my_profiles/custom/builds.yaml)
+    2022-06-15 12:07:53     Adding default input datasets from defaults/inputs.yaml
+    2022-06-15 12:07:53     Adding custom input data (data/custom)
+    2022-06-15 12:07:53     Adding `controls` as a build
+    2022-06-15 12:07:53     Adding `custom` as a build
+    2022-06-15 12:07:53     Creating system configuration (my_profiles/custom/config.yaml)
+    2022-06-15 12:07:53     Adding default system resources
+    2022-06-15 12:07:53     Done! The custom profile is ready to be run with:
 
                             snakemake --profile my_profiles/custom
     ```
@@ -175,36 +176,35 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 
 `ncov-recombinant` can alternatively be dispatched using the SLURM job submission system.
 
-### Tutorial
-
 1. Create an HPC-compatible profile to store your build configuration.
 
     ```bash
-    bash scripts/create_profile.sh --data data/tutorial --hpc
+    bash scripts/create_profile.sh --data data/custom --hpc
     ```
 
     ```text
-    2022-06-14 15:24:51     Searching for metadata (data/tutorial/metadata.tsv)
-                            SUCCESS: metadata found
-    2022-06-14 15:24:51     Checking for 3 required metadata columns (strain|date|country)
-    2022-06-14 15:24:51     SUCCESS: 3 columns found.
-    2022-06-14 15:24:51     Searching for sequences (data/tutorial/sequences.fasta)
-                            SUCCESS: Sequences found
-    2022-06-14 15:24:51     Checking that the strain column matches the sequence names
-                            SUCCESS: Strain column matches sequence names
-    2022-06-14 15:24:51     Creating new profile directory (my_profiles/tutorial-hpc)
-    2022-06-14 15:24:51     Creating build file (my_profiles/tutorial-hpc/builds.yaml)
-    2022-06-14 15:24:51     Adding default input datasets from defaults/inputs.yaml
-    2022-06-14 15:24:51     Adding tutorial-hpc input dataset (data/tutorial)
-    2022-06-14 15:24:51     Creating system configuration (my_profiles/tutorial-hpc/config.yaml)
-    2022-06-14 15:24:51     Adding default HPC system resources
-    2022-06-14 15:24:51     Creating build (tutorial-hpc)
-    2022-06-14 15:24:51     Done! The tutorial-hpc profile is ready to be run with:
+    2022-06-15 12:10:45     Searching for metadata (data/custom/metadata.tsv)
+    2022-06-15 12:10:45     SUCCESS: metadata found
+    2022-06-15 12:10:45     Checking for 3 required metadata columns (strain date country)
+    2022-06-15 12:10:45     SUCCESS: 3 columns found.
+    2022-06-15 12:10:45     Searching for sequences (data/custom/sequences.fasta)
+    2022-06-15 12:10:45     SUCCESS: Sequences found
+    2022-06-15 12:10:45     Checking that the metadata strains match the sequence names
+    2022-06-15 12:10:45     SUCCESS: Strain column matches sequence names
+    2022-06-15 12:10:45     Creating new profile directory (my_profiles/custom-hpc)
+    2022-06-15 12:10:45     Creating build file (my_profiles/custom-hpc/builds.yaml)
+    2022-06-15 12:10:45     Adding default input data (defaults/inputs.yaml)
+    2022-06-15 12:10:45     Adding custom input data (data/custom)
+    2022-06-15 12:10:45     Adding `controls` as a build
+    2022-06-15 12:10:45     Adding `custom` as a build
+    2022-06-15 12:10:45     Creating system configuration (my_profiles/custom-hpc/config.yaml)
+    2022-06-15 12:10:45     Adding default HPC system resources
+    2022-06-15 12:10:45     Done! The custom-hpc profile is ready to be run with:
 
-                            snakemake --profile my_profiles/tutorial-hpc  
+                            snakemake --profile my_profiles/custom-hpc
     ```
 
-2. Edit `my_profiles/tutorial-hpc/config.yaml` to specify the number of `jobs` and `default-resources` to use.
+2. Edit `my_profiles/custom-hpc/config.yaml` to specify the number of `jobs` and `default-resources` to use.
 
     ```yaml
     # Maximum number of jobs to run
@@ -220,7 +220,7 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 3. Dispatch the workflow using the slurm wrapper script:
 
     ```bash
-    bash scripts/slurm.sh --profile my_profiles/tutorial-hpc
+    bash scripts/slurm.sh --profile my_profiles/custom-hpc
     ```
 
 4. Use the `--help` parameter to get additional options for SLURM dispatch.
