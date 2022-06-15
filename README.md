@@ -32,12 +32,17 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 
 Linelists are collated into a spreadsheet for excel/google sheets:
 
-1. `recombinants`: Per-lineage summary statistics.
-1. `linelist`: Per-sequence statistics.
-1. `false_positives`: Sequences flagged as potential recombinants by Nextclade, that could not be verified by [sc2rf](https://github.com/lenaschimmel/sc2rf) or [UShER](https://github.com/yatisht/usher).
+1. `lineage`: The recombinant lineages observed.
+1. `parents`: The parental combinations observed.
+1. `linelist`: Results from <u>all</u> input sequences (minimal statistics).
+1. `summary`: Results from <u>all</u> input sequences (all possible statistics, for troubleshooting).
+1. `positives`: Results from sequences classified as a <u>recombinant</u> by at least 2 of 3 classifiers.
+1. `false_positives`: Results from sequences flagged as recombinants by Nextclade, that were not verified by [sc2rf](https://github.com/lenaschimmel/sc2rf) or [UShER](https://github.com/yatisht/usher).
+1. `negatives`: Results from sequences classifed as a <u>non-recombinant</u> by nextclade.
 1. `issues`: Metadata of issues related to recombinant lineages posted in the [pango-designation](https://github.com/cov-lineages/pango-designation/issues) repository.
 
-[![excel_output](images/excel_output.png)](https://docs.google.com/spreadsheets/d/1Voy4zw4VCZSp1K4oSjXPrKVbB1w8K_VnC_a5dxEU4rg/edit#gid=1139120749)
+[![excel_output](images/excel_output.png)](
+https://docs.google.com/spreadsheets/d/1EH-JmXFTAnzUHavxPOZnNNgHIBZcyhSMRSQJ8J6qWsk/edit#gid=103507248)
 
 ### Slides
 
