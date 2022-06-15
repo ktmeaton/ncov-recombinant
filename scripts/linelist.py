@@ -133,8 +133,6 @@ def main(
         ):
             is_recombinant = True
 
-        print(strain, is_recombinant, lineage_usher)
-
         # Use UShER as the definitive lineage caller
         lineage = lineage_usher
 
@@ -154,7 +152,7 @@ def main(
 
                 # TBD: regions if desired
 
-            linelist_df.at[rec[0], "issue"] = issue
+            linelist_df.at[rec[0], "issue"] = str(issue)
 
         # Alternatively, try to find related pango-designation issues by breakpoint
         # Multiple matches are possible here
@@ -191,7 +189,7 @@ def main(
             status = "false_positive"
 
         linelist_df.at[rec[0], "status"] = str(status)
-        linelist_df.at[rec[0], "issue"] = issue
+        linelist_df.at[rec[0], "issue"] = str(issue)
 
     # -------------------------------------------------------------------------
     # Lineage Grouping
@@ -338,7 +336,6 @@ def main(
     # All
     outpath = os.path.join(outdir, "linelist.tsv")
     linelist_df.to_csv(outpath, sep="\t", index=False)
-    print(linelist_df)
 
     # Positives
     positive_df = linelist_df[
