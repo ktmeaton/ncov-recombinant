@@ -50,6 +50,7 @@ def main(
 
     df = pd.read_csv(input, sep="\t")
     df.fillna(NO_DATA_CHAR, inplace=True)
+    df["issue"] = [str(int(i)) if i != NO_DATA_CHAR else i for i in df["issue"]]
 
     df["datetime"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
 
@@ -99,7 +100,6 @@ def main(
 
     recombinants_df = pd.DataFrame(recombinants_data)
     recombinants_df.sort_values(by="sequences", ascending=False, inplace=True)
-
     recombinants_df.to_csv(output, index=False, sep="\t")
 
 
