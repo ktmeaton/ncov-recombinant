@@ -98,8 +98,7 @@ jobs:
           echo "CONDA_PKGS_DIRS=/home/runner/miniconda/pkgs" >> $GITHUB_ENV
           echo "CONDA_ENV_FILE=workflow/envs/environment.yaml" >> $GITHUB_ENV
           echo "CONDA_ENV_NAME=ncov-recombinant" >> $GITHUB_ENV
-          echo "CI_PROFILE=profiles/controls" >> $GITHUB_ENV
-          echo "CI_TARGET=results/controls-positive/report/report.pptx" >> $GITHUB_ENV
+          echo "CI_PROFILE=profiles/controls-positive" >> $GITHUB_ENV
 
       # checkout repository
       - name: checkout repo
@@ -135,7 +134,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate $CONDA_ENV_NAME;
-          snakemake --profile $CI_PROFILE $CI_TARGET;
+          snakemake --profile $CI_PROFILE;
 
       # Create an artifact of the powerpoint slides
       - name: upload report
@@ -161,8 +160,7 @@ jobs:
           echo "CONDA_PKGS_DIRS=/home/runner/miniconda/pkgs" >> $GITHUB_ENV
           echo "CONDA_ENV_FILE=workflow/envs/environment.yaml" >> $GITHUB_ENV
           echo "CONDA_ENV_NAME=ncov-recombinant" >> $GITHUB_ENV
-          echo "CI_PROFILE=profiles/controls" >> $GITHUB_ENV
-          echo "CI_TARGET=results/controls-negative/report/report.pptx" >> $GITHUB_ENV
+          echo "CI_PROFILE=profiles/controls-negative" >> $GITHUB_ENV
 
       # checkout repository
       - name: checkout repo
@@ -198,7 +196,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate $CONDA_ENV_NAME;
-          snakemake --profile $CI_PROFILE $CI_TARGET;
+          snakemake --profile $CI_PROFILE;
 
       # Create an artifact of the powerpoint slides
       - name: upload report
@@ -225,7 +223,6 @@ jobs:
           echo "CONDA_ENV_FILE=workflow/envs/environment.yaml" >> $GITHUB_ENV
           echo "CONDA_ENV_NAME=ncov-recombinant" >> $GITHUB_ENV
           echo "CI_PROFILE=profiles/controls" >> $GITHUB_ENV
-          echo "CI_TARGET=results/controls-all/report/report.pptx" >> $GITHUB_ENV
 
       # checkout repository
       - name: checkout repo
@@ -261,11 +258,11 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate $CONDA_ENV_NAME;
-          snakemake --profile $CI_PROFILE $CI_TARGET;
+          snakemake --profile $CI_PROFILE;
 
       # Create an artifact of the powerpoint slides
       - name: upload report
         uses: actions/upload-artifact@v3
         with:
-          name: report-controls-all
-          path: results/controls-all/report/report.pptx
+          name: report-controls
+          path: results/controls/report/report.pptx
