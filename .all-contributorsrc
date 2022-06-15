@@ -11,19 +11,29 @@
   "commitConvention": "atom",
   "contributors": [
     {
+      "login": "nextstrain",
+      "name": "Nextstrain (Nextclade)",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22159334?v=4",
+      "profile": "https://github.com/nextstrain/nextclade",
+      "contributions": [
+        "data",
+        "plugin"
+      ]
+    },
+    {
       "login": "lenaschimmel",
       "name": "Lena Schimmel (sc2rf)",
       "avatar_url": "https://avatars.githubusercontent.com/u/1325019?v=4",
-      "profile": "http://lenaschimmel.de/",
+      "profile": "https://github.com/lenaschimmel/sc2rf",
       "contributions": [
         "plugin"
       ]
     },
     {
       "login": "yatisht",
-      "name": "Yatish Turakhia",
+      "name": "Yatish Turakhia (UShER)",
       "avatar_url": "https://avatars.githubusercontent.com/u/34664884?v=4",
-      "profile": "https://turakhia.eng.ucsd.edu/",
+      "profile": "https://github.com/yatisht/usher",
       "contributions": [
         "data",
         "plugin"
@@ -31,19 +41,9 @@
     },
     {
       "login": "AngieHinrichs",
-      "name": "Angie Hinrichs",
+      "name": "Angie Hinrichs (UShER)",
       "avatar_url": "https://avatars.githubusercontent.com/u/186983?v=4",
-      "profile": "http://genome.ucsc.edu/",
-      "contributions": [
-        "data",
-        "plugin"
-      ]
-    },
-    {
-      "login": "nextstrain",
-      "name": "Nextstrain",
-      "avatar_url": "https://avatars.githubusercontent.com/u/22159334?v=4",
-      "profile": "https://nextstrain.org/",
+      "profile": "https://github.com/yatisht/usher",
       "contributions": [
         "data",
         "plugin"
