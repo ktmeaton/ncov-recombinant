@@ -6,3 +6,24 @@
 
 # name       : A directory will be created as results/{name}
 # base_input : The base phylogeny for UShER, must be an input with type "usher"
+
+builds:
+
+  # ---------------------------------------------------------------------------
+  # `controls` uses a mixture of positive and negative recombinants
+
+  - name: controls
+    base_input: public-20220417
+
+    # There are negatives present, don't exclude them
+    sc2rf:
+      exclude_negatives: false
+
+    # There are false positives that will be corrected, don't exclude them
+    faToVcf:
+      exclude_false_positives: false
+
+    plot:
+      min_date: "2022-01-10"
+      max_date: "2022-04-25"
+      singletons: true
