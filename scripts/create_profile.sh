@@ -94,9 +94,9 @@ mkdir -p $profile_dir
 echo -e "$(date "+%Y-%m-%d %T")\tSearching for metadata ($data/metadata.tsv)"
 check=$(ls $data/metadata.tsv 2> /dev/null)
 if [[ $check ]]; then
-    echo -e "\t\t\tSUCCESS: metadata found"
+    echo -e "$(date "+%Y-%m-%d %T")\tSUCCESS: metadata found"
 else
-    echo -e "\t\t\tFAIL: Metadata not found!"
+    echo -e "$(date "+%Y-%m-%d %T")\tFAIL: Metadata not found!"
     exit 1
 fi
 
@@ -109,9 +109,9 @@ first_col=$(head -n 1 $data/metadata.tsv | cut -f 1)
 if [[ $num_required_cols -eq $NUM_REQUIRED_COLS ]]; then
     echo -e "$(date "+%Y-%m-%d %T")\tSUCCESS: $NUM_REQUIRED_COLS columns found."
 elif [[ "$first_col" != "$FIRST_COL" ]]; then
-    echo -e "\t\t\tFAIL: First column ($first_col) is not '$FIRST_COL'"
+    echo -e "$(date "+%Y-%m-%d %T")\tFAIL: First column ($first_col) is not '$FIRST_COL'"
 elif [[ ! $num_required_cols -eq $NUM_REQUIRED_COLS ]]; then
-    echo -e "\t\t\tFAIL: $NUM_REQUIRED_COLS columns not found!"
+    echo -e "$(date "+%Y-%m-%d %T")\tFAIL: $NUM_REQUIRED_COLS columns not found!"
     exit 1
 fi
 
@@ -119,9 +119,9 @@ fi
 echo -e "$(date "+%Y-%m-%d %T")\tSearching for sequences ($data/sequences.fasta)"
 check=$(ls $data/sequences.fasta 2> /dev/null)
 if [[ $check ]]; then
-    echo -e "\t\t\tSUCCESS: Sequences found"
+    echo -e "$(date "+%Y-%m-%d %T")\tSUCCESS: Sequences found"
 else
-    echo -e "\t\t\tFAIL: Sequences not found!"
+    echo -e "$(date "+%Y-%m-%d %T")\tFAIL: Sequences not found!"
     exit 1
 fi
 
@@ -139,12 +139,12 @@ rm -f tmp.seq_names
 rm -f tmp.meta_names
 
 if [[ -z "$diff_names" ]]; then
-    echo -e "\t\t\tSUCCESS: Strain column matches sequence names"
+    echo -e "$(date "+%Y-%m-%d %T")\tSUCCESS: Strain column matches sequence names"
 else
-    echo -e "\t\t\tFAIL: Strain column does not match the sequence names!"
-    echo -e "\t\t\tStrains missing from $data/sequences.fasta:"
+    echo -e "$(date "+%Y-%m-%d %T")\tFAIL: Strain column does not match the sequence names!"
+    echo -e "$(date "+%Y-%m-%d %T")\tStrains missing from $data/sequences.fasta:"
     echo $seq_missing | tr " " "\n" | sed 's/^/\t\t\t\t/g'
-    echo -e "\t\t\tStrains missing from $data/metadata.tsv:"
+    echo -e "$(date "+%Y-%m-%d %T")\tStrains missing from $data/metadata.tsv:"
     echo $meta_missing | tr " " "\n" | sed 's/^/\t\t\t\t/g'
     exit 1
 fi
@@ -164,11 +164,11 @@ mkdir -p $profile_dir/$profile
 echo -e "$(date "+%Y-%m-%d %T")\tCreating build file ($profile_dir/$profile/builds.yaml)"
 
 # Add default inputs to builds.yaml
-echo -e "$(date "+%Y-%m-%d %T")\tAdding default input datasets from $DEFAULT_INPUTS"
+echo -e "$(date "+%Y-%m-%d %T")\tAdding default input data ($DEFAULT_INPUTS)"
 cat $DEFAULT_INPUTS > $profile_dir/$profile/builds.yaml
 
 # Add custom inputs to builds.yaml
-echo -e "$(date "+%Y-%m-%d %T")\tAdding $profile input data ($data)"
+echo -e "$(date "+%Y-%m-%d %T")\tAdding $(basename $data) input data ($data)"
 echo -e "\n
   # custom data: $(basename $data)
   - name: $(basename $data)
@@ -182,12 +182,12 @@ echo -e "\n
 if [[ $exclude_controls == "true" ]]; then
   cat $EXCLUDE_CONTROLS_BUILDS >> $profile_dir/$profile/builds.yaml
 else
-  echo -e "$(date "+%Y-%m-%d %T")\tAdding controls as a build ($profile)"
+  echo -e "$(date "+%Y-%m-%d %T")\tAdding \`controls\` as a build"
   cat $DEFAULT_BUILDS >> $profile_dir/$profile/builds.yaml
 fi
 
 #Add custom build
-echo -e "$(date "+%Y-%m-%d %T")\tAdding $profile as a build ($profile)"
+echo -e "$(date "+%Y-%m-%d %T")\tAdding \`$(basename $data)\` as a build"
 
 echo -e "\n
   # ---------------------------------------------------------------------------
