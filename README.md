@@ -18,7 +18,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 
 ## Table of Contents
 
-1. [Contributors](https://github.com/ktmeaton/ncov-recombinant#contributors)
+1. [Credits](https://github.com/ktmeaton/ncov-recombinant#credits)
 1. [Output](https://github.com/ktmeaton/ncov-recombinant#output)
 1. [Install](https://github.com/ktmeaton/ncov-recombinant#install)
 1. [Tutorial](https://github.com/ktmeaton/ncov-recombinant#tutorial)
@@ -27,7 +27,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 1. [Troubleshooting](https://github.com/ktmeaton/ncov-recombinant#troubleshooting)
 1. [Credits](https://github.com/ktmeaton/ncov-recombinant#credits)
 
-## Contributors
+## Credits
 
 [ncov-recombinant](https://github.com/ktmeaton/ncov-recombinant) is built and maintained by [Katherine Eaton](https://ktmeaton.github.io/) at the [National Microbiology Laboratory (NML)](https://github.com/phac-nml) of the Public Health Agency of Canada (PHAC).
 
@@ -37,7 +37,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
   </tr>
 </table>
 
-Thanks goes to these wonderful people:
+Thanks goes to these wonderful people, who developed the tools this pipeline uses:
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -45,7 +45,9 @@ Thanks goes to these wonderful people:
 <table>
   <tr>
     <td align="center"><a href="http://lenaschimmel.de"><img src="https://avatars.githubusercontent.com/u/1325019?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Lena Schimmel (sc2rf)</b></sub></a><br /><a href="https://github.com/lenaschimmel/sc2rf" title="Code">💻</a></td>
-  </tr>
+    <td align="center"><a href="https://turakhia.eng.ucsd.edu/"><img src="https://avatars.githubusercontent.com/u/34664884?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Yatish Turakhia (UShER)</b></sub></a><br /><a href="https://github.com/yatisht/usher" title="Code">💻</a><a href="http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/" title="Data">🔣</a></td>
+    <td align="center"><a href="https://github.com/AngieHinrichs"><img src="https://avatars.githubusercontent.com/u/186983?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Angie Hinrichs (UShER)</b></sub></a><br /><a href="https://github.com/yatisht/usher" title="Code">💻</a><a href="http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/" title="Data">🔣</a></td>
+  </tr>  
 </table>
 
 <!-- markdownlint-restore -->
@@ -286,9 +288,7 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 - Logs for each rule will be stored at: `logs/<rule>/<build>_<date>.txt`
 - If using slurm (`profiles/hpc`) the master log will be at: `logs/ncov-recombinant/ncov-recombinant_<date>_<jobid>.log`
 
-## Credits
+## Credits (TBD)
 
 - nextstrain/ncov: https://github.com/nextstrain/ncov
 - nextstrain/nextclade: https://github.com/nextstrain/nextclade
-- lenaschimmel/sc2rf: https://github.com/lenaschimmel/sc2rf
-- yatisht/usher: https://github.com/yatisht/usher
