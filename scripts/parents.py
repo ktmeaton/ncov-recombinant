@@ -41,7 +41,6 @@ def main(
 
     df = pd.read_csv(input, sep="\t")
     df.fillna(NO_DATA_CHAR, inplace=True)
-
     df["datetime"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
 
     # -------------------------------------------------------------------------
