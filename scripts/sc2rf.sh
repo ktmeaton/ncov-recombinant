@@ -67,9 +67,6 @@ mkdir -p $outdir
 # Location of sc2rf executable
 sc2rf="sc2rf/sc2rf.py"
 
-# Add sc2rf dir to sc2rf_args
-sc2rf_args+=("--sc2rf-dir sc2rf")
-
 # Add optional params to sc2rf_args
 primers_name=${primers_name:-primers}
 sc2rf_args+=("--csvfile $output_csv")
