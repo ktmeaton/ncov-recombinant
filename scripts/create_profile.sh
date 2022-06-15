@@ -17,6 +17,15 @@ while [[ $# -gt 0 ]]; do
       hpc="true"
       shift # past argument
       ;;
+    --exclude-controls)
+      exclude_controls="true"
+      shift # past argument
+      ;;
+    --profile-dir)
+      profile_dir=$2
+      shift # past argument
+      shift # past value
+      ;;
     --data)
       data=$2
       shift # past argument
@@ -34,7 +43,7 @@ done
 
 if [[ $help || $num_args -eq 0 ]]; then
   usage="
-  usage: bash template_build.sh [-h,--help] [--data DATA] [--hpc] \n\n
+  usage: bash template_build.sh [-h,--help] [--data DATA] [--hpc] [--profile-dir]\n\n
 
   \tCreate a template build for the ncov-recombinant Snakemake pipeline.\n\n
 
@@ -43,6 +52,8 @@ if [[ $help || $num_args -eq 0 ]]; then
 
   \tOptional arguments:\n
   \t\t--hpc                     \t\t\t Configure build for HPC execution using SLURM.\n
+  \t\t--profile-dir             \t\t\t Directory to create the profile in (default: my_profiles)\n
+  \t\t--exclude-controls        \t\t\t Exclude the controls build (NOT RECOMMENDED! For testing only)\n
   \t\t-h, --help                \t\t Show this help message and exit.
   "
   echo -e $usage
@@ -54,16 +65,19 @@ if [[ -z $data ]]; then
   exit 1
 fi
 
-PROFILES_DIR="my_profiles"
+
 NUM_REQUIRED_COLS=3
 REQUIRED_COLS="strain|date|country"
 FIRST_COL="strain"
 DEFAULT_INPUTS="defaults/inputs.yaml"
 DEFAULT_PARAMS="defaults/parameters.yaml"
 DEFAULT_BUILDS="defaults/builds.yaml"
+EXCLUDE_CONTROLS_BUILDS="defaults/builds-exclude-controls.yaml"
 DEFAULT_CONFIG="profiles/controls/config.yaml"
 DEFAULT_CONFIG_HPC="profiles/controls-hpc/config.yaml"
 DEFAULT_BASE_INPUT="public-latest"
+
+profile_dir=${profile_dir:-my_profiles}
 
 if [[ -z $hpc ]]; then
   profile="$(basename $data)"
@@ -71,9 +85,7 @@ else
   profile="$(basename $data)-hpc"
 fi
 
-
-mkdir -p $PROFILES_DIR
-
+mkdir -p $profile_dir
 
 # -----------------------------------------------------------------------------
 # Validate Inputs
@@ -89,7 +101,7 @@ else
 fi
 
 # Metadata Validate
-echo -e "$(date "+%Y-%m-%d %T")\tChecking for $NUM_REQUIRED_COLS required metadata columns ($REQUIRED_COLS)"
+echo -e "$(date "+%Y-%m-%d %T")\tChecking for $NUM_REQUIRED_COLS required metadata columns ($(echo $REQUIRED_COLS | tr "|" " " ))"
 num_required_cols=$(head -n 1 $data/metadata.tsv | tr "\t" "\n" | grep -w -E "$REQUIRED_COLS" | wc -l)
 first_col=$(head -n 1 $data/metadata.tsv | cut -f 1)
 
@@ -138,43 +150,68 @@ else
 fi
 
 
-# Create profiles directory
-echo -e "$(date "+%Y-%m-%d %T")\tCreating new profile directory ($PROFILES_DIR/$profile)"
-mkdir -p $PROFILES_DIR/$profile
+# -----------------------------------------------------------------------------
+# Profile
 
-echo -e "$(date "+%Y-%m-%d %T")\tCreating build file ($PROFILES_DIR/$profile/builds.yaml)"
+# Create profile directory
+echo -e "$(date "+%Y-%m-%d %T")\tCreating new profile directory ($profile_dir/$profile)"
+mkdir -p $profile_dir/$profile
+
+# -----------------------------------------------------------------------------
+# Build
+
+# Create builds.yaml
+echo -e "$(date "+%Y-%m-%d %T")\tCreating build file ($profile_dir/$profile/builds.yaml)"
+
+# Add default inputs to builds.yaml
 echo -e "$(date "+%Y-%m-%d %T")\tAdding default input datasets from $DEFAULT_INPUTS"
-cat $DEFAULT_INPUTS > $PROFILES_DIR/$profile/builds.yaml
+cat $DEFAULT_INPUTS > $profile_dir/$profile/builds.yaml
 
-echo -e "$(date "+%Y-%m-%d %T")\tAdding $profile input dataset ($data)"
+# Add custom inputs to builds.yaml
+echo -e "$(date "+%Y-%m-%d %T")\tAdding $profile input data ($data)"
 echo -e "\n
-  # custom local build
+  # custom data: $(basename $data)
   - name: $(basename $data)
     type:
       - local
     metadata: $data/metadata.tsv
     sequences: $data/sequences.fasta
-" >> $PROFILES_DIR/$profile/builds.yaml
+" >> $profile_dir/$profile/builds.yaml
 
-echo -e "$(date "+%Y-%m-%d %T")\tCreating system configuration ($PROFILES_DIR/$profile/config.yaml)"
-if [[ -z $hpc ]]; then
-    echo -e "$(date "+%Y-%m-%d %T")\tAdding default system resources"
-    cp -f $DEFAULT_CONFIG $PROFILES_DIR/$profile/config.yaml
+# Add controls build, unless excluded
+if [[ $exclude_controls == "true" ]]; then
+  cat $EXCLUDE_CONTROLS_BUILDS >> $profile_dir/$profile/builds.yaml
 else
-    echo -e "$(date "+%Y-%m-%d %T")\tAdding default HPC system resources"
-    cp -f $DEFAULT_CONFIG_HPC $PROFILES_DIR/$profile/config.yaml
+  echo -e "$(date "+%Y-%m-%d %T")\tAdding controls as a build ($profile)"
+  cat $DEFAULT_BUILDS >> $profile_dir/$profile/builds.yaml
 fi
-sed -i "s|profiles/controls/builds.yaml|$PROFILES_DIR/$profile/builds.yaml|g" $PROFILES_DIR/$profile/config.yaml
 
-echo -e "$(date "+%Y-%m-%d %T")\tCreating build ($profile)"
-cat $DEFAULT_BUILDS >> $PROFILES_DIR/$profile/builds.yaml
-echo -e "
-builds:
+#Add custom build
+echo -e "$(date "+%Y-%m-%d %T")\tAdding $profile as a build ($profile)"
+
+echo -e "\n
+  # ---------------------------------------------------------------------------
+  # $(basename $data) build\n
   - name: $(basename $data)
     base_input: $DEFAULT_BASE_INPUT
-" >> $PROFILES_DIR/$profile/builds.yaml
+" >> $profile_dir/$profile/builds.yaml
+
+# -----------------------------------------------------------------------------
+# Config
+
+# Create config.yaml
+echo -e "$(date "+%Y-%m-%d %T")\tCreating system configuration ($profile_dir/$profile/config.yaml)"
+if [[ -z $hpc ]]; then
+    echo -e "$(date "+%Y-%m-%d %T")\tAdding default system resources"
+    cp -f $DEFAULT_CONFIG $profile_dir/$profile/config.yaml
+else
+    echo -e "$(date "+%Y-%m-%d %T")\tAdding default HPC system resources"
+    cp -f $DEFAULT_CONFIG_HPC $profile_dir/$profile/config.yaml
+fi
+sed -i "s|profiles/controls/builds.yaml|$profile_dir/$profile/builds.yaml|g" $profile_dir/$profile/config.yaml
+
 
 echo -e "$(date "+%Y-%m-%d %T")\tDone! The $profile profile is ready to be run with:"
 echo -e "
-\t\t\tsnakemake --profile $PROFILES_DIR/$profile
+\t\t\tsnakemake --profile $profile_dir/$profile
 "
