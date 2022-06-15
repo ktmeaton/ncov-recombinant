@@ -114,20 +114,29 @@ else
 fi
 
 # Match seqs and metadata
-echo -e "$(date "+%Y-%m-%d %T")\tChecking that the strain column matches the sequence names"
-seq_names=$(grep ">" $data/sequences.fasta | sed 's/>//g' | sort)
-strain_names=$(cut -f 1 $data/metadata.tsv | tail -n+2 | sort)
+echo -e "$(date "+%Y-%m-%d %T")\tChecking that the metadata strains match the sequence names"
+grep ">" $data/sequences.fasta | sed 's/>//g' > tmp.seq_names
+cut -f 1 $data/metadata.tsv | tail -n+2 > tmp.meta_names
+diff_names=$(cat tmp.seq_names tmp.meta_names | sort | uniq -u)
+# Reminder, var name is delib differently from input
+seq_missing=$(echo $diff_names | tr " " "\n" | grep -f - tmp.meta_names)
+meta_missing=$(echo $diff_names | tr " " "\n" | grep -f - tmp.seq_names)
 
-if [[ "$seq_names" == "$strain_names" ]]; then
+# Cleanup tmp files
+rm -f tmp.seq_names
+rm -f tmp.meta_names
+
+if [[ -z "$diff_names" ]]; then
     echo -e "\t\t\tSUCCESS: Strain column matches sequence names"
 else
     echo -e "\t\t\tFAIL: Strain column does not match the sequence names!"
-    echo -e "\t\t\tSequence names:"
-    echo $seq_names | sed 's/ /\n/g' | sed 's/^/\t\t\t\t/g'
-    echo -e "\t\t\tStrain names:"
-    echo $strain_names | sed 's/ /\n/g' | sed 's/^/\t\t\t\t/g'
+    echo -e "\t\t\tStrains missing from $data/sequences.fasta:"
+    echo $seq_missing | tr " " "\n" | sed 's/^/\t\t\t\t/g'
+    echo -e "\t\t\tStrains missing from $data/metadata.tsv:"
+    echo $meta_missing | tr " " "\n" | sed 's/^/\t\t\t\t/g'
     exit 1
 fi
+
 
 # Create profiles directory
 echo -e "$(date "+%Y-%m-%d %T")\tCreating new profile directory ($PROFILES_DIR/$profile)"
