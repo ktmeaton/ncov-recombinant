@@ -1,24 +1,74 @@
 {
+  "projectName": "ncov-recombinant",
+  "projectOwner": "ktmeaton",
+  "repoType": "github",
+  "repoHost": "https://github.com",
   "files": [
     "README.md"
   ],
   "imageSize": 100,
   "commit": false,
+  "commitConvention": "atom",
   "contributors": [
     {
       "login": "lenaschimmel",
-      "name": "Lena Schimmel",
+      "name": "Lena Schimmel (sc2rf)",
       "avatar_url": "https://avatars.githubusercontent.com/u/1325019?v=4",
-      "profile": "http://lenaschimmel.de",
+      "profile": "http://lenaschimmel.de/",
       "contributions": [
-        "code"
+        "plugin"
+      ]
+    },
+    {
+      "login": "yatisht",
+      "name": "Yatish Turakhia",
+      "avatar_url": "https://avatars.githubusercontent.com/u/34664884?v=4",
+      "profile": "https://turakhia.eng.ucsd.edu/",
+      "contributions": [
+        "data",
+        "plugin"
+      ]
+    },
+    {
+      "login": "AngieHinrichs",
+      "name": "Angie Hinrichs",
+      "avatar_url": "https://avatars.githubusercontent.com/u/186983?v=4",
+      "profile": "http://genome.ucsc.edu/",
+      "contributions": [
+        "data",
+        "plugin"
+      ]
+    },
+    {
+      "login": "nextstrain",
+      "name": "Nextstrain",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22159334?v=4",
+      "profile": "https://nextstrain.org/",
+      "contributions": [
+        "data",
+        "plugin"
+      ]
+    },
+    {
+      "login": "benjamindeslisle",
+      "name": "Benjamin Delisle",
+      "avatar_url": "https://ui-avatars.com/api/?name=Benjamin-Delisle?v=4",
+      "profile": "https://www.inspq.qc.ca/en/auteurs/2629/all",
+      "contributions": [
+        "bug",
+        "test"
+      ]
+    },
+    {
+      "login": "vanipriyadarsiniikkurthi",
+      "name": "Vani Priyadarsini Ikkurthi",
+      "avatar_url": "https://ui-avatars.com/api/?name=Vani Priyadarsini Ikkurthi?v=4",
+      "profile": "https://ca.linkedin.com/in/dr-vani-priyadarsini-ikkurti-4a2ab676",
+      "contributions": [
+        "bug",
+        "test"
       ]
     }
   ],
-  "contributorsPerLine": 7,
-  "projectName": "ncov-recombinant",
-  "projectOwner": "ktmeaton",
-  "repoType": "github",
-  "repoHost": "https://github.com",
-  "skipCi": true
+  "contributorsPerLine": 7
 }
