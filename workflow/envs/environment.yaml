@@ -28,7 +28,7 @@ dependencies:
   # For dev users
   #- conda-forge::pre_commit=2.17.0
   #- anaconda::git=2.35.0
-  - conda-forge::yarn
+  #- conda-forge::yarn
   - pip:
     # sc2rf dependencies
     - termcolor==1.1.0
