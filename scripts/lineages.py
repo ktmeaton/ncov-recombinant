@@ -50,10 +50,17 @@ def main(
 
     df = pd.read_csv(input, sep="\t")
     df.fillna(NO_DATA_CHAR, inplace=True)
-    df["issue"] = [
-        str(int(i)) if i != NO_DATA_CHAR and "," not in i else i for i in df["issue"]
-    ]
 
+    issues_format = []
+
+    for issue in df["issue"]:
+        if type(issue) == float:
+            issue = str(int(issue))
+            issues_format.append(issue)
+        elif type(issue) == str:
+            issues_format.append(issue)
+
+    df["issue"] = issues_format
     df["datetime"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
 
     # -------------------------------------------------------------------------
