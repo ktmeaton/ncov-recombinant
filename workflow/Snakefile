@@ -383,7 +383,6 @@ def _inputs_sc2rf(build):
   else:
     inputs["alignment"] = "results/{build}/nextclade/recombinants.fasta".format(build=build)
 
-
   return inputs
 
 
@@ -512,12 +511,13 @@ rule sc2rf_recombinants:
       --outdir {params.outdir} \
       --aligned {input.alignment} \
       --issues {input.issues} \
+      --log {log} \
       {params.motifs} \
-      2> {log};
+      >> {log} 2>&1;
 
     # Cleanup
-    mv -f {params.outdir}/recombinants.tsv {params.outdir}/stats.tsv
-    rm -f {params.outdir}/recombinants.exclude.tsv;
+    mv -f {params.outdir}/recombinants.tsv {params.outdir}/stats.tsv >> {log} 2>&1;
+    rm -f {params.outdir}/recombinants.exclude.tsv >> {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------
@@ -625,7 +625,7 @@ rule faToVcf:
   shell:
     """
     # Add the reference genome
-    cat {input.reference} {input.alignment} > {output.alignment};
+    cat {input.reference} {input.alignment} > {output.alignment} 2> {log};
 
     # Construct VCF
     faToVcf -ambiguousToN -maskSites={input.prob_sites} {output.alignment} {params.prefix} >> {log} 2>&1;
