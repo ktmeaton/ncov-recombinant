@@ -73,8 +73,7 @@ rule_params:
 
   # ---------------------------------------------------------------------------
   # k               : The number of contextual samples to select when extracting subtrees.
-  # low_memory_mode : true if the metadata should not be used, false if it should
-  #                 : set to true if you have <= 4GB of memory.
+  # low_memory_mode : true if you have <= 4GB of memory, so that the usher metadata will not be used.
   - name: usher_subtree
     k: 500
     low_memory_mode: true
@@ -89,20 +88,18 @@ rule_params:
   # ---------------------------------------------------------------------------
   # geo            : Column to use for a geographic summary (typically region, country, or division)
   # max_placements : The maximum number of UShER placements before labeling false_positive (-1 to disable.).
-  # Note: the rule `linelist` is also going to use the `extra_cols` param of rule `usher_metadata`,
-  # to determine which metadata columns appear in the linelist
+  # Note: the rule `linelist` is also going to use the `extra_cols` param of rule `usher_metadata`, to determine which metadata columns appear in the linelist
   - name: linelist
     geo: country
     max_placements: -1
 
   # ---------------------------------------------------------------------------
-  # lag           : The number of weeks before the present where data is accurate. Used to plot a light grey box.
+  # lag           : The number of weeks before the present where data is accurate (ex. 4). Used to plot a light grey box.
   # weeks         : The number of weeks to plot in retrospect (ex. 16)
   # min_date      : (Optional) The date to start plots at (ex. "2022-01-03"). Overrides the `weeks` parameter.
   # max_date      : (Optional) The date to end plots at (ex. "2022-04-25").
-  # singletons    : "true" is singelton lineages (N=1) should be plotted and reported.
-  # Note: the rule `plot` is also going to use the `geo` param of rule `linelist`,
-  # to plot recombinants by geographic location
+  # singletons    : "true" if singelton lineages (N=1) should be plotted and reported.
+  # Note: the rule `plot` is also going to use the `geo` param of rule `linelist`, to plot recombinants by geographic location
   - name: plot
     weeks: 16
     lag: 4
@@ -113,8 +110,7 @@ rule_params:
   # ---------------------------------------------------------------------------
   # changelog : (Optional) path to a CHANGELOG.md to append to the report
   # template  : (Optional) path to a powerpoint template
-  # Note: the rule `report` is also going to use the `geo` param of rule `linelist`,
-  # to summarize recombinants by geographic location
+  # Note: the rule `report` is also going to use the `geo` param of rule `linelist`, to summarize recombinants by geographic location
   - name: report
     changelog: "CHANGELOG.md"
     template: "resources/template.pptx"
