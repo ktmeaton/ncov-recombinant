@@ -18,49 +18,13 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 
 ## Table of Contents
 
-1. [Output](https://github.com/ktmeaton/ncov-recombinant#output)
 1. [Install](https://github.com/ktmeaton/ncov-recombinant#install)
 1. [Tutorial](https://github.com/ktmeaton/ncov-recombinant#tutorial)
+1. [Output](https://github.com/ktmeaton/ncov-recombinant#output)
 1. [Configuration](https://github.com/ktmeaton/ncov-recombinant#configuration)
 1. [High Performance Computing](https://github.com/ktmeaton/ncov-recombinant#high-performance-computing)
 1. [FAQ](https://github.com/ktmeaton/ncov-recombinant#faq)
 1. [Credits](https://github.com/ktmeaton/ncov-recombinant#credits)
-
-## Output
-
-### Tables
-
-Linelists are collated into a spreadsheet for excel/google sheets:
-
-1. `lineage`: The recombinant lineages observed.
-1. `parents`: The parental combinations observed.
-1. `linelist`: Results from <u>all</u> input sequences (minimal statistics).
-1. `summary`: Results from <u>all</u> input sequences (all possible statistics, for troubleshooting).
-1. `positives`: Results from sequences classified as a <u>recombinant</u> by at least 2 of 3 classifiers.
-1. `false_positives`: Results from sequences flagged as recombinants by Nextclade, that were not verified by [sc2rf](https://github.com/lenaschimmel/sc2rf) or [UShER](https://github.com/yatisht/usher).
-1. `negatives`: Results from sequences classifed as a <u>non-recombinant</u> by nextclade.
-1. `issues`: Metadata of issues related to recombinant lineages posted in the [pango-designation](https://github.com/cov-lineages/pango-designation/issues) repository.
-
-[![excel_output](images/excel_output.png)](
-https://docs.google.com/spreadsheets/d/1EH-JmXFTAnzUHavxPOZnNNgHIBZcyhSMRSQJ8J6qWsk/edit#gid=103507248)
-
-### Slides
-
-Powerpoint/google slides with acommpanying plots for presenting.
-
-[![powerpoint_output](images/powerpoint_output.png)](https://docs.google.com/presentation/d/17EDrQk34VUGOfPtpqdNQiBv5OfWPkULpZwgERWeZf-8/edit#slide=id.p2)
-
-### Breakpoints
-
-Visualization of breakpoints by parent from [sc2rf](https://github.com/lenaschimmel/sc2rf).
-
-![sc2rf_output](images/sc2rf_output.png)
-
-### Phylogenetic Context
-
-Placement of samples on the latest global phylogeny using [UShER](https://github.com/yatisht/usher).
-
-![usher_output](images/usher_output.png)
 
 ## Install
 
@@ -94,10 +58,11 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
     snakemake --profile profiles/tutorial
     ```
 
-1. Explore the [output](https://github.com/ktmeaton/ncov-recombinant#output)
+1. Explore the [output](https://github.com/ktmeaton/ncov-recombinant#output).
 
     - Slides | `results/tutorial/report/report.pptx`
     - Tables<sup>*</sup> | `results/tutorial/report/report.xlsx`
+    - Plots | `results/tutorial/plots`
     - Breakpoints<sup>†</sup> | `results/tutorial/sc2rf/recombinants.ansi.txt`
     - Trees<sup>‡</sup> | `results/tutorial/subtrees`
 
@@ -105,10 +70,46 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 <sup>†</sup> Visualize breakpoints with `less -S` or [Visual Studio ANSI Colors](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi).  
 <sup>‡</sup>  Upload Auspice JSON trees to <https://auspice.us/>.
 
+## Output
+
+### Tables
+
+Linelists are collated into a spreadsheet for excel/google sheets:
+
+1. `lineage`: The recombinant lineages observed.
+1. `parents`: The parental combinations observed.
+1. `linelist`: Results from <u>all</u> input sequences (minimal statistics).
+1. `summary`: Results from <u>all</u> input sequences (all possible statistics, for troubleshooting).
+1. `positives`: Results from sequences classified as a <u>recombinant</u> by at least 2 of 3 classifiers.
+1. `false_positives`: Results from sequences flagged as recombinants by Nextclade, that were not verified by [sc2rf](https://github.com/lenaschimmel/sc2rf) or [UShER](https://github.com/yatisht/usher).
+1. `negatives`: Results from sequences classifed as a <u>non-recombinant</u> by nextclade.
+1. `issues`: Metadata of issues related to recombinant lineages posted in the [pango-designation](https://github.com/cov-lineages/pango-designation/issues) repository.
+
+[![excel_output](images/excel_output.png)](
+https://docs.google.com/spreadsheets/d/1EH-JmXFTAnzUHavxPOZnNNgHIBZcyhSMRSQJ8J6qWsk/edit#gid=103507248)
+
+### Slides
+
+Powerpoint/google slides with plots embedded for presenting.
+
+[![powerpoint_output](images/powerpoint_output.png)](https://docs.google.com/presentation/d/17EDrQk34VUGOfPtpqdNQiBv5OfWPkULpZwgERWeZf-8/edit#slide=id.p2)
+
+### Breakpoints
+
+Visualization of breakpoints by parent from [sc2rf](https://github.com/lenaschimmel/sc2rf).
+
+![sc2rf_output](images/sc2rf_output.png)
+
+### Phylogenetic Context
+
+Placement of samples on the latest global phylogeny using [UShER](https://github.com/yatisht/usher).
+
+![usher_output](images/usher_output.png)
+
 ## Controls
 
 - After completing the tutorial, a good next step is to run the `controls` build.
-- This build analyzes 60 publicly available sequences in [`data/controls`](https://github.com/ktmeaton/ncov-recombinant/tree/master/data/controls), which include recombinant ("positive") and non-recombinant ("negative") sequences.
+- This build analyzes publicly available sequences in [`data/controls`](https://github.com/ktmeaton/ncov-recombinant/tree/master/data/controls), which include recombinant ("positive") and non-recombinant ("negative") sequences.
 - With 1 CPU and 4 GB of memory, this takes ~30 minutes to complete.
 - Instructions for how to include the `controls` in your custom build are in the [configuration](https://github.com/ktmeaton/ncov-recombinant#configuration) section.
 
