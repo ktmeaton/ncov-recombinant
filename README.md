@@ -48,7 +48,7 @@ https://docs.google.com/spreadsheets/d/1EH-JmXFTAnzUHavxPOZnNNgHIBZcyhSMRSQJ8J6q
 
 Powerpoint/google slides with acommpanying plots for presenting.
 
-[![powerpoint_output](images/powerpoint_output.png)](https://docs.google.com/presentation/d/1dFKHPaaD8wOHt_4Vde_yfSBlHz8m7XrqDDn0pik_hs4/edit#slide=id.p2)
+[![powerpoint_output](images/powerpoint_output.png)](https://docs.google.com/presentation/d/17EDrQk34VUGOfPtpqdNQiBv5OfWPkULpZwgERWeZf-8/edit#slide=id.p2)
 
 ### Breakpoints
 
@@ -145,6 +145,9 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
                             snakemake --profile my_profiles/custom
     ```
 
+    > - Note: you can add the param `--controls` to add a `controls` build that will run in parallel.
+    > - Note: The `controls` build analyzes a dataset of positive and negative recombinant sequences, and adds \~30 min to the runtime.
+
 1. Edit `my_profiles/custom/config.yaml`, so that the `jobs` and `default-resources` match your system.
 
     > Note: For HPC environments, see the [High Performance Computing](https://github.com/ktmeaton/ncov-recombinant#high-performance-computing) section.
@@ -183,7 +186,7 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 1. Create an HPC-compatible profile to store your build configuration.
 
     ```bash
-    bash scripts/create_profile.sh --data data/custom --hpc
+    scripts/create_profile.sh --data data/custom --hpc
     ```
 
     ```text
@@ -223,13 +226,13 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 3. Dispatch the workflow using the slurm wrapper script:
 
     ```bash
-    bash scripts/slurm.sh --profile my_profiles/custom-hpc
+    scripts/slurm.sh --profile my_profiles/custom-hpc
     ```
 
 4. Use the `--help` parameter to get additional options for SLURM dispatch.
 
     ```bash
-    bash scripts/slurm.sh --help
+    scripts/slurm.sh --help
     ```
 
     ```text
