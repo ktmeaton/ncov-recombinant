@@ -54,7 +54,9 @@ def main(
     issues_format = []
 
     for issue in df["issue"]:
-        if type(issue) == float:
+        if type(issue) == int:
+            issues_format.append(int(issue))
+        elif type(issue) == float:
             issue = str(int(issue))
             issues_format.append(issue)
         elif type(issue) == str:
