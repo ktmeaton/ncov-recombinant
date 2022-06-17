@@ -9,7 +9,6 @@ on:
     paths-ignore:
       - 'autologs/**'
       - 'docs/**'
-      - 'images/**'
       - 'ncov/**'
       - 'sc2rf/**'
   pull_request:
