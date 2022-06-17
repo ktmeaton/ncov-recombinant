@@ -294,6 +294,43 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 
     > - **Tip**: Display log of most recent workflow: `cat $(ls -t logs/ncov-recombinant/*.log | head -n 1)`
 
+1. Why is the `usher` rule taking a long time (+10 min)?
+
+    - Placing samples on the global phylogeny is computationally intensive.
+    - Option \#1 is to increase the resources in your profile's `config.yaml` file:
+
+        ```yaml
+        default-resources:
+          - cpus=4
+          - mem_mb=16000
+          - time_min=720
+        ```
+
+    - Option \#2 is to reduce the sample size by excluding negatives n your profile's `builds.yaml` file:
+
+        ```yaml
+        builds:
+          - name: custom
+            base_input: public-latest
+
+            sc2rf:
+              exclude_negatives: true
+        ```
+
+    - Option \#3 for even aggressive sample filtering, is to exclude false positives as well:
+
+        ```yaml
+        builds:
+          - name: custom
+            base_input: public-latest
+
+            sc2rf:
+              exclude_negatives: true
+
+            faToVcf:
+              exclude_false_positives: true
+        ```
+
 1. How do I cleanup all the output from a previous run?
 
     ```bash
