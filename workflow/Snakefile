@@ -966,7 +966,7 @@ rule summary:
 # Linelist
 
 # Parameters Function
-def _params_linelist():
+def _params_linelist(build):
   """Parse parameters from wildcards for rule linelist."""
 
   params = {}
@@ -1009,8 +1009,8 @@ rule linelist:
   params:
     outdir         = "results/{build}/linelists",
     extra_cols     = lambda wildcards: _params_usher_metadata(wildcards.build)["extra_cols"],
-    geo            = lambda wildcards: _params_linelist()["geo"],
-    max_placements = lambda wildcards: _params_linelist()["max_placements"],
+    geo            = lambda wildcards: _params_linelist(wildcards.build)["geo"],
+    max_placements = lambda wildcards: _params_linelist(wildcards.build)["max_placements"],
   threads: 1
   resources:
     cpus = 1,

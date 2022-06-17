@@ -2,7 +2,7 @@
 
 ## Major Changes
 
-1. Default parameters have been updated! Please regenerate profiles/builds with:
+1. Default parameters have been updated! Please regenerate your profiles/builds with:
 
     ```bash
     bash scripts/create_profile.sh --data data/custom
@@ -28,7 +28,7 @@
 1. Make sure all rules write to a log if possible.
 1. Convert all rule inputs to snakemake rule variables.
 1. Create and document a `create_profile.sh` script.
-1. Use new logic for merging default parameters into a custom build.
+1. Implement the `--low-memory` mode parameter within the script `usher_metadata.sh`.
 
 ## Data
 
@@ -36,7 +36,7 @@
 
     - `controls-negatives`
     - `controls-positives`
-    - `controls-all`
+    - `controls`
 
 ## Programs
 
