@@ -92,7 +92,7 @@ https://docs.google.com/spreadsheets/d/1FFkKO84LV74401Vc5Uero0gMc_-7npvp6x7M0x-n
 
 Powerpoint/google slides with plots embedded for presenting.
 
-[![powerpoint_output](images/powerpoint_output.png)](https://docs.google.com/presentation/d/17EDrQk34VUGOfPtpqdNQiBv5OfWPkULpZwgERWeZf-8/edit#slide=id.p2)
+[![powerpoint_output](images/powerpoint_output.png)](https://docs.google.com/presentation/d/1eCPvaY1X3AzllTzmIwthY2i6GATsL3FDnW_LfE7CkQQ/edit#slide=id.p2)
 
 ### Breakpoints
 
