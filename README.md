@@ -23,7 +23,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 1. [Tutorial](https://github.com/ktmeaton/ncov-recombinant#tutorial)
 1. [Configuration](https://github.com/ktmeaton/ncov-recombinant#configuration)
 1. [High Performance Computing](https://github.com/ktmeaton/ncov-recombinant#high-performance-computing)
-1. [Troubleshooting](https://github.com/ktmeaton/ncov-recombinant#troubleshooting)
+1. [FAQ](https://github.com/ktmeaton/ncov-recombinant#faq)
 1. [Credits](https://github.com/ktmeaton/ncov-recombinant#credits)
 
 ## Output
@@ -132,7 +132,7 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
     mkdir -p data/custom
     ```
 
-1. Copy over your `metadata.tsv` and unaligned `sequences.fasta` to `data/custom`.
+1. Copy over your <u>unaligned</u> `sequences.fasta` and `metadata.tsv` to `data/custom`.
 
     > - **Note**: `metadata.tsv` MUST have at minimum the columns `strain`, `date`, `country`.  
     > - **Note**: The first column MUST be `strain`.
@@ -272,7 +272,7 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
                     -h, --help                       Show this help message and exit.
     ```
 
-## Troubleshooting
+## FAQ
 
 1. What do I do if the workflow won't run because the directory is "locked"?
 
@@ -283,13 +283,64 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 1. How do I troubleshoot workflow errors?
 
     - Start with investigating the logfile of the rule that failed.
-    - [Issue submissions](https://github.com/ktmeaton/ncov-recombinant/issues/33) are welcome and greatly appreciated!
 
     ![rule_log_output](images/rule_log_output.png)
+
+    - [Issue submissions](https://github.com/ktmeaton/ncov-recombinant/issues/33) are welcome and greatly appreciated!
 
 1. How do I troubleshoot SLURM errors?
 
     - If the workflow was dispatched with `scripts/slurm.sh`, the master log will be stored at: `logs/ncov-recombinant/ncov-recombinant_<date>_<jobid>.log`
+
+    > - **Tip**: Display log of most recent workflow: `cat $(ls -t logs/ncov-recombinant/*.log | head -n 1)`
+
+1. How do I cleanup all the output from a previous run?
+
+    ```bash
+    snakemake --profile profiles/tutorial --delete-all-output
+    ```
+
+1. Why are "positive" sequences missing from the plots and slides?
+
+    - The most likely reason is that these sequences fall outside of the reporting period.
+    - The default reporting period is set to 16 weeks before the present.
+    - To change it for a build, add custom `plot` parameters to your `builds.yaml` file.
+
+    ```yaml
+      - name: custom
+        base_input: public-latest
+
+        plot:
+            min_date: "2022-01-10"
+            max_date: "2022-04-25" # Optional, can be left blank to use current date
+    ```
+
+1. Where can I find the plotting data?
+
+    - A data table is provided for each plot:
+
+        - Plot: `results/tutorial/plots/lineage.png`
+        - Table: `results/tutorial/plots/lineage.tsv`
+        - The rows are the epiweek, and the columns are the categories (ex. lineages)
+
+        |epiweek   |XM |miscBA1BA2Post17k-example-1|miscBA1BA2Post17k-example-2|proposed467-example-1|
+        |:---------|:--|:--------------------------|:--------------------------|:--------------------|
+        |2022-01-10|0.0|0.0                        |0.0                        |0.0                  |
+        |2022-01-17|0.0|0.0                        |0.0                        |0.0                  |
+        |2022-01-24|0.0|0.0                        |0.0                        |0.0                  |
+        |2022-01-31|0.0|1.0                        |0.0                        |1.0                  |
+        |2022-02-07|0.0|0.0                        |0.0                        |1.0                  |
+        |2022-02-14|1.0|0.0                        |0.0                        |0.0                  |
+        |2022-02-21|0.0|0.0                        |0.0                        |0.0                  |
+        |2022-02-28|0.0|0.0                        |0.0                        |0.0                  |
+        |2022-03-07|0.0|0.0                        |0.0                        |0.0                  |
+        |2022-03-14|0.0|0.0                        |0.0                        |0.0                  |
+        |2022-03-21|0.0|0.0                        |1.0                        |0.0                  |
+        |2022-03-28|1.0|0.0                        |0.0                        |0.0                  |
+        |2022-04-04|0.0|0.0                        |0.0                        |0.0                  |
+        |2022-04-11|0.0|0.0                        |0.0                        |0.0                  |
+        |2022-04-18|0.0|0.0                        |0.0                        |0.0                  |
+        |2022-04-25|0.0|0.0                        |0.0                        |0.0                  |  
 
 ## Credits
 
