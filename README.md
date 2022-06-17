@@ -332,6 +332,23 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
               exclude_false_positives: true
         ```
 
+1. How do I include more of my custom metadata columns into the linelists?
+
+    - By default, the mandatory columns `strain`, `date`, and `country` will appear from your metadata.
+    - Extra columns can be supplied as a parameter to `usher_metadata` in your `builds.yaml` file.
+    - In the following example, the columns `division`, `gisaid_epi_isl`, and `ct` will be extracted from your input `metadata.tsv` file and included in the final linelists.
+
+    ```yaml
+      - name: custom
+        base_input: public-latest
+
+        usher_metadata:
+          extra_cols:
+            - division
+            - gisaid_epi_isl
+            - ct  
+    ```
+
 1. How do I cleanup all the output from a previous run?
 
     ```bash
