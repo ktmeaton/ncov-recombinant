@@ -3,6 +3,7 @@ import click
 import filecmp
 import os
 import json
+import logging
 
 NO_DATA_CHAR = "NA"
 GEO_RESOLUTIONS = "resources/geo_resolutions.json"
@@ -18,21 +19,33 @@ def json_get_strains(json_tree):
 @click.command()
 @click.option("--indir", help="Input directory of subtrees.", required=True)
 @click.option("--outdir", help="Output directory for collapsed trees.", required=True)
+@click.option("--log", help="Logfile.", required=False, default="usher_collapse.log")
 def main(
     indir,
     outdir,
+    log,
 ):
     """Collect and condense UShER subtrees"""
 
+    # Check for directory
     if not os.path.exists(outdir):
         os.mkdir(outdir)
+
+    # create logger
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler(log)
+    fh.setLevel(logging.DEBUG)
+    logger.addHandler(fh)
 
     trees_list = [
         os.path.join(indir, f) for f in os.listdir(indir) if f.endswith("json")
     ]
     subtrees = {}
 
-    print("Parsed: {} trees".format(len(trees_list)))
+    logging.info("Parsed: {} trees".format(len(trees_list)))
 
     # If there was only 1 tree...
     if len(trees_list) == 1:
@@ -41,6 +54,7 @@ def main(
     else:
         for tree_1 in trees_list:
             tree_1_idx = trees_list.index(tree_1)
+            logging.info("Parsing tree: {}".format(tree_1_idx + 1))
 
             for tree_2 in trees_list[tree_1_idx + 1 :]:
 
@@ -97,11 +111,11 @@ def main(
     # Write Output
 
     # Sample to subtree mapping
-
     num_trees = 0
     subtrees_collapse = {}
 
     out_path_metadata = os.path.join(outdir, "metadata.tsv")
+    logging.info("Writing metadata to table: {}".format(out_path_metadata))
 
     with open(out_path_metadata, "w") as outfile:
         header = "strain\tusher_subtree"
@@ -124,8 +138,8 @@ def main(
                 outfile.write(line + "\n")
                 num_trees += 1
 
-    print("Collapsed: {} trees".format(num_trees))
-    print("Final: {} trees".format(len(subtrees_collapse)))
+    logging.info("Collapsed: {} trees".format(num_trees))
+    logging.info("Final: {} trees".format(len(subtrees_collapse)))
 
     # Trees
     for i in subtrees_collapse:
@@ -168,6 +182,8 @@ def main(
         with open(out_path, "w") as outfile:
             # outfile.write(json.dumps(json_data, indent=2))
             outfile.write(json.dumps(json_data))
+
+    logging.info("Done")
 
 
 if __name__ == "__main__":
