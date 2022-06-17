@@ -139,7 +139,7 @@ def main(
     )
     all_df.index.name = None
     all_df.fillna(0, inplace=True)
-    all_df["epiweek"] = all_df.index
+    all_df.insert(0, "epiweek", all_df.index)
     # Check if it was empty
     if len(all_df) == 0:
         all_df.insert(1, "sequences", [])
@@ -200,7 +200,12 @@ def main(
 
         plot_df.index.name = None
         plot_df.fillna(0, inplace=True)
-        plot_df["epiweek"] = plot_df.index
+
+        # Convert counts from floats to integers
+        plot_df[plot_df.columns] = plot_df[plot_df.columns].astype(int)
+
+        # Add epiweeks column
+        plot_df.insert(0, "epiweek", plot_df.index)
 
         plot_dict[plot]["df"] = plot_df
 
@@ -226,6 +231,7 @@ def main(
         iter_i += 1
 
     for plot_df in df_list:
+        plot_df.fillna(0, inplace=True)
         plot_df.sort_values(by="epiweek", axis="index", inplace=True)
 
     lag_epiweek = max_epiweek - timedelta(weeks=lag)
