@@ -105,6 +105,25 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 <sup>†</sup> Visualize breakpoints with `less -S` or [Visual Studio ANSI Colors](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi).  
 <sup>‡</sup>  Upload Auspice JSON trees to <https://auspice.us/>.
 
+## Controls
+
+- After completing the tutorial, a good next step is to run the `controls` build.
+- This build analyzes 60 publicly available sequences in [`data/controls`](https://github.com/ktmeaton/ncov-recombinant/tree/master/data/controls), which include recombinant ("positive") and non-recombinant ("negative") sequences.
+- With 1 CPU and 4 GB of memory, this takes ~30 minutes to complete.
+- Instructions for how to include the `controls` in your custom build are in the [configuration](https://github.com/ktmeaton/ncov-recombinant#configuration) section.
+
+1. Preview the steps that are going to be run.
+
+    ```bash
+    snakemake --profile profiles/controls --dryrun
+    ```
+
+1. Run the workflow.
+
+    ```bash
+    snakemake --profile profiles/controls
+    ```
+
 ## Configuration
 
 1. Create a new directory for your data.
