@@ -778,7 +778,7 @@ def _params_usher_metadata(build):
   else: params["extra_cols"] = ""
 
   low_memory_mode = config["builds"][build]["usher_subtree"]["low_memory_mode"]
-  if low_memory_mode: params["low_memory_mode"] = ""
+  if low_memory_mode: params["low_memory_mode"] = "--low-memory"
   else: params["low_memory_mode"] = ""
 
   return params
