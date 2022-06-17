@@ -378,25 +378,6 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
         - Table: `results/tutorial/plots/lineage.tsv`
         - The rows are the epiweek, and the columns are the categories (ex. lineages)
 
-        |epiweek   |XM |miscBA1BA2Post17k-example-1|miscBA1BA2Post17k-example-2|proposed467-example-1|
-        |:---------|:--|:--------------------------|:--------------------------|:--------------------|
-        |2022-01-10|0.0|0.0                        |0.0                        |0.0                  |
-        |2022-01-17|0.0|0.0                        |0.0                        |0.0                  |
-        |2022-01-24|0.0|0.0                        |0.0                        |0.0                  |
-        |2022-01-31|0.0|1.0                        |0.0                        |1.0                  |
-        |2022-02-07|0.0|0.0                        |0.0                        |1.0                  |
-        |2022-02-14|1.0|0.0                        |0.0                        |0.0                  |
-        |2022-02-21|0.0|0.0                        |0.0                        |0.0                  |
-        |2022-02-28|0.0|0.0                        |0.0                        |0.0                  |
-        |2022-03-07|0.0|0.0                        |0.0                        |0.0                  |
-        |2022-03-14|0.0|0.0                        |0.0                        |0.0                  |
-        |2022-03-21|0.0|0.0                        |1.0                        |0.0                  |
-        |2022-03-28|1.0|0.0                        |0.0                        |0.0                  |
-        |2022-04-04|0.0|0.0                        |0.0                        |0.0                  |
-        |2022-04-11|0.0|0.0                        |0.0                        |0.0                  |
-        |2022-04-18|0.0|0.0                        |0.0                        |0.0                  |
-        |2022-04-25|0.0|0.0                        |0.0                        |0.0                  |  
-
 ## Credits
 
 [ncov-recombinant](https://github.com/ktmeaton/ncov-recombinant) is built and maintained by [Katherine Eaton](https://ktmeaton.github.io/) at the [National Microbiology Laboratory (NML)](https://github.com/phac-nml) of the Public Health Agency of Canada (PHAC).
