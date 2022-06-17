@@ -790,6 +790,7 @@ rule usher_metadata:
   """
   message: """Merging metadata for UShER protobuf and converting to decimal date.\n
   build:      {wildcards.build}
+  low_memory: {params.low_memory_mode}
   log:        {log}
   metadata:   {output.decimal_date}
   """
@@ -1036,28 +1037,28 @@ rule linelist:
 rule_name = "plot"
 
 # Parameters Function
-def _params_plot(wildcards):
+def _params_plot(build):
   """Parse parameters from wildcards for rule plot."""
 
   params = {}
 
-  weeks = config["builds"][wildcards.build]["plot"]["weeks"]
+  weeks = config["builds"][build]["plot"]["weeks"]
   if weeks: params["weeks"] = "--weeks {}".format(weeks)
   else: params["weeks"] = ""
 
-  min_date = config["builds"][wildcards.build]["plot"]["min_date"]
+  min_date = config["builds"][build]["plot"]["min_date"]
   if min_date: params["min_date"] = "--min-date {}".format(min_date)
   else: params["min_date"] = ""
 
-  max_date = config["builds"][wildcards.build]["plot"]["max_date"]
+  max_date = config["builds"][build]["plot"]["max_date"]
   if max_date: params["max_date"] = "--max-date {}".format(max_date)
   else: params["max_date"] = ""
 
-  singletons = config["builds"][wildcards.build]["plot"]["singletons"]
+  singletons = config["builds"][build]["plot"]["singletons"]
   if singletons: params["singletons"] = "--singletons"
   else: params["singletons"] = ""
 
-  lag = config["builds"][wildcards.build]["plot"]["lag"]
+  lag = config["builds"][build]["plot"]["lag"]
   if lag: params["lag"] = "--lag {}".format(lag)
   else: params["lag"] = ""
 
@@ -1079,12 +1080,12 @@ rule plot:
     plots      = directory("results/{build}/plots"),
   params:
     outdir     = "results/{build}/plots",
-    geo        = lambda wildcards: _params_linelist()["geo"],
-    weeks      = lambda wildcards: _params_plot(wildcards)["weeks"],
-    min_date   = lambda wildcards: _params_plot(wildcards)["min_date"],
-    max_date   = lambda wildcards: _params_plot(wildcards)["max_date"],
-    lag        = lambda wildcards: _params_plot(wildcards)["lag"],
-    singletons = lambda wildcards: _params_plot(wildcards)["singletons"],
+    geo        = lambda wildcards: _params_linelist(wildcards.build)["geo"],
+    weeks      = lambda wildcards: _params_plot(wildcards.build)["weeks"],
+    min_date   = lambda wildcards: _params_plot(wildcards.build)["min_date"],
+    max_date   = lambda wildcards: _params_plot(wildcards.build)["max_date"],
+    lag        = lambda wildcards: _params_plot(wildcards.build)["lag"],
+    singletons = lambda wildcards: _params_plot(wildcards.build)["singletons"],
   threads: 1
   resources:
     cpus = 1,
@@ -1111,20 +1112,20 @@ rule plot:
 
 rule_name = "report"
 
-def _params_report(wildcards):
+def _params_report(build):
   """Parse parameters from wildcards for rule report."""
 
   params = {}
 
-  geo = config["builds"][wildcards.build]["linelist"]["geo"]
+  geo = config["builds"][build]["linelist"]["geo"]
   if geo: params["geo"] = "--geo {}".format(geo)
   else: params["geo"] = ""
 
-  changelog = config["builds"][wildcards.build]["report"]["changelog"]
+  changelog = config["builds"][build]["report"]["changelog"]
   if changelog: params["changelog"] = "--changelog {}".format(changelog)
   else: params["changelog"] = ""
 
-  template = config["builds"][wildcards.build]["report"]["template"]
+  template = config["builds"][build]["report"]["template"]
   if template: params["template"] = "--template {}".format(template)
   else: params["template"] = ""
 
@@ -1156,9 +1157,9 @@ rule report:
     pptx            = "results/{build}/report/report.pptx",
     xlsx            = "results/{build}/report/report.xlsx",
   params:
-    geo       = lambda wildcards: _params_report(wildcards)["geo"],
-    changelog = lambda wildcards: _params_report(wildcards)["changelog"],
-    template  = lambda wildcards: _params_report(wildcards)["template"],
+    geo       = lambda wildcards: _params_report(wildcards.build)["geo"],
+    changelog = lambda wildcards: _params_report(wildcards.build)["changelog"],
+    template  = lambda wildcards: _params_report(wildcards.build)["template"],
 
   threads: 1
   resources:
