@@ -15,8 +15,8 @@ profiles/custom
 my_profiles/
 
 # Ignore datasets
-data/public-*
+data/public*
 data/sars-cov-2_*
-data/canada
-data/requests
-data/custom
+data/canada*
+data/requests*
+data/custom*

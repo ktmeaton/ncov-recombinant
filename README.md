@@ -115,8 +115,8 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 
 1. Copy over your `metadata.tsv` and unaligned `sequences.fasta` to `data/custom`.
 
-    > - Note: `metadata.tsv` MUST have at minimum the columns `strain`, `date`, `country`.  
-    > - Note: The first column MUST be `strain`.
+    > - **Note**: `metadata.tsv` MUST have at minimum the columns `strain`, `date`, `country`.  
+    > - **Note**: The first column MUST be `strain`.
 
 1. Create a profile for your custom build.
 
@@ -145,12 +145,12 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
                             snakemake --profile my_profiles/custom
     ```
 
-    > - Note: you can add the param `--controls` to add a `controls` build that will run in parallel.
-    > - Note: The `controls` build analyzes a dataset of positive and negative recombinant sequences, and adds \~30 min to the runtime.
+    > - **Note**: you can add the param `--controls` to add a `controls` build that will run in parallel.
+    > - **Note**: The `controls` build analyzes a dataset of positive and negative recombinant sequences, and adds \~30 min to the runtime.
 
 1. Edit `my_profiles/custom/config.yaml`, so that the `jobs` and `default-resources` match your system.
 
-    > Note: For HPC environments, see the [High Performance Computing](https://github.com/ktmeaton/ncov-recombinant#high-performance-computing) section.
+    > **Note**: For HPC environments, see the [High Performance Computing](https://github.com/ktmeaton/ncov-recombinant#high-performance-computing) section.
 
     ```yaml
     #------------------------------------------------------------------------------#
@@ -229,6 +229,8 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
     scripts/slurm.sh --profile my_profiles/custom-hpc
     ```
 
+    > - **Tip**: Display log of most recent workflow: `cat $(ls -t logs/ncov-recombinant/*.log | head -n 1)`
+
 4. Use the `--help` parameter to get additional options for SLURM dispatch.
 
     ```bash
@@ -253,14 +255,22 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 
 ## Troubleshooting
 
-- Unlock the workflow after a failed run:
+1. What do I do if the workflow won't run because the directory is "locked"?
 
     ```bash
     snakemake --profile profiles/tutorial --unlock
     ```
 
-- Logs for each rule will be stored at: `logs/<rule>/<build>_<date>.txt`
-- If using slurm (`profiles/hpc`) the master log will be at: `logs/ncov-recombinant/ncov-recombinant_<date>_<jobid>.log`
+1. How do I troubleshoot workflow errors?
+
+    - Start with investigating the logfile of the rule that failed.
+    - [Issue submissions](https://github.com/ktmeaton/ncov-recombinant/issues/33) are welcome and greatly appreciated!
+
+    ![rule_log_output](images/rule_log_output.png)
+
+1. How do I troubleshoot SLURM errors?
+
+    - If the workflow was dispatched with `scripts/slurm.sh`, the master log will be stored at: `logs/ncov-recombinant/ncov-recombinant_<date>_<jobid>.log`
 
 ## Credits
 
