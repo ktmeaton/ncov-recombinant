@@ -94,7 +94,7 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
     snakemake --profile profiles/tutorial
     ```
 
-1. Explore the output:
+1. Explore the [output](https://github.com/ktmeaton/ncov-recombinant#output)
 
     - Slides | `results/tutorial/report/report.pptx`
     - Tables<sup>*</sup> | `results/tutorial/report/report.xlsx`
@@ -236,7 +236,7 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
     ```
 
     ```text
-    usage: bash slurm.sh [-h] [--profile PROFILE] [--conda-env CONDA_ENV] [--target TARGET] [--partition PARTITION] [--cpus CPUS] [--mem MEM]
+    usage: bash slurm.sh [-h] [--profile PROFILE] [--conda-env CONDA_ENV] [--target TARGET] [--cpus CPUS] [--mem MEM]
 
             Dispatch a Snakemake pipeline using SLURM.
 
@@ -244,7 +244,6 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
                     --profile PROFILE                Snakemake profile to execute (ex. profiles/tutorial-hpc)
 
             Optional arguments:
-                    --partition PARTITION            Partition to submit jobs to with SLURM.
                     --conda-env CONDA_ENV            Conda environment to use. (default: ncov-recombinant)
                     --target TARGET                  Snakemake target(s) to execute (default: all)
                     --cpus CPUS                      CPUS to use for the main pipeline. (default: 1)
