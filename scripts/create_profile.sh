@@ -79,11 +79,17 @@ DEFAULT_BASE_INPUT="public-latest"
 
 profile_dir=${profile_dir:-my_profiles}
 
-if [[ -z $hpc ]]; then
-  profile="$(basename $data)"
-else
-  profile="$(basename $data)-hpc"
+profile=$(basename $data)
+
+
+if [[ ! -z $controls ]]; then
+  profile="${profile}-controls"
 fi
+
+if [[ ! -z $hpc ]]; then
+  profile="${profile}-hpc"
+fi
+
 
 mkdir -p $profile_dir
 
@@ -178,6 +184,10 @@ echo -e "\n
     sequences: $data/sequences.fasta
 " >> $profile_dir/$profile/builds.yaml
 
+# Add default rule parameters
+echo -e "$(date "+%Y-%m-%d %T")\tAdding default rule parameters ($data)"
+cat $DEFAULT_PARAMS >> $profile_dir/$profile/builds.yaml
+
 # Add controls build, unless excluded
 if [[ $controls == "true" ]]; then
   echo -e "$(date "+%Y-%m-%d %T")\tAdding \`controls\` as a build"
@@ -211,7 +221,19 @@ fi
 sed -i "s|profiles/controls/builds.yaml|$profile_dir/$profile/builds.yaml|g" $profile_dir/$profile/config.yaml
 
 
-echo -e "$(date "+%Y-%m-%d %T")\tDone! The $profile profile is ready to be run with:"
+echo -e "$(date "+%Y-%m-%d %T")\tDone!"
+
+echo -e "$(date "+%Y-%m-%d %T")\tSystem resources can be further configured in:"
+echo -e "
+\t\t\t$profile_dir/$profile/config.yaml
+"
+
+echo -e "$(date "+%Y-%m-%d %T")\tBuilds can be configured in:"
+echo -e "
+\t\t\t$profile_dir/$profile/builds.yaml
+"
+
+echo -e "$(date "+%Y-%m-%d %T")\tThe $profile profile is ready to be run with:"
 echo -e "
 \t\t\tsnakemake --profile $profile_dir/$profile
 "
