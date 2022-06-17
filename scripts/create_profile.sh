@@ -17,8 +17,8 @@ while [[ $# -gt 0 ]]; do
       hpc="true"
       shift # past argument
       ;;
-    --exclude-controls)
-      exclude_controls="true"
+    --controls)
+      controls="true"
       shift # past argument
       ;;
     --profile-dir)
@@ -53,7 +53,7 @@ if [[ $help || $num_args -eq 0 ]]; then
   \tOptional arguments:\n
   \t\t--hpc                     \t\t\t Configure build for HPC execution using SLURM.\n
   \t\t--profile-dir             \t\t\t Directory to create the profile in (default: my_profiles)\n
-  \t\t--exclude-controls        \t\t\t Exclude the controls build (NOT RECOMMENDED! For testing only)\n
+  \t\t--controls                \t\t\t Add the controls build\n
   \t\t-h, --help                \t\t Show this help message and exit.
   "
   echo -e $usage
@@ -179,11 +179,11 @@ echo -e "\n
 " >> $profile_dir/$profile/builds.yaml
 
 # Add controls build, unless excluded
-if [[ $exclude_controls == "true" ]]; then
-  cat $EXCLUDE_CONTROLS_BUILDS >> $profile_dir/$profile/builds.yaml
-else
+if [[ $controls == "true" ]]; then
   echo -e "$(date "+%Y-%m-%d %T")\tAdding \`controls\` as a build"
   cat $DEFAULT_BUILDS >> $profile_dir/$profile/builds.yaml
+else
+  cat $EXCLUDE_CONTROLS_BUILDS >> $profile_dir/$profile/builds.yaml
 fi
 
 #Add custom build
