@@ -115,33 +115,32 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
 
 1. Copy over your `metadata.tsv` and unaligned `sequences.fasta` to `data/custom`.
 
-    > Note: `metadata.tsv` MUST have at minimum the columns `strain`, `date`, `country`.  
-    > Note: The first column MUST be `strain`.
+    > - Note: `metadata.tsv` MUST have at minimum the columns `strain`, `date`, `country`.  
+    > - Note: The first column MUST be `strain`.
 
 1. Create a profile for your custom build.
 
     ```bash
-    bash scripts/create_profile.sh --data data/custom
+    scripts/create_profile.sh --data data/custom
     ```
 
     ```text
-    2022-06-15 12:07:53     Searching for metadata (data/custom/metadata.tsv)
-    2022-06-15 12:07:53     SUCCESS: metadata found
-    2022-06-15 12:07:53     Checking for 3 required metadata columns (strain date country)
-    2022-06-15 12:07:53     SUCCESS: 3 columns found.
-    2022-06-15 12:07:53     Searching for sequences (data/custom/sequences.fasta)
-    2022-06-15 12:07:53     SUCCESS: Sequences found
-    2022-06-15 12:07:53     Checking that the metadata strains match the sequence names
-    2022-06-15 12:07:53     SUCCESS: Strain column matches sequence names
-    2022-06-15 12:07:53     Creating new profile directory (my_profiles/custom)
-    2022-06-15 12:07:53     Creating build file (my_profiles/custom/builds.yaml)
-    2022-06-15 12:07:53     Adding default input datasets from defaults/inputs.yaml
-    2022-06-15 12:07:53     Adding custom input data (data/custom)
-    2022-06-15 12:07:53     Adding `controls` as a build
-    2022-06-15 12:07:53     Adding `custom` as a build
-    2022-06-15 12:07:53     Creating system configuration (my_profiles/custom/config.yaml)
-    2022-06-15 12:07:53     Adding default system resources
-    2022-06-15 12:07:53     Done! The custom profile is ready to be run with:
+    2022-06-17 09:15:06     Searching for metadata (data/custom/metadata.tsv)
+    2022-06-17 09:15:06     SUCCESS: metadata found
+    2022-06-17 09:15:06     Checking for 3 required metadata columns (strain date country)
+    2022-06-17 09:15:06     SUCCESS: 3 columns found.
+    2022-06-17 09:15:06     Searching for sequences (data/custom/sequences.fasta)
+    2022-06-17 09:15:06     SUCCESS: Sequences found
+    2022-06-17 09:15:06     Checking that the metadata strains match the sequence names
+    2022-06-17 09:15:06     SUCCESS: Strain column matches sequence names
+    2022-06-17 09:15:06     Creating new profile directory (my_profiles/custom)
+    2022-06-17 09:15:06     Creating build file (my_profiles/custom/builds.yaml)
+    2022-06-17 09:15:06     Adding default input data (defaults/inputs.yaml)
+    2022-06-17 09:15:06     Adding custom input data (data/custom)
+    2022-06-17 09:15:06     Adding `custom` as a build
+    2022-06-17 09:15:06     Creating system configuration (my_profiles/custom/config.yaml)
+    2022-06-17 09:15:06     Adding default system resources
+    2022-06-17 09:15:06     Done! The custom profile is ready to be run with:
 
                             snakemake --profile my_profiles/custom
     ```
@@ -188,23 +187,22 @@ Placement of samples on the latest global phylogeny using [UShER](https://github
     ```
 
     ```text
-    2022-06-15 12:10:45     Searching for metadata (data/custom/metadata.tsv)
-    2022-06-15 12:10:45     SUCCESS: metadata found
-    2022-06-15 12:10:45     Checking for 3 required metadata columns (strain date country)
-    2022-06-15 12:10:45     SUCCESS: 3 columns found.
-    2022-06-15 12:10:45     Searching for sequences (data/custom/sequences.fasta)
-    2022-06-15 12:10:45     SUCCESS: Sequences found
-    2022-06-15 12:10:45     Checking that the metadata strains match the sequence names
-    2022-06-15 12:10:45     SUCCESS: Strain column matches sequence names
-    2022-06-15 12:10:45     Creating new profile directory (my_profiles/custom-hpc)
-    2022-06-15 12:10:45     Creating build file (my_profiles/custom-hpc/builds.yaml)
-    2022-06-15 12:10:45     Adding default input data (defaults/inputs.yaml)
-    2022-06-15 12:10:45     Adding custom input data (data/custom)
-    2022-06-15 12:10:45     Adding `controls` as a build
-    2022-06-15 12:10:45     Adding `custom` as a build
-    2022-06-15 12:10:45     Creating system configuration (my_profiles/custom-hpc/config.yaml)
-    2022-06-15 12:10:45     Adding default HPC system resources
-    2022-06-15 12:10:45     Done! The custom-hpc profile is ready to be run with:
+    2022-06-17 09:16:55     Searching for metadata (data/custom/metadata.tsv)
+    2022-06-17 09:16:55     SUCCESS: metadata found
+    2022-06-17 09:16:55     Checking for 3 required metadata columns (strain date country)
+    2022-06-17 09:16:55     SUCCESS: 3 columns found.
+    2022-06-17 09:16:55     Searching for sequences (data/custom/sequences.fasta)
+    2022-06-17 09:16:55     SUCCESS: Sequences found
+    2022-06-17 09:16:55     Checking that the metadata strains match the sequence names
+    2022-06-17 09:16:55     SUCCESS: Strain column matches sequence names
+    2022-06-17 09:16:55     Creating new profile directory (my_profiles/custom-hpc)
+    2022-06-17 09:16:55     Creating build file (my_profiles/custom-hpc/builds.yaml)
+    2022-06-17 09:16:55     Adding default input data (defaults/inputs.yaml)
+    2022-06-17 09:16:55     Adding custom input data (data/custom)
+    2022-06-17 09:16:55     Adding `custom` as a build
+    2022-06-17 09:16:55     Creating system configuration (my_profiles/custom-hpc/config.yaml)
+    2022-06-17 09:16:55     Adding default HPC system resources
+    2022-06-17 09:16:56     Done! The custom-hpc profile is ready to be run with:
 
                             snakemake --profile my_profiles/custom-hpc
     ```
