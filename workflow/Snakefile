@@ -76,39 +76,18 @@ if "builds" not in config:
 default_keys = ["inputs", "builds", "rule_params"]
 default_build_keys = ["name", "base_input"]
 
-# Set rule parameters for each build
+# Set default rule parameters for each build
 for build in config["builds"]:
-
-  build_final = copy.deepcopy(config["builds"][build])
-
-  # Initialize with defaults
   for rule in config["rule_params"]:
-    build_final[rule] = config["rule_params"][rule]
-
-  # Load custom global params
-  del_keys = []
-  for key in config.keys():
-    if key in default_keys: continue
-    # Convert to an ordered dict, Add a new name element to the dictionary
-    config[key].update({"name": key})
-    config[key] = OrderedDict(config[key])
-
-    for param in config[key]:
-      build_final[key][param] = config[key][param]
-
-    del_keys.append(key)
-
-  # Delete these keys, they've been put into rule params
-  for key in del_keys:
-    del config[key]
-
-  # Load build specific params
-  for key in config["builds"][build]:
-    if key in default_build_keys: continue
-    for param in config["builds"][build][key]:
-      build_final[key][param] = config["builds"][build][key][param]
-
-  config["builds"][build] = build_final
+    # Case 1. There are no params for this rule in the build
+    if rule not in config["builds"][build]:
+      config["builds"][build][rule] = config["rule_params"][rule]
+    # Case 2. There are some params for this rule in the build
+    else:
+      for param in config["rule_params"][rule]:
+        # Case 3. This param has not been specified
+        if param not in config["builds"][build][rule]:
+          config["builds"][build][rule][param] = config["rule_params"][rule][param]
 
 # Store list of builds and inputs for rule wildcard constraints
 BUILDS = list(config["builds"].keys())
@@ -799,8 +778,8 @@ def _params_usher_metadata(build):
   else: params["extra_cols"] = ""
 
   low_memory_mode = config["builds"][build]["usher_subtree"]["low_memory_mode"]
-  if low_memory_mode: params["low_memory_mode"] = True
-  else: params["low_memory_mode"] = False
+  if low_memory_mode: params["low_memory_mode"] = ""
+  else: params["low_memory_mode"] = ""
 
   return params
 
@@ -818,16 +797,18 @@ rule usher_metadata:
   wildcard_constraints:
     mode = "|".join(LOCAL_INPUTS),
   input:
-    input_metadata = "data/{build}/metadata.tsv",
     base_metadata  = lambda wildcards: "data/{base_input}/metadata.tsv".format(
             base_input=config["builds"][wildcards.build]["base_input"]
           ),
     clades          = rules.usher_stats.output.clades,
+    nextclade       = rules.nextclade.output.metadata,
+    sc2rf           = rules.sc2rf_recombinants.output.stats,
+    placement_stats = rules.usher_stats.output.placement_stats,
+    issue_to_lineage = rules.issues_download.output.issue_to_lineage,
   output:
     metadata        = "results/{build}/usher/usher.metadata.tsv",
     decimal_date    = "results/{build}/usher/usher.metadata.decimal_date.tsv",
   params:
-    base_input      = lambda wildcards: config["builds"][wildcards.build]["base_input"],
     extra_cols      = lambda wildcards: _params_usher_metadata(wildcards.build)["extra_cols"],
     low_memory_mode = lambda wildcards: _params_usher_metadata(wildcards.build)["low_memory_mode"],
   threads: 1
@@ -839,11 +820,17 @@ rule usher_metadata:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    if [[ "{params.low_memory_mode}" == "True" ]]; then
-      cp {input.input_metadata} {output.metadata} 2> {log};
-    else
-      bash scripts/usher_metadata.sh --base-input {params.base_input} --build {wildcards.build} {params.extra_cols} 1> {output.metadata} 2> {log};
-    fi;
+    bash scripts/usher_metadata.sh \
+      --base-metadata {input.base_metadata} \
+      --nextclade {input.nextclade} \
+      --sc2rf {input.sc2rf} \
+      --clades {input.clades} \
+      --placement-stats {input.placement_stats} \
+      --issue-to-lineage {input.issue_to_lineage} \
+      --output {output.metadata} \
+      {params.extra_cols} \
+      {params.low_memory_mode} \
+      > {log} 2>&1;
 
     # Convert date col to decimal date
     python3 scripts/date_to_decimal.py {output.metadata} {output.decimal_date} >> {log} 2>&1;
