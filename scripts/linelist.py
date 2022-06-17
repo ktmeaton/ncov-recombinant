@@ -178,7 +178,7 @@ def main(
             status = "proposed"
 
         # Negatives recombinants
-        if status_sc2rf == "negative":
+        if not is_recombinant and status_sc2rf == "negative":
             status = "negative"
 
         # False Positives recombinants
