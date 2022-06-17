@@ -86,7 +86,7 @@ Linelists are collated into a spreadsheet for excel/google sheets:
 1. `issues`: Metadata of issues related to recombinant lineages posted in the [pango-designation](https://github.com/cov-lineages/pango-designation/issues) repository.
 
 [![excel_output](images/excel_output.png)](
-https://docs.google.com/spreadsheets/d/1EH-JmXFTAnzUHavxPOZnNNgHIBZcyhSMRSQJ8J6qWsk/edit#gid=103507248)
+https://docs.google.com/spreadsheets/d/1FFkKO84LV74401Vc5Uero0gMc_-7npvp6x7M0x-nLJw/edit#gid=2069867983)
 
 ### Slides
 
