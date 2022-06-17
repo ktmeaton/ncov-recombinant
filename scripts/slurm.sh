@@ -22,11 +22,6 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    --partition)
-      partition=$2
-      shift # past argument
-      shift # past value
-      ;;
     --cpus)
       cpus=$2
       shift # past argument
@@ -61,7 +56,6 @@ if [[ $help || $num_args -eq 0 ]]; then
   \t\t--profile PROFILE     \t\t   Snakemake profile to execute (ex. profiles/tutorial-hpc)\n\n
 
   \tOptional arguments:\n
-  \t\t--partition PARTITION     \t\t  Partition to submit jobs to with SLURM.\n
   \t\t--conda-env CONDA_ENV     \t\t Conda environment to use. (default: ncov-recombinant)\n
   \t\t--target TARGET           \t\t Snakemake target(s) to execute (default: all)\n
   \t\t--cpus CPUS               \t\t\t CPUS to use for the  main pipeline. (default: 1)\n
@@ -98,7 +92,6 @@ mkdir -p $log_dir
 cmd="
 sbatch
   --parsable
-  ${partition}
   -c ${cpus}
   --mem=${mem}
   -J ${conda_env}
