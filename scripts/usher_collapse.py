@@ -36,10 +36,16 @@ def json_get_strains(json_tree):
 @click.option("--indir", help="Input directory of subtrees.", required=True)
 @click.option("--outdir", help="Output directory for collapsed trees.", required=True)
 @click.option("--log", help="Logfile.", required=False)
+@click.option(
+    "--duplicate-col",
+    help="Label duplicate sequences based on the ID in this column.",
+    required=False,
+)
 def main(
     indir,
     outdir,
     log,
+    duplicate_col,
 ):
     """Collect and condense UShER subtrees"""
 
@@ -183,13 +189,15 @@ def main(
     # -------------------------------------------------------------------------
     # Write Output Trees
 
+    # Duplicate checking is to be done
+    # if duplicate_col:
+    #    logging.info("Checking for duplicate strains.")
+
     logging.info("Writing output trees to {}.".format(outdir))
     for i in subtrees_collapse:
 
-        # JSONS
-        in_path = subtrees_collapse[i]
-        with open(in_path) as infile:
-            json_data = json.load(infile)
+        subtree_idx = trees_list.index(subtrees_collapse[i])
+        json_data = trees_json[subtree_idx]
 
         # Strain List
         strains_csv = json_get_strains(json_data["tree"])
