@@ -632,7 +632,7 @@ rule usher_download:
     input = "|".join(USHER_INPUTS),
   output:
     pb           = "data/{input}/usher.pb.gz",
-    metadata     = "data/{input}/metadata.tsv",
+    metadata     = "data/{input}/metadata.tsv.gz",
     ver          = "data/{input}/version.txt",
   params:
     pb_url       = lambda wildcards: config["inputs"][wildcards.input]["pb_url"],
@@ -648,12 +648,62 @@ rule usher_download:
   shell:
     """
     wget -q -O {output.pb} {params.pb_url} > {log} 2>&1;
-    wget -q -O {output.metadata}.gz {params.metadata_url} >> {log} 2>&1;
+    wget -q -O {output.metadata} {params.metadata_url} >> {log} 2>&1;
     wget -q -O {output.ver} {params.ver_url} >> {log} 2>&1;
+    """
 
-    csvtk mutate2 -t -n "dataset" -e '"{wildcards.input}"' {output.metadata}.gz 1> {output.metadata} 2>> {log};
+# -----------------------------------------------------------------------------#
+rule_name = "usher_columns"
+rule usher_columns:
+  """Add columns to the base phylogeny metadata."""
 
-    rm -f {output.metadata}.gz >> {log} 2>&1
+  message: """Adding extra columns to the UShER metadata.\n
+  input:    {wildcards.input}
+  log:      {log}
+  metadata: {output.metadata}
+  """
+
+  wildcard_constraints:
+    input = "|".join(USHER_INPUTS),
+  input:
+    metadata = "data/{input}/metadata.tsv.gz",
+  output:
+    metadata      = "data/{input}/metadata.tsv",
+    gisaid_id_map = "data/{input}/gisaid_id_map.tsv",
+  params:
+    gisaid_regex = "^.*EPI_ISL_[0-9|-]*"
+  benchmark:
+    "benchmarks/{rule}/{{input}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{input}}_{today}.txt".format(today=today, rule=rule_name),
+  threads: 1
+  resources:
+    cpus = 1,
+    mem_mb = 4000,
+  # Note: We use pipefail to allow `grep` to return a non-zero exit codes (1)
+  #       which will happen if no GISAID IDs could be identified.
+  shell:
+    """
+    set +o pipefail;
+
+    # Extract strains with embedded GISID IDs
+    csvtk cut -t -f "strain" {input.metadata} \
+      | grep -o -E "{params.gisaid_regex}" \
+      | awk -F "|" '{{print $0"\\t"$2}}' \
+      > {output.gisaid_id_map};
+
+    # Extract strains without GISAID IDs
+    csvtk cut -t -f "strain" {input.metadata} \
+      | tail -n+2 \
+      | grep -v -E "{params.gisaid_regex}" \
+      | awk '{{print $0"\\tNone"}}' \
+      >> {output.gisaid_id_map};
+
+    csvtk mutate2 -t -n "dataset" -e '"{wildcards.input}"' {input.metadata} \
+      | csvtk rename -t -f "pangolin_lineage" -n "pango_lineage" \
+      | csvtk mutate -t -f "strain" -n "gisaid_epi_isl" \
+      | csvtk replace -t -f "gisaid_epi_isl" -p "(.*)" -k {output.gisaid_id_map} -r "{{kv}}" \
+      1> {output.metadata} 2>> {log};
     """
 
 # -----------------------------------------------------------------------------
