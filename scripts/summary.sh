@@ -6,6 +6,11 @@
 while [[ $# -gt 0 ]]; do
 
   case $1 in
+    --output)
+      output=$2
+      shift # past argument
+      shift # past value
+      ;;
     --nextclade)
       nextclade=$2
       shift # past argument
@@ -91,9 +96,9 @@ fi
 csvtk cut -t -f "${default_cols}${extra_cols}clade,Nextclade_pango" ${nextclade} \
   | csvtk rename -t -f "clade" -n "Nextclade_clade" \
   | csvtk merge -t --na "NA" -f "strain" - ${sc2rf} \
-  | csvtk merge -t -k --na "NA" -f "strain" - ${usher_clades} \
-  | csvtk merge -t -k --na "NA" -f "strain" - ${usher_placements} \
-  | csvtk merge -t -k --na "NA" -f "strain" - ${subtrees} \
+  | csvtk merge -t -k --na "NA" -f "strain" ${subtrees} - \
+  | csvtk merge -t -k --na "NA" -f "strain" ${usher_placements} - \
+  | csvtk merge -t -k --na "NA" -f "strain" ${usher_clades} - \
   | csvtk sort -t -k "$sort_col" \
   | csvtk mutate2 -t -n "ncov-recombinant_version" -e "\"$ncov_recombinant_ver\"" \
   | csvtk mutate2 -t -n "nextclade_version" -e "\"$nextclade_ver\"" \
@@ -101,4 +106,5 @@ csvtk cut -t -f "${default_cols}${extra_cols}clade,Nextclade_pango" ${nextclade}
   | csvtk mutate2 -t -n "sc2rf_mutations_version" -e "\"${sc2rf_muts_ver}\"" \
   | csvtk mutate2 -t -n "usher_version" -e "\"$usher_ver\"" \
   | csvtk mutate2 -t -n "nextclade_dataset" -e "\"$nextclade_dataset\"" \
-  | csvtk mutate2 -t -n "usher_dataset" -e "\"$usher_dataset_ver\""
+  | csvtk mutate2 -t -n "usher_dataset" -e "\"$usher_dataset_ver\"" \
+  > $output
