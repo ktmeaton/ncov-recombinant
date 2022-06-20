@@ -110,10 +110,7 @@ rule_params:
   # ---------------------------------------------------------------------------
   # changelog   : (Optional) path to a CHANGELOG.md to append to the report
   # template    : (Optional) path to a powerpoint template
-  # redact_cols : (Optional) a list of columns to redact, and generate an optional "redacted" report
   # Note: the rule `report` is also going to use the `geo` param of rule `linelist`, to summarize recombinants by geographic location
   - name: report
     changelog: "CHANGELOG.md"
     template: "resources/template.pptx"
-    redact_cols:
-    #  - primary_specimen_id
