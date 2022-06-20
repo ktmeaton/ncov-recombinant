@@ -23,7 +23,6 @@ dependencies:
   - conda-forge::seaborn
   # Report Generation
   - conda-forge:python-pptx
-  - conda-forge::openpyxl
   - bioconda::epiweeks
   - conda-forge::zip
   # For dev users
