@@ -13,6 +13,9 @@
 
 ## Bug Fixes
 
+1. Improve subtree collapse effiency (#35).
+1. Improve subtree aesthetics and filters (#20).
+1. Fix issues rendering as float (#29).
 1. Explicitly control the dimensions of plots for powerpoint embedding.
 1. Remove hard-coded `extra_cols` (#26).
 1. Fix mismatch in lineages plot and description (#21).
@@ -20,12 +23,13 @@
 
 ## Workflow
 
+1. Add new rule `usher_columns` to augment the base usher metadata.
 1. Add new script `parents.py`, plots, and report slide to summarize recombinant sequences by parent.
 1. Make rules `plot` and `report` more dynamic with regards to plots creation.
 1. Exclude the reference genome from alignment until `faToVcf`.
 1. Include the log path and expected outputs in the message for each rule.
 1. Use sub-functions to better control optional parameters.
-1. Make sure all rules write to a log if possible.
+1. Make sure all rules write to a log if possible (#34).
 1. Convert all rule inputs to snakemake rule variables.
 1. Create and document a `create_profile.sh` script.
 1. Implement the `--low-memory` mode parameter within the script `usher_metadata.sh`.
@@ -37,6 +41,8 @@
     - `controls-negatives`
     - `controls-positives`
     - `controls`
+
+1. Add versions to `genbank_accessions` for `controls`.
 
 ## Programs
 
@@ -68,6 +74,7 @@
 
 ## Output
 
+1. Output new `_historical` plots and slides for plotting all data over time.
 1. Output new file `parents.tsv` to summarize recombinant sequences by parent.
 1. Order the colors/legend of the stacked bar `plots` by number of sequences.
 1. Include lineage and cluster id in filepaths of largest plots and tables.
