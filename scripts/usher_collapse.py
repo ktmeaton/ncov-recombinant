@@ -1,12 +1,28 @@
 #!/usr/bin/env python3
 import click
-import filecmp
 import os
 import json
 import logging
+import sys
 
 NO_DATA_CHAR = "NA"
 GEO_RESOLUTIONS = "resources/geo_resolutions.json"
+COLS_RENAME = {
+    "clade_nextclade": "Clade (Nextclade)",
+    "clade_usher": "Clade (UShER)",
+    "country": "Country",
+    "num_date": "Date",
+    "date": "Date (Raw)",
+    "division": "Division",
+    "genbank_accession": "Genbank Accession",
+    "gisaid_epi_isl": "GISAID Accession",
+    "lineage_nextclade": "Lineage (Nextclade)",
+    "lineage_usher": "Lineage (UShER)",
+    "usher_placements": "Number of Placements",
+    "parents": "Parents",
+    "breakpoints": "Recombination Breakpoints",
+    "parents_regions": "Recombination Regions",
+}
 
 
 def json_get_strains(json_tree):
@@ -19,7 +35,7 @@ def json_get_strains(json_tree):
 @click.command()
 @click.option("--indir", help="Input directory of subtrees.", required=True)
 @click.option("--outdir", help="Output directory for collapsed trees.", required=True)
-@click.option("--log", help="Logfile.", required=False, default="usher_collapse.log")
+@click.option("--log", help="Logfile.", required=False)
 def main(
     indir,
     outdir,
@@ -36,16 +52,31 @@ def main(
     logger.setLevel(logging.DEBUG)
 
     # create file handler which logs even debug messages
-    fh = logging.FileHandler(log)
+    if log:
+        fh = logging.FileHandler(log)
+    else:
+        fh = logging.StreamHandler(sys.stdout)
     fh.setLevel(logging.DEBUG)
     logger.addHandler(fh)
 
+    # Store a list of tree filepaths
+    logging.info("Identifying tree file paths.")
     trees_list = [
         os.path.join(indir, f) for f in os.listdir(indir) if f.endswith("json")
     ]
+    logging.info("Parsing JSON content of {} trees.".format(len(trees_list)))
+    # Store a list of tree content
+    trees_json = [json.load(open(t)) for t in trees_list]
+    logging.info("JSON content successfully parsed.")
+
+    # Grab strain lists
+    logging.info("Parsing strains from {} trees.".format(len(trees_json)))
+    trees_strains = [json_get_strains(tree_data["tree"]) for tree_data in trees_json]
+    logging.info("Strains successfully parsed.")
+
     subtrees = {}
 
-    logging.info("Parsed: {} trees".format(len(trees_list)))
+    logging.info("Comparing strains across {} trees.".format(len(trees_strains)))
 
     # If there was only 1 tree...
     if len(trees_list) == 1:
@@ -54,12 +85,16 @@ def main(
     else:
         for tree_1 in trees_list:
             tree_1_idx = trees_list.index(tree_1)
-            logging.info("Parsing tree: {}".format(tree_1_idx + 1))
+            logging.info("Comparing tree: {}".format(tree_1_idx + 1))
+            tree_1_strains = trees_strains[tree_1_idx]
 
             for tree_2 in trees_list[tree_1_idx + 1 :]:
 
-                # Are these trees the same?
-                same_tree = filecmp.cmp(tree_1, tree_2)
+                tree_2_idx = trees_list.index(tree_2)
+
+                # Do these trees have the same strains?
+                tree_2_strains = trees_strains[tree_2_idx]
+                same_tree = tree_1_strains == tree_2_strains
 
                 # How many subtrees are there currently
                 num_subtrees = len(subtrees)
@@ -85,16 +120,18 @@ def main(
 
                         subtree_found = False
                         subtree_match = None
+                        tree_idx = trees_list.index(tree)
+                        tree_strains = trees_strains[tree_idx]
 
                         # Iterate over subtrees
                         for i in subtrees:
-                            # Iterate over files associated with subtree
-                            for filename in subtrees[i]:
-                                subtree_found = filecmp.cmp(filename, tree)
-                                subtree_match = i
-                                if subtree_found:
-                                    break
+                            # Get the representative tree from this subtree (1st)
+                            subtree = subtrees[i][0]
+                            subtree_idx = trees_list.index(subtree)
+                            subtree_strains = trees_strains[subtree_idx]
+                            subtree_found = tree_strains == subtree_strains
                             if subtree_found:
+                                subtree_match = i
                                 break
 
                         # If we found a match
@@ -108,7 +145,8 @@ def main(
                             num_subtrees += 1
                             subtrees[num_subtrees] = [tree]
 
-    # Write Output
+    # -------------------------------------------------------------------------
+    # Write Output Metadata
 
     # Sample to subtree mapping
     num_trees = 0
@@ -138,10 +176,14 @@ def main(
                 outfile.write(line + "\n")
                 num_trees += 1
 
-    logging.info("Collapsed: {} trees".format(num_trees))
-    logging.info("Final: {} trees".format(len(subtrees_collapse)))
+    logging.info(
+        "Collapsed {} trees into {} trees".format(num_trees, len(subtrees_collapse))
+    )
 
-    # Trees
+    # -------------------------------------------------------------------------
+    # Write Output Trees
+
+    logging.info("Writing output trees to {}.".format(outdir))
     for i in subtrees_collapse:
 
         # JSONS
@@ -162,11 +204,38 @@ def main(
         color_col_found = False
 
         for coloring in json_data["meta"]["colorings"]:
-            if coloring["key"] == color_col:
+            var_name = coloring["key"]
+            if var_name == color_col:
                 color_col_found = True
+
+            # Add coloring as filter
+            if var_name not in json_data["meta"]["filters"]:
+                json_data["meta"]["filters"].append(var_name)
+
+            # Give nice name to coloring
+            if var_name in COLS_RENAME:
+                coloring["title"] = COLS_RENAME[var_name]
+
+            # Otherwise use generic title case
+            else:
+                coloring["title"] = var_name.replace("_", " ").title()
 
         if color_col_found:
             json_data["meta"]["display_defaults"]["color_by"] = color_col
+
+        # Sort the order of coloring columns
+        colorings_sort = []
+        colorings_order = [
+            coloring["title"] for coloring in json_data["meta"]["colorings"]
+        ]
+        colorings_order.sort()
+        for key_sort in colorings_order:
+            for key_unsort in json_data["meta"]["colorings"]:
+                if key_sort == key_unsort["title"]:
+                    colorings_sort.append(key_unsort)
+                    break
+
+        json_data["meta"]["colorings"] = colorings_sort
 
         # Map
         with open(GEO_RESOLUTIONS) as infile:
@@ -180,8 +249,12 @@ def main(
         # Write Output
         out_path = os.path.join(outdir, "subtree_{}.json".format(i))
         with open(out_path, "w") as outfile:
-            # outfile.write(json.dumps(json_data, indent=2))
-            outfile.write(json.dumps(json_data))
+            # For a small analysis, use pretty json formatting (ident)
+            if len(subtrees) <= 10:
+                outfile.write(json.dumps(json_data, indent=2))
+            # Otherwise save on space
+            else:
+                outfile.write(json.dumps(json_data))
 
     logging.info("Done")
 
