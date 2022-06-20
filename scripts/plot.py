@@ -5,10 +5,11 @@ import pandas as pd
 import numpy as np
 import epiweeks
 import matplotlib.pyplot as plt
-from matplotlib import patches, cm
+from matplotlib import patches, colors
 from datetime import datetime, timedelta
 import sys
 import copy
+import math
 
 NO_DATA_CHAR = "NA"
 ALPHA_LAG = 0.25
@@ -19,6 +20,29 @@ EPIWEEK_MAX_BUFF_FACTOR = 1.1
 # The dimensions are set in the powerpoint template (resources/template.pttx)
 DPI = 96 * 2
 FIGSIZE = [6.75, 5.33]
+
+
+def categorical_cmap(nc, nsc, cmap="tab20", continuous=False):
+    """
+    Author: ImportanceOfBeingEarnest
+    Link: https://stackoverflow.com/a/47232942
+    """
+    if nc > plt.get_cmap(cmap).N:
+        raise ValueError("Too many categories for the specified colormap.")
+    if continuous:
+        ccolors = plt.get_cmap(cmap)(np.linspace(0, 1, nc))
+    else:
+        ccolors = plt.get_cmap(cmap)(np.arange(nc, dtype=int))
+    cols = np.zeros((nc * nsc, 3))
+    for i, c in enumerate(ccolors):
+        chsv = colors.rgb_to_hsv(c[:3])
+        arhsv = np.tile(chsv, nsc).reshape(nsc, 3)
+        arhsv[:, 1] = np.linspace(chsv[1], 0.25, nsc)
+        arhsv[:, 2] = np.linspace(chsv[2], 1, nsc)
+        rgb = colors.hsv_to_rgb(arhsv)
+        cols[i * nsc : (i + 1) * nsc, :] = rgb
+    cmap = colors.ListedColormap(cols)
+    return cmap
 
 
 @click.command()
@@ -87,6 +111,7 @@ def main(
         min_datetime = datetime.strptime(min_date, "%Y-%m-%d")
         min_epiweek = epiweeks.Week.fromdate(min_datetime, system="iso").startdate()
     elif weeks:
+        weeks = int(weeks)
         min_epiweek = max_epiweek - timedelta(weeks=(weeks - 1))
     else:
         min_epiweek = epiweeks.Week.fromdate(
@@ -119,8 +144,9 @@ def main(
         if cluster_size >= largest_cluster_size:
             largest_cluster_id = cluster_id
             largest_lineage = cluster_df["lineage"].values[0]
+            largest_cluster_size = cluster_size
 
-        if not cluster_size == 1:
+        if cluster_size == 1:
             for i in cluster_df.index:
                 drop_singleton_ids.append(i)
 
@@ -265,18 +291,35 @@ def main(
         plot_df.to_csv(out_path + ".tsv", sep="\t", index=False)
 
         # Use the tab20 color palette
-        if len(plot_df.columns) > 20:
-            print(
-                "WARNING: {} dataframe has more than 20 categories".format(label),
-                file=sys.stderr,
-            )
+        num_cat = len(plot_df.columns)
 
         legend_ncol = 1
-        if len(plot_df.columns) > 10:
+        if num_cat > 10:
             legend_ncol = 2
 
-        custom_cmap_i = np.linspace(0.0, 1.0, 20)
-        df_cmap = cm.get_cmap("tab20")(custom_cmap_i)
+        pal = "tab10"
+        # Exclude the last color in tab10, which is a light blue
+        pal_num_cat = 9
+        pal_num_sub_cat = 1
+
+        custom_cmap_i = np.linspace(0.0, 1.0, pal_num_cat)
+
+        if num_cat > pal_num_cat:
+            print(
+                "WARNING: {} dataframe has more than {} categories".format(
+                    label, pal_num_cat
+                ),
+                file=sys.stderr,
+            )
+            # Determine subcategories
+            pal_num_sub_cat = math.ceil(num_cat / pal_num_cat)
+            custom_cmap_i = np.linspace(0.0, 1.0, num_cat)
+
+        df_cmap = categorical_cmap(pal_num_cat, pal_num_sub_cat, cmap=pal)(
+            custom_cmap_i
+        )
+
+        # df_cmap = cm.get_cmap(pal)(custom_cmap_i)
 
         # The df is sorted by time (epiweek)
         # But we want colors to be sorted by number of sequences
@@ -374,12 +417,17 @@ def main(
         else:
             ax.set_ylim(0, round(max_epiweek_sequences * EPIWEEK_MAX_BUFF_FACTOR, 1))
 
+        # small df: upper right
+        # large df: upper left
+        legend_loc = "upper right"
+        if len(plot_df) > 16:
+            legend_loc = "upper left"
         legend = ax.legend(
             title=legend_title.title(),
             edgecolor="black",
             fontsize=8,
             ncol=legend_ncol,
-            loc="upper right",
+            loc=legend_loc,
         )
 
         legend.get_frame().set_linewidth(1)

@@ -961,7 +961,7 @@ rule usher_subtree_collapse:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    python3 scripts/usher_collapse.py --indir {input.subtrees_dir} --outdir {output.collapse_dir} --log {log} >> {log} 2>&1 ;
+    python3 scripts/usher_collapse.py --indir {input.subtrees_dir} --outdir {output.collapse_dir} --log {log};
     """
 
 # -----------------------------------------------------------------------------#
@@ -1249,6 +1249,7 @@ rule report:
     geo       = lambda wildcards: _params_report(wildcards.build)["geo"],
     changelog = lambda wildcards: _params_report(wildcards.build)["changelog"],
     template  = lambda wildcards: _params_report(wildcards.build)["template"],
+    singletons = lambda wildcards: _params_plot(wildcards.build)["singletons"],
 
   threads: 1
   resources:
@@ -1263,7 +1264,7 @@ rule report:
     csvtk csv2xlsx -t -o {output.xlsx} {input.tables} > {log} 2>&1;
 
     # Create the powerpoint slides
-    python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.changelog} {params.template} >> {log} 2>&1;
+    python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.changelog} {params.template} {params.singletons} >> {log} 2>&1;
     """
 
 rule report_historical:
@@ -1283,6 +1284,7 @@ rule report_historical:
     geo       = lambda wildcards: _params_report(wildcards.build)["geo"],
     changelog = lambda wildcards: _params_report(wildcards.build)["changelog"],
     template  = lambda wildcards: _params_report(wildcards.build)["template"],
+    singletons = lambda wildcards: _params_plot(wildcards.build)["singletons"],
 
   threads: 1
   resources:
@@ -1294,5 +1296,5 @@ rule report_historical:
   shell:
     """
     # Create the powerpoint slides
-    python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.changelog} {params.template} > {log} 2>&1;
+    python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.changelog} {params.template} {params.singletons} > {log} 2>&1;
     """

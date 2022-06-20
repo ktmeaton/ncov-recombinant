@@ -54,6 +54,11 @@ CLADES_RENAME = {
     "--changelog", help="Markdown changelog", required=False, default="CHANGELOG.md"
 )
 @click.option(
+    "--singletons",
+    help="Whether singletons were included in plots",
+    is_flag=True,
+)
+@click.option(
     "--template",
     help="Powerpoint template",
     required=False,
@@ -65,6 +70,7 @@ def main(
     geo,
     changelog,
     output,
+    singletons,
 ):
     """Create a report of powerpoint slides"""
 
@@ -163,7 +169,6 @@ def main(
         if status.lower() in RECOMBINANT_STATUS:
             regex = RECOMBINANT_STATUS[status.lower()]
             for lineage in lineages:
-                print(status, regex, lineage, re.match(regex, lineage))
                 if re.match(regex, lineage):
 
                     seq_count = sum(lineage_df[lineage].dropna())
@@ -186,9 +191,15 @@ def main(
     body = slide.placeholders[2]
 
     summary = "\n"
-    summary += "There are {num_lineages} recombinant lineages.\n".format(
-        num_lineages=num_lineages
-    )
+    if singletons:
+        summary += "There are {num_lineages} recombinant lineages.\n".format(
+            num_lineages=num_lineages
+        )
+    else:
+        summary += "There are {num_lineages} recombinant lineages*.\n".format(
+            num_lineages=num_lineages
+        )
+
     for status in RECOMBINANT_STATUS:
         if status in status_counts:
             count = status_counts[status]["lineages"]
@@ -198,9 +209,16 @@ def main(
             lineages=count, status=status
         )
     summary += "\n"
-    summary += "There are {num_sequences} recombinant sequences.\n".format(
-        num_sequences=num_sequences
-    )
+    # Whether we need a footnote for singletons
+    if singletons:
+        summary += "There are {num_sequences} recombinant sequences.\n".format(
+            num_sequences=num_sequences
+        )
+    else:
+        summary += "There are {num_sequences} recombinant sequences*.\n".format(
+            num_sequences=num_sequences
+        )
+
     for status in RECOMBINANT_STATUS:
         if status in status_counts:
             count = status_counts[status]["sequences"]
@@ -209,6 +227,9 @@ def main(
         summary += "  - {sequences} sequences are {status}.\n".format(
             sequences=count, status=status
         )
+    if not singletons:
+        summary += "\n"
+        summary += "*Excluding singleton lineages (N=1)"
 
     body.text_frame.text = summary
 
@@ -224,6 +245,10 @@ def main(
     geo_df = plot_dict["geography"]["df"]
     geos = list(geo_df.columns)
     geos.remove("epiweek")
+    # Order columns
+    geos_counts = {region: int(sum(geo_df[region])) for region in geos}
+    geos = sorted(geos_counts, key=geos_counts.get, reverse=True)
+
     num_geos = len(geos)
 
     graph_slide_layout = presentation.slide_layouts[8]
@@ -263,6 +288,14 @@ def main(
 
     designated_lineages = list(designated_df.columns)
     designated_lineages.remove("epiweek")
+
+    # Order columns
+    designated_counts = {
+        lineage: int(sum(designated_df[lineage])) for lineage in designated_lineages
+    }
+    designated_lineages = sorted(
+        designated_counts, key=designated_counts.get, reverse=True
+    )
     num_designated = len(designated_lineages)
 
     graph_slide_layout = presentation.slide_layouts[8]
@@ -302,6 +335,15 @@ def main(
 
     largest_geos = list(largest_df.columns)
     largest_geos.remove("epiweek")
+
+    # Order columns
+    largest_geos_counts = {
+        region: int(sum(largest_df[region])) for region in largest_geos
+    }
+    largest_geos = sorted(
+        largest_geos_counts, key=largest_geos_counts.get, reverse=True
+    )
+
     num_geos = len(largest_geos)
 
     largest_lineage = plot_dict["largest"]["lineage"]
@@ -358,6 +400,10 @@ def main(
 
     parents = list(parents_df.columns)
     parents.remove("epiweek")
+
+    parents_counts = {p: int(sum(parents_df[p])) for p in parents}
+    parents = sorted(parents_counts, key=parents_counts.get, reverse=True)
+
     num_parents = len(parents)
 
     graph_slide_layout = presentation.slide_layouts[8]
