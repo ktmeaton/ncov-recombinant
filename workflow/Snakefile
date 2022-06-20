@@ -829,10 +829,9 @@ rule usher_metadata:
       --placement-stats {input.placement_stats} \
       --issue-to-lineage {input.issue_to_lineage} \
       --output {output.metadata} \
-      --log {log} \
       {params.extra_cols} \
       {params.low_memory_mode} \
-      >> {log} 2>&1;
+      > {log} 2>&1;
 
     # Convert date col to decimal date
     python3 scripts/date_to_decimal.py {output.metadata} {output.decimal_date} >> {log} 2>&1;
@@ -910,7 +909,7 @@ rule usher_subtree_collapse:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    python3 scripts/usher_collapse.py --indir {input.subtrees_dir} --outdir {output.collapse_dir} > {log} 2>&1;
+    python3 scripts/usher_collapse.py --indir {input.subtrees_dir} --outdir {output.collapse_dir} --log {log} >> {log} 2>&1 ;
     """
 
 # -----------------------------------------------------------------------------#
