@@ -1,36 +1,36 @@
-strain	date	country	pango_lineage	clade_membership	division	region	genbank_accession	author
-USA/MD-CDC-ASC210277356/2021	2021-08-05	USA	B	19A	Maryland	North America	OK079939	Howard et al C
-GHA/1651_S3/2020	2020-03-25	Ghana	A.11	19B	Ghana	Africa	MT890220	Ngoi et al
-England/MILK-1567218/2021	2021-05-08	United Kingdom	B.1.620	20A	England	Europe	OU278597	The Lighthouse Lab in Milton et al A
-Estonia/Cov0319/2020	2020-09-17	Estonia	B.1.1.10	20B	Estonia	Europe	OU278317	Avi et al
-Iceland/1173/2020	2020-03-30	Iceland	B.1	20C	Iceland	Europe	OU181114	Jonsson et al A
-EGY/CUNCI-HGC09I030/2020	2020-12-25	Egypt	C.36	20D	Egypt	Africa	MW547502	Zekri et al
-NZL/20CV0589/2020	2020-11-18	New Zealand	B.1.177.51	20E (EU1)	Auckland	Oceania	OK426660	Ren et al
-AUS/VIC3454/2020	2020-07-05	Australia	D.2	20F	Victoria	Oceania	MT972589	Sait et al C
-USA/JDYI/2020	2020-10-27	USA	B.1.2	20G	Alabama	North America	MW923885	Grimwood et al
-FRA/IHUCOVID-036058-NovaE/2021	2021-04-09	France	B.1.351.2	20H (Beta, V2)	France	Europe	ON279241	Levasseur et al B
-England/MILK-BDC2A2/2020	2020-11-26	United Kingdom	B.1.1.7	20I (Alpha, V1)	England	Europe	OD905376	The Lighthouse Lab in Milton et al B
-BRA/PR-NVBS936GENOV827686254257/2021	2021-06-09	Brazil	P.1	20J (Gamma, V3)	Brazil	South America	ON577540	Guarischi et al
-USA/CA-CDC-QDX26400331/2021	2021-06-28	USA	B.1.617.2	21A (Delta)	California	North America	MZ590769	Howard et al R
-England/MILK-1564EF9/2021	2021-05-07	United Kingdom	B.1.617.1	21B (Kappa)	England	Europe	OU279226	The Lighthouse Lab in Milton et al A
-USA/CA-CZB-22906/2021	2021-01-04	USA	B.1.429	21C (Epsilon)	California	North America	MW701160	Consortium et al
-England/CAMC-1395ED3/2021	2021-03-03	United Kingdom	B.1.525	21D (Eta)	England	Europe	OU054628	Howes et al A
-USA/GU-CDC-2-3906074/2021	2021-01-31	USA	P.3	21E (Theta)	Guam	North America	MZ779587	Sheth et al C
-USA/NY-CDC-LC0031214/2021	2021-03-15	USA	B.1.526	21F (Iota)	New York	North America	MW987419	Howard et al Z
-Switzerland/ZH-UZH-IMV-3ba4d945/2021	2021-08-02	Switzerland	C.37.1	21G (Lambda)	Zürich	Europe	OU576905	? F
-USA/FL-CDC-FG-022848/2021	2021-04-12	USA	B.1.621	21H (Mu)	Florida	North America	OK213902	Howard et al AQ
-England/MILK-1622A3E/2021	2021-06-03	United Kingdom	AY.11	21I (Delta)	England	Europe	OU314327	The Lighthouse Lab in Milton et al A
-USA/FL-CDC-QDX26157271/2021	2021-06-22	USA	AY.75	21I (Delta)	Florida	North America	MZ535087	Howard et al S
-USA/TX-CDC-ASC210111920/2021	2021-07-07	USA	AY.44	21J (Delta)	Texas	North America	MZ705780	Howard et al Q
-England/QEUH-173F5F0/2021	2021-06-18	United Kingdom	AY.4	21J (Delta)	England	Europe	OU358465	VanSteenhouse et al A
-Switzerland/AG-ETHZ-35947998/2022	2022-01-23	Switzerland	BA.1.1	21K (Omicron)	Aargau	Europe	OV882645	? G
-USA/GA-GPHL-2867/2021	2021-12-27	USA	BA.1.1.18	21K (Omicron)	Georgia	North America	OM201100	Parrott et al
-Denmark/DCGC-323445/2022	2022-01-15	Denmark	BA.2	21L (Omicron)	Hovedstaden	Europe	OW783991	Danish Covid-19 Genome et al
-USA/NY-Broad-CRSP_JYXB4KKAEDIB5CUN/2022	2022-03-07	USA	BA.2.7	21L (Omicron)	New York	North America	ON066513	Lemieux et al G
-USA/PA-CDC-QDX34289597/2022	2022-02-25	USA	BA.3.1	21M (Omicron)	Pennsylvania	North America	OM998782	Howard et al BM
-USA/NC-CDC-LC0597531/2022	2022-04-22	USA	BA.4	22A (Omicron)	North Carolina	North America	ON465569	Howard et al CK
-USA/CA-CDC-LC0603479/2022	2022-04-29	USA	BA.4	22A (Omicron)	California	North America	ON468185	Howard et al CO
-USA/FL-BPHL-8585/2022	2022-05-12	USA	BA.5	22B (Omicron)	Florida	North America	ON729631	Schmedes et al D
-BHR/22920323375_S6_L001/2022	2022-05-11	Bahrain	BA.5	22B (Omicron)	Bahrain	Asia	ON627314	Marhoon et al A
-USA/VT-Broad-CRSP_HCJQO5WTVP7AY6KK/2022	2022-03-28	USA	BA.2.12.1	22C (Omicron)	Vermont	North America	ON199482	Lemieux et al H
-USA/RI-CDC-LC0586837/2022	2022-04-13	USA	BA.2.12.1	22C (Omicron)	Rhode Island	North America	ON395248	Howard et al BZ
+strain	date	country	pango_lineage	clade_membership	division	region	genbank_accession	author	dataset
+USA/MD-CDC-ASC210277356/2021	2021-08-05	USA	B	19A	Maryland	North America	OK079939.1	Howard et al C	controls-negative
+GHA/1651_S3/2020	2020-03-25	Ghana	A.11	19B	Ghana	Africa	MT890220.1	Ngoi et al	controls-negative
+England/MILK-1567218/2021	2021-05-08	United Kingdom	B.1.620	20A	England	Europe	OU278597.1	The Lighthouse Lab in Milton et al A	controls-negative
+Estonia/Cov0319/2020	2020-09-17	Estonia	B.1.1.10	20B	Estonia	Europe	OU278317.1	Avi et al	controls-negative
+Iceland/1173/2020	2020-03-30	Iceland	B.1	20C	Iceland	Europe	OU181114.1	Jonsson et al A	controls-negative
+EGY/CUNCI-HGC09I030/2020	2020-12-25	Egypt	C.36	20D	Egypt	Africa	MW547502.1	Zekri et al	controls-negative
+NZL/20CV0589/2020	2020-11-18	New Zealand	B.1.177.51	20E (EU1)	Auckland	Oceania	OK426660.1	Ren et al	controls-negative
+AUS/VIC3454/2020	2020-07-05	Australia	D.2	20F	Victoria	Oceania	MT972589.1	Sait et al C	controls-negative
+USA/JDYI/2020	2020-10-27	USA	B.1.2	20G	Alabama	North America	MW923885.1	Grimwood et al	controls-negative
+FRA/IHUCOVID-036058-NovaE/2021	2021-04-09	France	B.1.351.2	20H (Beta, V2)	France	Europe	ON279241.1	Levasseur et al B	controls-negative
+England/MILK-BDC2A2/2020	2020-11-26	United Kingdom	B.1.1.7	20I (Alpha, V1)	England	Europe	OD905376.1	The Lighthouse Lab in Milton et al B	controls-negative
+BRA/PR-NVBS936GENOV827686254257/2021	2021-06-09	Brazil	P.1	20J (Gamma, V3)	Brazil	South America	ON577540.1	Guarischi et al	controls-negative
+USA/CA-CDC-QDX26400331/2021	2021-06-28	USA	B.1.617.2	21A (Delta)	California	North America	MZ590769.1	Howard et al R	controls-negative
+England/MILK-1564EF9/2021	2021-05-07	United Kingdom	B.1.617.1	21B (Kappa)	England	Europe	OU279226.1	The Lighthouse Lab in Milton et al A	controls-negative
+USA/CA-CZB-22906/2021	2021-01-04	USA	B.1.429	21C (Epsilon)	California	North America	MW701160.1	Consortium et al	controls-negative
+England/CAMC-1395ED3/2021	2021-03-03	United Kingdom	B.1.525	21D (Eta)	England	Europe	OU054628.1	Howes et al A	controls-negative
+USA/GU-CDC-2-3906074/2021	2021-01-31	USA	P.3	21E (Theta)	Guam	North America	MZ779587.1	Sheth et al C	controls-negative
+USA/NY-CDC-LC0031214/2021	2021-03-15	USA	B.1.526	21F (Iota)	New York	North America	MW987419.1	Howard et al Z	controls-negative
+Switzerland/ZH-UZH-IMV-3ba4d945/2021	2021-08-02	Switzerland	C.37.1	21G (Lambda)	Zürich	Europe	OU576905.1	? F	controls-negative
+USA/FL-CDC-FG-022848/2021	2021-04-12	USA	B.1.621	21H (Mu)	Florida	North America	OK213902.1	Howard et al AQ	controls-negative
+England/MILK-1622A3E/2021	2021-06-03	United Kingdom	AY.11	21I (Delta)	England	Europe	OU314327.1	The Lighthouse Lab in Milton et al A	controls-negative
+USA/FL-CDC-QDX26157271/2021	2021-06-22	USA	AY.75	21I (Delta)	Florida	North America	MZ535087.1	Howard et al S	controls-negative
+USA/TX-CDC-ASC210111920/2021	2021-07-07	USA	AY.44	21J (Delta)	Texas	North America	MZ705780.1	Howard et al Q	controls-negative
+England/QEUH-173F5F0/2021	2021-06-18	United Kingdom	AY.4	21J (Delta)	England	Europe	OU358465.1	VanSteenhouse et al A	controls-negative
+Switzerland/AG-ETHZ-35947998/2022	2022-01-23	Switzerland	BA.1.1	21K (Omicron)	Aargau	Europe	OV882645.1	? G	controls-negative
+USA/GA-GPHL-2867/2021	2021-12-27	USA	BA.1.1.18	21K (Omicron)	Georgia	North America	OM201100.1	Parrott et al	controls-negative
+Denmark/DCGC-323445/2022	2022-01-15	Denmark	BA.2	21L (Omicron)	Hovedstaden	Europe	OW783991.1	Danish Covid-19 Genome et al	controls-negative
+USA/NY-Broad-CRSP_JYXB4KKAEDIB5CUN/2022	2022-03-07	USA	BA.2.7	21L (Omicron)	New York	North America	ON066513.1	Lemieux et al G	controls-negative
+USA/PA-CDC-QDX34289597/2022	2022-02-25	USA	BA.3.1	21M (Omicron)	Pennsylvania	North America	OM998782.1	Howard et al BM	controls-negative
+USA/NC-CDC-LC0597531/2022	2022-04-22	USA	BA.4	22A (Omicron)	North Carolina	North America	ON465569.1	Howard et al CK	controls-negative
+USA/CA-CDC-LC0603479/2022	2022-04-29	USA	BA.4	22A (Omicron)	California	North America	ON468185.1	Howard et al CO	controls-negative
+USA/FL-BPHL-8585/2022	2022-05-12	USA	BA.5	22B (Omicron)	Florida	North America	ON729631.1	Schmedes et al D	controls-negative
+BHR/22920323375_S6_L001/2022	2022-05-11	Bahrain	BA.5	22B (Omicron)	Bahrain	Asia	ON627314.1	Marhoon et al A	controls-negative
+USA/VT-Broad-CRSP_HCJQO5WTVP7AY6KK/2022	2022-03-28	USA	BA.2.12.1	22C (Omicron)	Vermont	North America	ON199482.1	Lemieux et al H	controls-negative
+USA/RI-CDC-LC0586837/2022	2022-04-13	USA	BA.2.12.1	22C (Omicron)	Rhode Island	North America	ON395248.1	Howard et al BZ	controls-negative
