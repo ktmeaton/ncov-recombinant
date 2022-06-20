@@ -22,8 +22,9 @@ dependencies:
   - conda-forge::pandas=1.4.1
   - conda-forge::seaborn
   # Report Generation
-  - python-pptx
-  - epiweeks
+  - conda-forge:python-pptx
+  - conda-forge::openpyxl
+  - bioconda::epiweeks
   - conda-forge::zip
   # For dev users
   #- conda-forge::pre_commit=2.17.0
