@@ -94,16 +94,6 @@ BUILDS = list(config["builds"].keys())
 USHER_INPUTS = [input for input in config["inputs"] if "usher" in config["inputs"][input]["type"]]
 LOCAL_INPUTS = [input for input in config["inputs"] if "local" in config["inputs"][input]["type"]]
 
-# Check if we're making optional redacted reports
-reports = []
-for build in config["builds"]:
-  redact_cols = config["builds"][build]["report"]["redact_cols"]
-  if not redact_cols:
-    report_path = "results/{build_name}/report/report.xlsx".format(build_name=build)
-  else:
-    report_path = "results/{build_name}/report/report-redact.xlsx".format(build_name=build)
-  reports.append(report_path)
-
 # -----------------------------------------------------------------------------#
 #  Default Target
 # -----------------------------------------------------------------------------#
@@ -130,7 +120,9 @@ rule all:
           build_name=BUILDS,
           ),
         # Stage 5: Report
-        reports,
+        expand("results/{build_name}/report/report.xlsx",
+          build_name=BUILDS,
+          ),
 
 # -----------------------------------------------------------------------------#
 #  Accessory Rules
@@ -1187,10 +1179,6 @@ def _params_report(build):
   if template: params["template"] = "--template {}".format(template)
   else: params["template"] = ""
 
-  redact_cols = config["builds"][build]["report"]["redact_cols"]
-  if redact_cols: params["redact_cols"] = "{}".format(",".join(redact_cols))
-  else: params["redact_cols"] = ""
-
   return params
 
 rule report:
@@ -1237,34 +1225,4 @@ rule report:
 
     # Create the powerpoint slides
     python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.changelog} {params.template} >> {log} 2>&1;
-    """
-
-rule report_redact:
-  """Redact columns from report tables."""
-
-  message: """Redacting columns from report tables.\n
-  build:       {wildcards.build}
-  log:         {log}
-  redact_cols: {params.redact_cols}
-  report:      {output.xlsx}
-  """
-
-  input:
-    xlsx        = "results/{build}/report/report.xlsx",
-  output:
-    xlsx        = "results/{build}/report/report-redact.xlsx",
-
-  params:
-    outdir      = "results/{build}/report",
-    redact_cols = lambda wildcards: _params_report(wildcards.build)["redact_cols"],
-  threads: 1
-  resources:
-    cpus = 1,
-  benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
-  shell:
-    """
-    python3 scripts/report_redact.py --input {input.xlsx} --output {output.xlsx} --cols {params.redact_cols} > {log} 2>&1;
     """
