@@ -69,7 +69,6 @@ else
   extra_cols=","
 fi
 
-echo $low_memory
 # Low memory, don't use usher metadata
 if [[ "$low_memory" == "true" ]]; then
 
