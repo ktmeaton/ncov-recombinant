@@ -36,16 +36,16 @@ def json_get_strains(json_tree):
 @click.option("--indir", help="Input directory of subtrees.", required=True)
 @click.option("--outdir", help="Output directory for collapsed trees.", required=True)
 @click.option("--log", help="Logfile.", required=False)
-@click.option(
-    "--duplicate-col",
-    help="Label duplicate sequences based on the ID in this column.",
-    required=False,
-)
+# @click.option(
+#     "--duplicate-col",
+#     help="Label duplicate sequences based on the ID in this column.",
+#     required=False,
+# )
 def main(
     indir,
     outdir,
     log,
-    duplicate_col,
+    # duplicate_col,
 ):
     """Collect and condense UShER subtrees"""
 
