@@ -119,10 +119,13 @@ rule all:
         expand("results/{build_name}/linelists/positives.tsv",
           build_name=BUILDS,
           ),
-        # Stage 5: Report
+        # Stage 5: Reports
         expand("results/{build_name}/report/report.xlsx",
           build_name=BUILDS,
           ),
+        expand("results/{build_name}/report_historical/report.pptx",
+                  build_name=BUILDS,
+                  ),
 
 # -----------------------------------------------------------------------------#
 #  Accessory Rules
@@ -1157,6 +1160,42 @@ rule plot:
       > {log} 2>&1;
     """
 
+rule plot_historical:
+  """Plot results as a historical timeline."""
+
+  message: """Plot results as a historical timeline.\n
+  build:   {wildcards.build}
+  log:     {log}
+  plots:   {output.plots}
+  """
+
+  input:
+    positives  = rules.linelist.output.positives,
+  output:
+    plots      = directory("results/{build}/plots_historical"),
+  params:
+    outdir     = "results/{build}/plots_historical",
+    geo        = lambda wildcards: _params_linelist(wildcards.build)["geo"],
+    lag        = lambda wildcards: _params_plot(wildcards.build)["lag"],
+    singletons = lambda wildcards: _params_plot(wildcards.build)["singletons"],
+  threads: 1
+  resources:
+    cpus = 1,
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    python3 scripts/plot.py \
+      --input {input.positives} \
+      --outdir {params.outdir} \
+      {params.lag} \
+      {params.geo} \
+      {params.singletons} \
+      > {log} 2>&1;
+    """
+
 # -----------------------------------------------------------------------------#
 # Report
 
@@ -1225,4 +1264,35 @@ rule report:
 
     # Create the powerpoint slides
     python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.changelog} {params.template} >> {log} 2>&1;
+    """
+
+rule report_historical:
+  """Summarize results into a historical report."""
+
+  message: """Summarize results into a historical report.\n
+  build:   {wildcards.build}
+  log:     {log}
+  slides:  {output.pptx}
+  """
+
+  input:
+    plots           = rules.plot_historical.output.plots,
+  output:
+    pptx            = "results/{build}/report_historical/report.pptx",
+  params:
+    geo       = lambda wildcards: _params_report(wildcards.build)["geo"],
+    changelog = lambda wildcards: _params_report(wildcards.build)["changelog"],
+    template  = lambda wildcards: _params_report(wildcards.build)["template"],
+
+  threads: 1
+  resources:
+    cpus = 1,
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    # Create the powerpoint slides
+    python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.changelog} {params.template} > {log} 2>&1;
     """
