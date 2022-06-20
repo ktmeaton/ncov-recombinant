@@ -67,3 +67,8 @@ builds:
       weeks: 16
       max_date: "2022-04-25"
       singletons: true
+
+    # country is not a protected field, this is for testing
+    report:
+      redact_cols:
+        - country
