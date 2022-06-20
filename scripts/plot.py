@@ -25,7 +25,9 @@ FIGSIZE = [6.75, 5.33]
 @click.option("--input", help="Recombinant sequences (TSV)", required=True)
 @click.option("--outdir", help="Output directory", required=False, default=".")
 @click.option(
-    "--weeks", help="Number of weeks in retrospect to plot", required=False, default=16
+    "--weeks",
+    help="Number of weeks in retrospect to plot",
+    required=False,
 )
 @click.option(
     "--min-date",
@@ -84,8 +86,12 @@ def main(
     if min_date:
         min_datetime = datetime.strptime(min_date, "%Y-%m-%d")
         min_epiweek = epiweeks.Week.fromdate(min_datetime, system="iso").startdate()
-    else:
+    elif weeks:
         min_epiweek = max_epiweek - timedelta(weeks=(weeks - 1))
+    else:
+        min_epiweek = epiweeks.Week.fromdate(
+            min(df["epiweek"]), system="iso"
+        ).startdate()
 
     weeks = int((max_epiweek - min_epiweek).days / 7)
 
