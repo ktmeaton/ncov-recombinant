@@ -1009,6 +1009,7 @@ rule summary:
   shell:
     """
     bash scripts/summary.sh \
+      --output {output.summary} \
       --nextclade {input.nextclade} \
       --sc2rf {input.sc2rf} \
       --usher-clades {input.usher_clades} \
@@ -1017,7 +1018,7 @@ rule summary:
       --subtrees {input.subtrees} \
       --nextclade-dataset {params.nextclade_dataset}_{params.nextclade_tag} \
       {params.extra_cols} \
-      1> {output.summary} 2> {log}
+      > {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------#
