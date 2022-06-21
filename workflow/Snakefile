@@ -649,9 +649,9 @@ rule usher_download:
     cpus = 1,
   shell:
     """
-    wget -q -O {output.pb} {params.pb_url} > {log} 2>&1;
-    wget -q -O {output.metadata} {params.metadata_url} >> {log} 2>&1;
-    wget -q -O {output.ver} {params.ver_url} >> {log} 2>&1;
+    wget -O {output.pb} {params.pb_url} > {log} 2>&1;
+    wget -O {output.metadata} {params.metadata_url} >> {log} 2>&1;
+    wget -O {output.ver} {params.ver_url} >> {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------#
