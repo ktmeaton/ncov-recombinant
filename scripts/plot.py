@@ -113,6 +113,9 @@ def main(
     elif weeks:
         weeks = int(weeks)
         min_epiweek = max_epiweek - timedelta(weeks=(weeks - 1))
+    elif len(df) == 0:
+        # Just need something for empty plots
+        min_epiweek = max_epiweek - timedelta(weeks=16)
     else:
         min_epiweek = epiweeks.Week.fromdate(
             min(df["epiweek"]), system="iso"
