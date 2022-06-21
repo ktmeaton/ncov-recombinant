@@ -171,12 +171,24 @@ def main(
                 if filename == subtrees[i][0]:
                     subtrees_collapse[i] = filename
                 strain = os.path.basename(filename).replace("_context.json", "")
+
                 # Replace the first and last underscores with "/"
                 if "_" in strain:
-                    country = strain.split("_")[0]
-                    collection_date = strain.split("_")[-1]
-                    middle = "_".join(strain.split("_")[1:-1])
-                    strain = "/".join([country, middle, collection_date])
+
+                    # Check for prefix
+                    if strain.startswith("hCoV-19"):
+                        prefix = strain.split("_")[0]
+                        country = strain.split("_")[1]
+                        collection_date = strain.split("_")[-1]
+                        middle = "_".join(strain.split("_")[2:-1])
+                        strain = "/".join([prefix, country, middle, collection_date])
+
+                    else:
+                        country = strain.split("_")[0]
+                        collection_date = strain.split("_")[-1]
+                        middle = "_".join(strain.split("_")[1:-1])
+
+                        strain = "/".join([country, middle, collection_date])
 
                 line = "{}\t{}".format(strain, i)
                 outfile.write(line + "\n")
