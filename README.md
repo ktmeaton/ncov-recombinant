@@ -19,6 +19,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 ## Table of Contents
 
 1. [Install](https://github.com/ktmeaton/ncov-recombinant#install)
+1. [Update](https://github.com/ktmeaton/ncov-recombinant#update)
 1. [Tutorial](https://github.com/ktmeaton/ncov-recombinant#tutorial)
 1. [Output](https://github.com/ktmeaton/ncov-recombinant#output)
 1. [Configuration](https://github.com/ktmeaton/ncov-recombinant#configuration)
@@ -42,9 +43,46 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
     conda activate ncov-recombinant
     ```
 
+## Update
+
+> **Tip**: If you have modified any pipeline files, it is often easier to instead do a [fresh install](https://github.com/ktmeaton/ncov-recombinant#install).
+
+1. Save (`stash`) any modifications you may have made to pipeline files.
+
+    ```bash
+    git stash
+    ```
+
+1. Download and apply the latest updates.
+
+    ```bash
+    git pull origin master
+    ```
+
+1. (Optional) List available versions (`tags`).
+
+    ```bash
+    git tag
+    ```
+
+    ```text
+    v0.1.0
+    v0.1.1
+    v0.1.2
+    v0.2.0
+    v0.2.1
+    v0.3.0
+    ```
+
+1. (Optional) Snapshot the pipeline to a specific version (`tag`).
+
+    ```bash
+    git checkout v0.3.0
+    ```
+
 ## Tutorial
 
-> Tip: Remember to run `conda activate ncov-recombinant` first!
+> **Tip**: Remember to run `conda activate ncov-recombinant` first!
 
 1. Preview the steps that are going to be run.
 
