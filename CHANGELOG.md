@@ -1,5 +1,235 @@
 # CHANGELOG
 
+## Development
+
+### Notes
+
+### Commits
+
+## v0.3.0
+
+### Notes
+
+#### Major Changes
+
+1. Default parameters have been updated! Please regenerate your profiles/builds with:
+
+    ```bash
+    bash scripts/create_profile.sh --data data/custom
+    ```
+
+1. Rule outputs are now in sub-directories for a cleaner `results` directory.
+1. The in-text report (`report.pptx`) statistics are no longer cumulative counts of all sequences. Instead they, will match the reporting period in the accompanying plots.
+
+#### Bug Fixes
+
+1. Improve subtree collapse effiency (#35).
+1. Improve subtree aesthetics and filters (#20).
+1. Fix issues rendering as float (#29).
+1. Explicitly control the dimensions of plots for powerpoint embedding.
+1. Remove hard-coded `extra_cols` (#26).
+1. Fix mismatch in lineages plot and description (#21).
+1. Downstream steps no longer fail if there are no recombinant sequences (#7).
+
+#### Workflow
+
+1. Add new rule `usher_columns` to augment the base usher metadata.
+1. Add new script `parents.py`, plots, and report slide to summarize recombinant sequences by parent.
+1. Make rules `plot` and `report` more dynamic with regards to plots creation.
+1. Exclude the reference genome from alignment until `faToVcf`.
+1. Include the log path and expected outputs in the message for each rule.
+1. Use sub-functions to better control optional parameters.
+1. Make sure all rules write to a log if possible (#34).
+1. Convert all rule inputs to snakemake rule variables.
+1. Create and document a `create_profile.sh` script.
+1. Implement the `--low-memory` mode parameter within the script `usher_metadata.sh`.
+
+#### Data
+
+1. Create new controls datasets:
+
+    - `controls-negatives`
+    - `controls-positives`
+    - `controls`
+
+1. Add versions to `genbank_accessions` for `controls`.
+
+#### Programs
+
+1. Upgrade UShER to v0.5.4 (possibly this was done in a prior ver).
+1. Remove `taxonium` and `chronumental` from the conda env.
+
+#### Parameters
+
+1. Add parameters to control whether negatives and false_positives should be excluded:
+
+    - `exclude_negatives: false`
+    - `false_positives: false`
+
+1. Add new optional param `max_placements` to rule `linelist`.
+1. Remove `--show-private-mutations` from `debug_args` of rule `sc2rf`.
+1. Add optional param `--sc2rf-dir` to `sc2rf` to enable execution outside of `sc2rf` dir.
+1. Add params `--output-csv` and `--output-ansi` to the wrapper `scripts/sc2rf.sh`.
+1. Remove params `nextclade_ref` and `custom_ref` from rule `nextclade`.
+1. Change `--breakpoints 0-10` in `sc2rf`.
+
+#### Continuous Integration
+
+1. Re-rename tutorial action to pipeline, and add different jobs for different profiles:
+
+    - Tutorial
+    - Controls (Positive)
+    - Controls (Negative)
+    - Controls (All)
+
+#### Output
+
+1. Output new `_historical` plots and slides for plotting all data over time.
+1. Output new file `parents.tsv` to summarize recombinant sequences by parent.
+1. Order the colors/legend of the stacked bar `plots` by number of sequences.
+1. Include lineage and cluster id in filepaths of largest plots and tables.
+1. Rename the linelist output:
+
+    - `linelist.tsv`
+    - `positives.tsv`  
+    - `negatives.tsv`
+    - `false_positives.tsv`
+    - `lineages.tsv`
+    - `parents.tsv`
+
+1. The `report.xlsx` now includes the following tables:
+
+    - lineages
+    - parents
+    - linelist
+    - positives
+    - negatives
+    - false_positives
+    - summary
+    - issues
+
+### Pull Requests
+
+- [```pull/12```](https://github.com/ktmeaton/ncov-recombinant/pull/12)
+- [```pull/11```](https://github.com/ktmeaton/ncov-recombinant/pull/11)
+- [```pull/15```](https://github.com/ktmeaton/ncov-recombinant/pull/15)
+- [```pull/19```](https://github.com/ktmeaton/ncov-recombinant/pull/19)
+- [```pull/40```](https://github.com/ktmeaton/ncov-recombinant/pull/40)
+- [```pull/39```](https://github.com/ktmeaton/ncov-recombinant/pull/39)
+- [```pull/8```](https://github.com/ktmeaton/ncov-recombinant/pull/8)
+
+### Commits
+
+- [```0486d3be```](https://github.com/ktmeaton/ncov-recombinant/commit/0486d3be) docs: add updating section to readme for issue #33
+- [```e8eda400```](https://github.com/ktmeaton/ncov-recombinant/commit/e8eda400) resources: updates issues with curate breakpoints
+- [```12e3700f```](https://github.com/ktmeaton/ncov-recombinant/commit/12e3700f) bug: catch empty dataframe in plot
+- [```d1ccca2a```](https://github.com/ktmeaton/ncov-recombinant/commit/d1ccca2a) workflow: first successful high-throughput run
+- [```cd741a10```](https://github.com/ktmeaton/ncov-recombinant/commit/cd741a10) workflow: add new rules plot_historical and report_historical
+- [```c2cc1380```](https://github.com/ktmeaton/ncov-recombinant/commit/c2cc1380) env: remove openpyxl from environment
+- [```7dc7c039```](https://github.com/ktmeaton/ncov-recombinant/commit/7dc7c039) workflow: remove rule report_redact #31
+- [```9ca5f822```](https://github.com/ktmeaton/ncov-recombinant/commit/9ca5f822) script: rearrange merge file order in summary
+- [```aa28eb9f```](https://github.com/ktmeaton/ncov-recombinant/commit/aa28eb9f) workflow: create new rule report_redact for #31
+- [```4748815d```](https://github.com/ktmeaton/ncov-recombinant/commit/4748815d) env: add openpyxl to environment for excel parsing in python
+- [```0060904a```](https://github.com/ktmeaton/ncov-recombinant/commit/0060904a) script: template duplicate labelling in usher_collapse for later
+- [```a82359a7```](https://github.com/ktmeaton/ncov-recombinant/commit/a82359a7) data: add accession versions to controls metadata
+- [```af7341aa```](https://github.com/ktmeaton/ncov-recombinant/commit/af7341aa) data: add accession versions to controls metadata
+- [```d860a4c8```](https://github.com/ktmeaton/ncov-recombinant/commit/d860a4c8) workflow: add new rule usher_columns to augment the base usher metadata
+- [```2511673d```](https://github.com/ktmeaton/ncov-recombinant/commit/2511673d) improve subtree collapse effiency (#35) and output aesthetics (#20)
+- [```1e81be3b```](https://github.com/ktmeaton/ncov-recombinant/commit/1e81be3b) bug: remove non-existant param --log in rule usher_metadata
+- [```02198b4c```](https://github.com/ktmeaton/ncov-recombinant/commit/02198b4c) script: add logging to usher_collapse
+- [```d40d3d78```](https://github.com/ktmeaton/ncov-recombinant/commit/d40d3d78) ci: don't run pipeline just for images changes
+- [```b880d9c8```](https://github.com/ktmeaton/ncov-recombinant/commit/b880d9c8) docs: update powerpoint image to proper ver
+- [```2d6514a0```](https://github.com/ktmeaton/ncov-recombinant/commit/2d6514a0) docs: update demo excel and slides with links and content
+- [```59c24ffe```](https://github.com/ktmeaton/ncov-recombinant/commit/59c24ffe) bug: fix typo that prevented low_memory_mode from activating
+- [```4d94df1d```](https://github.com/ktmeaton/ncov-recombinant/commit/4d94df1d) bug: continue supply missing build param to _params_ functions
+- [```c16c3377```](https://github.com/ktmeaton/ncov-recombinant/commit/c16c3377) bug: supply missing build param to _params_linelist
+- [```c31c2204```](https://github.com/ktmeaton/ncov-recombinant/commit/c31c2204) docs: remove plotting data table from FAQ
+- [```5461cbf2```](https://github.com/ktmeaton/ncov-recombinant/commit/5461cbf2) docs: describe how to include more custom metadata columns
+- [```7295c8c0```](https://github.com/ktmeaton/ncov-recombinant/commit/7295c8c0) script: implement low memory mode within usher_metadata script
+- [```6588f619```](https://github.com/ktmeaton/ncov-recombinant/commit/6588f619) workflow: restore original config merge logic
+- [```ae96cf3d```](https://github.com/ktmeaton/ncov-recombinant/commit/ae96cf3d) docs: rearrange sections in README
+- [```e99cdef9```](https://github.com/ktmeaton/ncov-recombinant/commit/e99cdef9) docs: add tips for speeding up usher in FAQ
+- [```753d1e1d```](https://github.com/ktmeaton/ncov-recombinant/commit/753d1e1d) resources: add proposed759 to curated breakpoints
+- [```1ea5610e```](https://github.com/ktmeaton/ncov-recombinant/commit/1ea5610e) docs: change troubleshooting section to FAQ
+- [```42152710```](https://github.com/ktmeaton/ncov-recombinant/commit/42152710) workflow: add logging to sc2rf_recombinants for issue #34
+- [```ca930fe3```](https://github.com/ktmeaton/ncov-recombinant/commit/ca930fe3) bug: fix status of designated recombinants missed by sc2rf (XB)
+- [```2c6102a6```](https://github.com/ktmeaton/ncov-recombinant/commit/2c6102a6) script: in plotting data replace counts that are empty string with 0
+- [```0c7fa988```](https://github.com/ktmeaton/ncov-recombinant/commit/0c7fa988) docs: tidy up comments in default parameters.yaml
+- [```43c61d43```](https://github.com/ktmeaton/ncov-recombinant/commit/43c61d43) bug: fix sc2rf postprocessing bug where sequences with only parent were missing filtered regions
+- [```6a00c866```](https://github.com/ktmeaton/ncov-recombinant/commit/6a00c866) ci: split jobs by profile for testing profile creation (#27)
+- [```aeabf009```](https://github.com/ktmeaton/ncov-recombinant/commit/aeabf009) ci: add new action profile_creation to test script create_profile.sh
+- [```9a6758e2```](https://github.com/ktmeaton/ncov-recombinant/commit/9a6758e2) add controls section to README
+- [```ef250a22```](https://github.com/ktmeaton/ncov-recombinant/commit/ef250a22) script: add -controls suffix to profiles created with --controls param
+- [```150a3e17```](https://github.com/ktmeaton/ncov-recombinant/commit/150a3e17) docs: update troubleshooting section
+- [```90b406c8```](https://github.com/ktmeaton/ncov-recombinant/commit/90b406c8) script: remove --partition flag to scripts/slurm.sh
+- [```a0c6ece2```](https://github.com/ktmeaton/ncov-recombinant/commit/a0c6ece2) docs: update google drive link to example slides
+- [```a37afeea```](https://github.com/ktmeaton/ncov-recombinant/commit/a37afeea) docs: update instructions for create_profile.sh
+- [```f9d050d2```](https://github.com/ktmeaton/ncov-recombinant/commit/f9d050d2) add execute permissions to scripts
+- [```38b5b422```](https://github.com/ktmeaton/ncov-recombinant/commit/38b5b422) bug: use a full loop to check issue formatting
+- [```307b4f67```](https://github.com/ktmeaton/ncov-recombinant/commit/307b4f67) catch issues list when converting to str
+- [```639f8c26```](https://github.com/ktmeaton/ncov-recombinant/commit/639f8c26) bug: fix issues rendering as float in tables for issue #29
+- [```35ea4be1```](https://github.com/ktmeaton/ncov-recombinant/commit/35ea4be1) remove param --sc2rf-dir from scripts/sc2rf.sh
+- [```5a2a9520```](https://github.com/ktmeaton/ncov-recombinant/commit/5a2a9520) docs: update images for excel and powerpoint
+- [```3ae737d5```](https://github.com/ktmeaton/ncov-recombinant/commit/3ae737d5) env: comment out yarn which is a dev dependency
+- [```3842e898```](https://github.com/ktmeaton/ncov-recombinant/commit/3842e898) improve logging in create_profile
+- [```84c684ca```](https://github.com/ktmeaton/ncov-recombinant/commit/84c684ca) workflow: separate profiles for controls,controls-positive,controls-negative
+- [```ad5e8e4b```](https://github.com/ktmeaton/ncov-recombinant/commit/ad5e8e4b) limit missing strains output from create_profile
+- [```a4898ecf```](https://github.com/ktmeaton/ncov-recombinant/commit/a4898ecf) docs: update development notes
+- [```34ee2fff```](https://github.com/ktmeaton/ncov-recombinant/commit/34ee2fff) docs: add links to contributors plugins
+- [```b6b0c999```](https://github.com/ktmeaton/ncov-recombinant/commit/b6b0c999) revert to automated all-contributors
+- [```e1a248f8```](https://github.com/ktmeaton/ncov-recombinant/commit/e1a248f8) add @yatisht and @AngieHinrichs to credits for usher
+- [```e3f432c4```](https://github.com/ktmeaton/ncov-recombinant/commit/e3f432c4) start adding contributors
+- [```862757bd```](https://github.com/ktmeaton/ncov-recombinant/commit/862757bd) docs: create .all-contributorsrc [skip ci]
+- [```a0532792```](https://github.com/ktmeaton/ncov-recombinant/commit/a0532792) docs: update README.md [skip ci]
+- [```6e67e73f```](https://github.com/ktmeaton/ncov-recombinant/commit/6e67e73f) update unpublished regex to solve #21
+- [```5ba6b37b```](https://github.com/ktmeaton/ncov-recombinant/commit/5ba6b37b) remove taxonium and chronumental from env
+- [```2a5fc627```](https://github.com/ktmeaton/ncov-recombinant/commit/2a5fc627) add artifacts for all pipelines
+- [```664b2e9b```](https://github.com/ktmeaton/ncov-recombinant/commit/664b2e9b) fix trailing whitespace in metadata
+- [```eada2fa3```](https://github.com/ktmeaton/ncov-recombinant/commit/eada2fa3) fix negative controls metadata
+- [```9aecd69a```](https://github.com/ktmeaton/ncov-recombinant/commit/9aecd69a) fix plot dimensions for pptx embed
+- [```657e8838```](https://github.com/ktmeaton/ncov-recombinant/commit/657e8838) fix outdir for linelist
+- [```6fb389dc```](https://github.com/ktmeaton/ncov-recombinant/commit/6fb389dc) fix input type for controls build
+- [```8ed69ce0```](https://github.com/ktmeaton/ncov-recombinant/commit/8ed69ce0) upload tutorial pptx as artifact
+- [```c6e647d2```](https://github.com/ktmeaton/ncov-recombinant/commit/c6e647d2) update ci profile for test action
+- [```19cdb8ed```](https://github.com/ktmeaton/ncov-recombinant/commit/19cdb8ed) lint pipeline
+- [```22e3aa6b```](https://github.com/ktmeaton/ncov-recombinant/commit/22e3aa6b) split controls action into positives,negatives,and all
+- [```33491320```](https://github.com/ktmeaton/ncov-recombinant/commit/33491320) rename action Tutorial to Pipeline
+- [```da2890d6```](https://github.com/ktmeaton/ncov-recombinant/commit/da2890d6) fix profile in install action
+- [```8a4d4fbb```](https://github.com/ktmeaton/ncov-recombinant/commit/8a4d4fbb) lint all files
+- [```b167ea45```](https://github.com/ktmeaton/ncov-recombinant/commit/b167ea45) update readme with profile creation instructions
+- [```4d2848b9```](https://github.com/ktmeaton/ncov-recombinant/commit/4d2848b9) add script to generate new profiles and builds
+- [```407f8aba```](https://github.com/ktmeaton/ncov-recombinant/commit/407f8aba) checkpoint before auto-generating builds
+- [```ccb3471b```](https://github.com/ktmeaton/ncov-recombinant/commit/ccb3471b) add new negatives dataset
+- [```964a22f8```](https://github.com/ktmeaton/ncov-recombinant/commit/964a22f8) (broken) script overhaul
+- [```1f1ca1b4```](https://github.com/ktmeaton/ncov-recombinant/commit/1f1ca1b4) add param --sc2rf-dir to allow execution outside of main directory
+- [```21541f02```](https://github.com/ktmeaton/ncov-recombinant/commit/21541f02) add exclude_negatives and exclude_false_positives to parameters
+- [```0b5854a2```](https://github.com/ktmeaton/ncov-recombinant/commit/0b5854a2) update docs
+- [```58b6396a```](https://github.com/ktmeaton/ncov-recombinant/commit/58b6396a) split controls data into positives and negatives
+- [```11f9f6a4```](https://github.com/ktmeaton/ncov-recombinant/commit/11f9f6a4) consolidate positives and negatives profiles into controls
+- [```581255c8```](https://github.com/ktmeaton/ncov-recombinant/commit/581255c8) generalize hpc profiles
+- [```1e2a70a4```](https://github.com/ktmeaton/ncov-recombinant/commit/1e2a70a4) update HPC instructions in README
+- [```a18b19e3```](https://github.com/ktmeaton/ncov-recombinant/commit/a18b19e3) (broken) add negatives data and profile
+- [```11817639```](https://github.com/ktmeaton/ncov-recombinant/commit/11817639) (broken) make plots and report dynamic
+- [```e833d151```](https://github.com/ktmeaton/ncov-recombinant/commit/e833d151) create tutorial-hpc profile
+- [```c4ac5699```](https://github.com/ktmeaton/ncov-recombinant/commit/c4ac5699) remove redundant profile laptop
+- [```c5107017```](https://github.com/ktmeaton/ncov-recombinant/commit/c5107017) remove ci profile
+- [```4be07e79```](https://github.com/ktmeaton/ncov-recombinant/commit/4be07e79) actually rename pipeline to tutorial
+- [```89c4d6b5```](https://github.com/ktmeaton/ncov-recombinant/commit/89c4d6b5) rename pipeline action to tutorial
+- [```7614b399```](https://github.com/ktmeaton/ncov-recombinant/commit/7614b399) exclude alpha beta gamma by default from Nextclade
+- [```d2c2461c```](https://github.com/ktmeaton/ncov-recombinant/commit/d2c2461c) update dev docs
+- [```f9368d11```](https://github.com/ktmeaton/ncov-recombinant/commit/f9368d11) remove proposed636 which is now XZ
+- [```4fbd0ce4```](https://github.com/ktmeaton/ncov-recombinant/commit/4fbd0ce4) add XAA and XAB to resources
+- [```65efd145```](https://github.com/ktmeaton/ncov-recombinant/commit/65efd145) add xz to resources
+- [```f3641b19```](https://github.com/ktmeaton/ncov-recombinant/commit/f3641b19) add parents slide to report and excel
+- [```4e25f665```](https://github.com/ktmeaton/ncov-recombinant/commit/4e25f665) add new script parents to summarize recombinants by parent
+- [```0decd47a```](https://github.com/ktmeaton/ncov-recombinant/commit/0decd47a) catch when no designated sequences are present
+- [```189fbb2a```](https://github.com/ktmeaton/ncov-recombinant/commit/189fbb2a) update resources breakpoints
+- [```3c5b4965```](https://github.com/ktmeaton/ncov-recombinant/commit/3c5b4965) update sc2rf with new logic for terminal deletions
+- [```e37d68d9```](https://github.com/ktmeaton/ncov-recombinant/commit/e37d68d9) update issues and breakpoints
+- [```761d41bf```](https://github.com/ktmeaton/ncov-recombinant/commit/761d41bf) use date in changelog for report
+- [```3c486dbc```](https://github.com/ktmeaton/ncov-recombinant/commit/3c486dbc) add zip to environment
+- [```1ff37195```](https://github.com/ktmeaton/ncov-recombinant/commit/1ff37195) add more info about system config
+
 ## v0.2.1
 
 ### Notes
@@ -41,10 +271,11 @@
 
 ### Pull Requests
 
-- [```pull/14```](https://github.com/ktmeaton/ncov-recombinant/pull/14) Plots and PowerPoints
+- [```pull/14```](https://github.com/ktmeaton/ncov-recombinant/pull/14)
 
 ### Commits
 
+- [```c2369c75```](https://github.com/ktmeaton/ncov-recombinant/commit/c2369c75) update CHANGELOG after README overhaul
 - [```9c8a774e```](https://github.com/ktmeaton/ncov-recombinant/commit/9c8a774e) update autologs to exclude first blank line in notes
 - [```2a8a7af5```](https://github.com/ktmeaton/ncov-recombinant/commit/2a8a7af5) overhaul README
 - [```9c2bd2f5```](https://github.com/ktmeaton/ncov-recombinant/commit/9c2bd2f5) change asterisks to dashes
@@ -147,9 +378,7 @@
 
 ### Pull Requests
 
-- [```pull/13```](https://github.com/ktmeaton/ncov-recombinant/pull/13) Three status categories: designated, proposed, unpublished
-- [```pull/12```](https://github.com/ktmeaton/ncov-recombinant/pull/12) Tutorial dataset and map panel for Auspice subtrees
-- [```pull/11```](https://github.com/ktmeaton/ncov-recombinant/pull/11) Add a tutorial profile
+- [```pull/13```](https://github.com/ktmeaton/ncov-recombinant/pull/13)
 
 ### Commits
 
@@ -249,7 +478,7 @@
 
 ### Pull Requests
 
-- [```pull/10```](https://github.com/ktmeaton/ncov-recombinant/pull/10) Automated report generation and sc2rf lineage assignments
+- [```pull/10```](https://github.com/ktmeaton/ncov-recombinant/pull/10)
 
 ### Commits
 
@@ -331,7 +560,7 @@
 
 ### Pull Requests
 
-- [```pull/8```](https://github.com/ktmeaton/ncov-recombinant/pull/8) Add XS and XQ to controls.
+- [```pull/3```](https://github.com/ktmeaton/ncov-recombinant/pull/3)
 
 ### Commits
 
@@ -365,30 +594,6 @@
 - [```c7a6b9ce```](https://github.com/ktmeaton/ncov-recombinant/commit/c7a6b9ce) remove unused nextclade_recombinants script
 - [```38645ce9```](https://github.com/ktmeaton/ncov-recombinant/commit/38645ce9) remove codecov badge
 - [```50fa9d89```](https://github.com/ktmeaton/ncov-recombinant/commit/50fa9d89) update CHANGELOG for v0.1.0
-
-## v0.1.0
-
-### Notes
-
-1. Add Stage 1: Nextclade.
-1. Add Stage 2: sc2rf.
-1. Add Stage 3: UShER.
-1. Add Stage 4: Summary.
-1. Add Continuous Integration workflows: `lint`, `test`, `pipeline`, and `release`.
-1. New representative controls dataset:
-
-    - Exclude XA because this is an Alpha recombinant (poor lineage accuracy).
-    - Exclude XB because of [current issue](https://github.com/summercms/covid19-pango-designation/commit/26b7359e34a0b2f122215332b6495fea97ff3fe7)
-    - Exclude XC because this is an Alpha recombinant (poor lineage accuracy).
-    - Exclude XD because there are no public genomes.
-    - Exclude XK because there are no public genomes.
-
-### Pull Requests
-
-- [```pull/3```](https://github.com/ktmeaton/ncov-recombinant/pull/3) Add Continuous Integration workflows: lint, test, pipeline, and release.
-
-### Commits
-
 - [```34c721b7```](https://github.com/ktmeaton/ncov-recombinant/commit/34c721b7) rearrange summary cols
 - [```18b389de```](https://github.com/ktmeaton/ncov-recombinant/commit/18b389de) disable usher plotting
 - [```0a101dd9```](https://github.com/ktmeaton/ncov-recombinant/commit/0a101dd9) covert sc2rf_recombinants to a script
