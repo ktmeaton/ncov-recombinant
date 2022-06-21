@@ -56,7 +56,7 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 1. Download and apply the latest updates.
 
     ```bash
-    git pull origin master
+    git pull --recurse-submodules
     ```
 
 1. (Optional) List available versions (`tags`).
