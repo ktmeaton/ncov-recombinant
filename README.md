@@ -59,25 +59,10 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
     git pull --recurse-submodules
     ```
 
-1. (Optional) List available versions (`tags`).
+1. Update your conda environment.
 
     ```bash
-    git tag
-    ```
-
-    ```text
-    v0.1.0
-    v0.1.1
-    v0.1.2
-    v0.2.0
-    v0.2.1
-    v0.3.0
-    ```
-
-1. (Optional) Snapshot the pipeline to a specific version (`tag`).
-
-    ```bash
-    git checkout v0.3.0
+    mamba env update -f workflow/envs/environment.yaml
     ```
 
 ## Tutorial
