@@ -119,6 +119,10 @@ Powerpoint/google slides with plots embedded for presenting.
 
 ### Breakpoints
 
+Visualization of breakpoints by lineage.
+
+![breakpoints_output](images/breakpoints_output.png)
+
 Visualization of breakpoints by parent from [sc2rf](https://github.com/lenaschimmel/sc2rf).
 
 ![sc2rf_output](images/sc2rf_output.png)
