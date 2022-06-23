@@ -97,7 +97,10 @@ def main(
         plot_dict[label]["plot_path"] = os.path.join(plot_dir, label + plot_suffix)
         plot_dict[label]["df_path"] = os.path.join(plot_dir, label + df_suffix)
         plot_dict[label]["df"] = pd.read_csv(plot_dict[label]["df_path"], sep="\t")
-        plot_dict[label]["df"].index = plot_dict[label]["df"]["epiweek"]
+
+        # Breakpoints df isn't over time, but by lineage
+        if "epiweek" in plot_dict[label]["df"].columns:
+            plot_dict[label]["df"].index = plot_dict[label]["df"]["epiweek"]
 
         # Largest is special, as it takes the form largest_<lineage>_<cluster_id>.*
         if label.startswith("largest_"):
@@ -434,6 +437,22 @@ def main(
     for paragraph in body.text_frame.paragraphs:
         for run in paragraph.runs:
             run.font.size = pptx.util.Pt(14)
+
+    # ---------------------------------------------------------------------
+    # Breakpoints Summary
+
+    plot_path = plot_dict["breakpoints"]["plot_path"]
+
+    graph_slide_layout = presentation.slide_layouts[8]
+    slide = presentation.slides.add_slide(graph_slide_layout)
+    title = slide.shapes.title
+
+    title.text_frame.text = "Breakpoints"
+    title.text_frame.paragraphs[0].font.bold = True
+
+    chart_placeholder = slide.placeholders[1]
+    chart_placeholder.insert_picture(plot_path)
+    body = slide.placeholders[2]
 
     # ---------------------------------------------------------------------
     # Changelog
