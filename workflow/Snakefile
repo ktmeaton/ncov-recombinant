@@ -1160,6 +1160,8 @@ rule plot:
       > {log} 2>&1;
     """
 
+# -----------------------------------------------------------------------------#
+rule_name = "plot_historical"
 rule plot_historical:
   """Plot results as a historical timeline."""
 
