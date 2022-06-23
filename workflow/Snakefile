@@ -198,6 +198,7 @@ rule issues_download:
   message: """Downloading pango-designation issues.\n
   log:     {log}
   issues:  {output.issues}
+  plot:    {output.plot}
   """
 
   input:
@@ -205,6 +206,7 @@ rule issues_download:
   output:
     issues           = "resources/issues.tsv",
     issue_to_lineage = "resources/issue_to_lineage.tsv",
+    plot             = "resources/breakpoints.png",
   threads: 1
   resources:
     cpus = 1,
@@ -216,6 +218,7 @@ rule issues_download:
     """
     python3 resources/issues.py --breakpoints {input.breakpoints} 1> {output.issues} 2> {log};
     csvtk cut -t -f "issue,lineage" {output.issues} | tail -n+2   1> {output.issue_to_lineage} 2>> {log};
+    python3 resources/breakpoints.py --input {input.breakpoints} --output {ouput.plot}  >> {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------#
