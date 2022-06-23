@@ -4,6 +4,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib import patches, colors, lines
+import os
 
 NO_DATA_CHAR = "NA"
 
@@ -241,6 +242,9 @@ def main(
     ax.set_ylabel("Lineage")
     ax.set_xlabel("Genomic Coordinate")
 
+    # Title
+    plt.suptitle("Recombination Breakpoints by Lineage")
+
     # -------------------------------------------------------------------------
     # Manually create legend
 
@@ -257,7 +261,7 @@ def main(
         handles=legend_handles,
         labels=legend_labels,
         title="Parent",
-        bbox_to_anchor=[1.01, 1.01],
+        bbox_to_anchor=[1.01, 1.00],
     )
     frame = legend.get_frame()
     frame.set_linewidth(1)
@@ -267,10 +271,11 @@ def main(
     # -------------------------------------------------------------------------
     # Export
 
-    plt.suptitle("Recombination Breakpoints by Lineage")
     plt.tight_layout()
     plt.subplots_adjust(hspace=0)
     plt.savefig(output)
+    output_basename = os.path.splitext(output)[0]
+    plt.savefig(output_basename + ".svg")
 
 
 if __name__ == "__main__":
