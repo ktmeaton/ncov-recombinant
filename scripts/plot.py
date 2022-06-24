@@ -43,6 +43,8 @@ LINEAGES_COLS = [
     "latest_date",
 ]
 
+plt.rcParams["svg.fonttype"] = "none"
+
 
 def categorical_cmap(nc, nsc, cmap="tab20", continuous=False):
     """
