@@ -15,6 +15,8 @@ BREAKPOINT_COLOR = "lightgrey"
 X_BUFF = 1000
 BREAKPOINT_COLOR = "lightgrey"
 
+plt.rcParams["svg.fonttype"] = "none"
+
 
 @click.command()
 @click.option("--input", help="Input file", required=True)
@@ -23,9 +25,11 @@ BREAKPOINT_COLOR = "lightgrey"
     help="Output file",
     required=True,
 )
+@click.option("--figsize", help="Figure dimensions (length,width)", required=False)
 def main(
     input,
     output,
+    figsize,
 ):
     """Plot breakpoints"""
 
@@ -135,9 +139,15 @@ def main(
     # Plot Setup
 
     # Dynamically set figsize
-    figsize_width = 12
-    figsize_height = 1
-    figsize = [figsize_width, (figsize_height * num_lineages) / 2]
+    if not figsize:
+        figsize_width = 12
+        figsize_height = 1
+        figsize = [figsize_width, (figsize_height * num_lineages) / 2]
+    else:
+        figsize_width = int(figsize.split(",")[0])
+        figsize_height = int(figsize.split(",")[1])
+        figsize = [figsize_width, figsize_height]
+
     fig, axes = plt.subplots(
         2,
         1,
