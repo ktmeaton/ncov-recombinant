@@ -218,7 +218,7 @@ rule issues_download:
     """
     python3 resources/issues.py --breakpoints {input.breakpoints} 1> {output.issues} 2> {log};
     csvtk cut -t -f "issue,lineage" {output.issues} | tail -n+2   1> {output.issue_to_lineage} 2>> {log};
-    python3 resources/breakpoints.py --input {input.breakpoints} --output {ouput.plot}  >> {log} 2>&1;
+    python3 resources/breakpoints.py --input {input.breakpoints} --output {output.plot}  >> {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------#
