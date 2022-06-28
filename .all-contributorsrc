@@ -6,6 +6,7 @@
   "files": [
     "README.md"
   ],
+  "contributorsPerLine": 5,
   "imageSize": 100,
   "commit": false,
   "commitConvention": "atom",
@@ -52,7 +53,7 @@
     {
       "login": "benjamindeslisle",
       "name": "Benjamin Delisle",
-      "avatar_url": "https://ui-avatars.com/api/?name=Benjamin-Delisle?v=4",
+      "avatar_url": "https://media-exp1.licdn.com/dms/image/C4D03AQHpM719wYvUcQ/profile-displayphoto-shrink_200_200/0/1643727239372?e=2147483647&v=beta&t=D3fOvOJqNJC_758nBGP2APDjiH7YyPgT3QmrSXm8kbQ",
       "profile": "https://www.inspq.qc.ca/en/auteurs/2629/all",
       "contributions": [
         "bug",
@@ -62,13 +63,22 @@
     {
       "login": "vanipriyadarsiniikkurthi",
       "name": "Vani Priyadarsini Ikkurthi",
-      "avatar_url": "https://ui-avatars.com/api/?name=Vani Priyadarsini Ikkurthi?v=4",
+      "avatar_url": "https://media-exp1.licdn.com/dms/image/C5603AQHaG8Xx4QLXSQ/profile-displayphoto-shrink_200_200/0/1569339145568?e=2147483647&v=beta&t=3WrvCciW-x8J3Aw4JHGrWOpuqiikrrGV2KsDaISnHIw",
       "profile": "https://ca.linkedin.com/in/dr-vani-priyadarsini-ikkurti-4a2ab676",
       "contributions": [
         "bug",
         "test"
       ]
+    },
+    {
+      "login": "markhorsman",
+      "name": "Mark Horsman",
+      "avatar_url": "https://media-exp1.licdn.com/dms/image/C5603AQFMpFRB71ZFhw/profile-displayphoto-shrink_200_200/0/1516893279997?e=1658966400&v=beta&t=R9ruztUYe31ZVLNcZrozaJIJsfvTISCpkAby8wLq-D0",
+      "profile": "https://ca.linkedin.com/in/mark-horsman-52a14740",
+      "contributions": [
+        "ideas",
+        "design"
+      ]
     }
-  ],
-  "contributorsPerLine": 7
+  ]
 }
