@@ -389,7 +389,7 @@ def main(
             ax=ax,
             x=x,
             color=df_cmap,
-            edgecolor="black",
+            edgecolor="none",
             width=WIDTH_BAR,
             alpha=ALPHA_BAR,
         )
