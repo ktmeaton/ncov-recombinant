@@ -16,7 +16,7 @@ my_profiles/
 
 # Ignore datasets
 data/public*
-data/sars-cov-2_*
+data/sars-cov-2*
 data/canada*
 data/requests*
 data/custom*

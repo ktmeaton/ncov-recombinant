@@ -253,6 +253,21 @@ rule nextclade_dataset:
 
 # -----------------------------------------------------------------------------
 rule_name = "nextclade"
+
+def _inputs_nextclade(build, prefix):
+  inputs = {}
+  tag=config["builds"][build]["nextclade_dataset"]["tag"]
+
+  if prefix == "nextclade_no-recomb":
+    dataset = config["builds"][build]["nextclade_dataset"]["dataset_no-recomb"]
+  else:
+    dataset = config["builds"][build]["nextclade_dataset"]["dataset"]
+
+  inputs["tag"] = tag
+  inputs["dataset"] = dataset
+
+  return inputs
+
 rule nextclade:
   """Align sequences and perform QC with Nextclade."""
 
@@ -264,24 +279,26 @@ rule nextclade:
   alignment: {output.alignment}
   """
 
+  wildcard_constraints:
+    nextclade_prefix = "nextclade|nextclade_no-recomb"
   input:
-    dataset       = "data/{dataset}_{tag}".format(
-                      dataset=config["builds"][build]["nextclade_dataset"]["dataset"],
-                      tag=config["builds"][build]["nextclade_dataset"]["tag"],
-                    ),
+    dataset       = lambda wildcards:  "data/{dataset}_{tag}".format(
+                      dataset=_inputs_nextclade(wildcards.build, wildcards.nextclade_prefix)["dataset"],
+                      tag=_inputs_nextclade(wildcards.build, wildcards.nextclade_prefix)["tag"],
+                      ),
     sequences     = "data/{build}/sequences.fasta",
     metadata      = "data/{build}/metadata.tsv",
   output:
-    alignment     = "results/{build}/nextclade/alignment.fasta",
-    qc            = "results/{build}/nextclade/qc.tsv",
-    metadata      = "results/{build}/nextclade/metadata.tsv",
+    alignment     = "results/{build}/{nextclade_prefix}/alignment.fasta",
+    qc            = "results/{build}/{nextclade_prefix}/qc.tsv",
+    metadata      = "results/{build}/{nextclade_prefix}/metadata.tsv",
   params:
-    outdir        = "results/{build}/nextclade",
+    outdir        = "results/{build}/{nextclade_prefix}",
     basename      = "nextclade",
   benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+    "benchmarks/{{nextclade_prefix}}/{{build}}_{today}.tsv".format(today=today),
   log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+    "logs/{{nextclade_prefix}}/{{build}}_{today}.log".format(today=today),
   shell:
     """
     # Align sequences
@@ -464,6 +481,7 @@ rule sc2rf_recombinants:
     csv             = rules.sc2rf.output.csv,
     issues          = rules.issues_download.output.issues,
     alignment       = lambda wildcards: _inputs_sc2rf(wildcards.build)["alignment"],
+    nextclade       = "results/{build}/nextclade_no-recomb/qc.tsv",
   output:
     stats           = "results/{build}/sc2rf/stats.tsv",
     strains         = "results/{build}/sc2rf/recombinants.txt",
@@ -495,6 +513,7 @@ rule sc2rf_recombinants:
       --outdir {params.outdir} \
       --aligned {input.alignment} \
       --issues {input.issues} \
+      --nextclade {input.nextclade} \
       --log {log} \
       {params.motifs} \
       >> {log} 2>&1;

@@ -15,6 +15,7 @@ rule_params:
   # dataset: The nextclade dataset to use as the reference
   - name: nextclade_dataset
     dataset: sars-cov-2
+    dataset_no-recomb: sars-cov-2-no-recomb
     tag: "2022-04-28T12:00:00Z"
 
   # ---------------------------------------------------------------------------
