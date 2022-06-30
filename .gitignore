@@ -20,6 +20,7 @@ data/sars-cov-2*
 data/canada*
 data/requests*
 data/custom*
+data/proposed*
 
 # all-contributors and yarn
 yarn.lock

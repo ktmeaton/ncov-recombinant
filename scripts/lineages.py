@@ -9,11 +9,12 @@ NO_DATA_CHAR = "NA"
 
 
 # Select and rename columns from linelist
-RECOMBINANTS_COLS = [
+LINEAGE_COLS = [
     "cluster_id",
     "status",
     "lineage",
-    "parents",
+    "parents_clade",
+    "parents_lineage",
     "breakpoints",
     "issue",
     "subtree",
@@ -69,7 +70,7 @@ def main(
     # Create the recombinants table (recombinants.tsv)
     # -------------------------------------------------------------------------
 
-    recombinants_data = {col: [] for col in RECOMBINANTS_COLS}
+    recombinants_data = {col: [] for col in LINEAGE_COLS}
     recombinants_data[geo] = []
 
     for cluster_id in set(df["cluster_id"]):
@@ -84,7 +85,10 @@ def main(
         recombinants_data["cluster_id"].append(cluster_id)
         recombinants_data["status"].append(match_df["status"].values[0])
         recombinants_data["lineage"].append(match_df["lineage"].values[0])
-        recombinants_data["parents"].append(match_df["parents"].values[0])
+        recombinants_data["parents_clade"].append(match_df["parents_clade"].values[0])
+        recombinants_data["parents_lineage"].append(
+            match_df["parents_lineage"].values[0]
+        )
         recombinants_data["breakpoints"].append(match_df["breakpoints"].values[0])
         recombinants_data["issue"].append(match_df["issue"].values[0])
         recombinants_data["subtree"].append(match_df["subtree"].values[0])

@@ -256,12 +256,13 @@ rule_name = "nextclade"
 
 def _inputs_nextclade(build, prefix):
   inputs = {}
-  tag=config["builds"][build]["nextclade_dataset"]["tag"]
 
   if prefix == "nextclade_no-recomb":
     dataset = config["builds"][build]["nextclade_dataset"]["dataset_no-recomb"]
+    tag = config["builds"][build]["nextclade_dataset"]["tag_no-recomb"]
   else:
     dataset = config["builds"][build]["nextclade_dataset"]["dataset"]
+    tag = config["builds"][build]["nextclade_dataset"]["tag"]
 
   inputs["tag"] = tag
   inputs["dataset"] = dataset
@@ -331,8 +332,8 @@ rule nextclade_recombinants:
   """
 
   input:
-    alignment      = rules.nextclade.output.alignment,
-    qc             = rules.nextclade.output.qc,
+    alignment      = "results/{build}/nextclade/alignment.fasta",
+    qc             = "results/{build}/nextclade/qc.tsv",
   output:
     alignment      = "results/{build}/nextclade/recombinants.fasta",
     strains        = "results/{build}/nextclade/recombinants.txt",
@@ -1001,7 +1002,7 @@ rule summary:
   """
 
   input:
-    nextclade        = rules.nextclade.output.metadata,
+    nextclade        = "results/{build}/nextclade/metadata.tsv",
     sc2rf            = rules.sc2rf_recombinants.output.stats,
     usher_clades     = rules.usher_stats.output.clades,
     usher_placements = rules.usher_stats.output.placement_stats,

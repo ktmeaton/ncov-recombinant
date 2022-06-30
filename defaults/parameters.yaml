@@ -13,10 +13,13 @@ rule_params:
   # ---------------------------------------------------------------------------
   # tag : datestamp of dataset (run `nextclade dataset list` for more info)
   # dataset: The nextclade dataset to use as the reference
+  # dataset_no-recomb: The nextcldae dataset to use without recombinants
+  # tag_no-recomb: datestamp of the dataset without recombinants
   - name: nextclade_dataset
     dataset: sars-cov-2
     dataset_no-recomb: sars-cov-2-no-recomb
-    tag: "2022-04-28T12:00:00Z"
+    tag: "2022-06-14T12:00:00Z"
+    tag_no-recomb: "2022-04-28T12:00:00Z"
 
   # ---------------------------------------------------------------------------
   # exclude_clades    : Exclude strains that are recombinants of these clades

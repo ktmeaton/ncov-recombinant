@@ -10,7 +10,7 @@ NO_DATA_CHAR = "NA"
 
 # Select and rename columns from linelist
 PARENTS_COLS = [
-    "parents",
+    "parents_clade",
     "sequences",
     "earliest_date",
     "latest_date",
@@ -49,18 +49,18 @@ def main(
 
     data = {col: [] for col in PARENTS_COLS}
 
-    for parents in set(df["parents"]):
+    for parents_clade in set(df["parents_clade"]):
 
-        match_df = df[df["parents"] == parents]
+        match_df = df[df["parents_clade"] == parents_clade]
 
-        if parents == NO_DATA_CHAR:
-            parents = "Unknown"
+        if parents_clade == NO_DATA_CHAR:
+            parents_clade = "Unknown"
 
         earliest_date = min(match_df["datetime"])
         latest_date = max(match_df["datetime"])
         sequences = len(match_df)
 
-        data["parents"].append(parents)
+        data["parents_clade"].append(parents_clade)
         data["sequences"].append(sequences)
         data["earliest_date"].append(earliest_date)
         data["latest_date"].append(latest_date)

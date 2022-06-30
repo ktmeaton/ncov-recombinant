@@ -156,6 +156,7 @@ def main(
 
     lineages = list(lineage_df.columns)
     lineages.remove("epiweek")
+    print(len(lineages), lineages)
 
     status_counts = {}
     status_df = plot_dict["status"]["df"]
@@ -396,10 +397,10 @@ def main(
             run.font.size = pptx.util.Pt(14)
 
     # ---------------------------------------------------------------------
-    # Parents Summary
+    # Parents Summary (Clade)
 
-    plot_path = plot_dict["parents"]["plot_path"]
-    parents_df = plot_dict["parents"]["df"]
+    plot_path = plot_dict["parents_clade"]["plot_path"]
+    parents_df = plot_dict["parents_clade"]["df"]
 
     parents = list(parents_df.columns)
     parents.remove("epiweek")
@@ -413,7 +414,7 @@ def main(
     slide = presentation.slides.add_slide(graph_slide_layout)
     title = slide.shapes.title
 
-    title.text_frame.text = "Parents"
+    title.text_frame.text = "Parents (Clade)"
     title.text_frame.paragraphs[0].font.bold = True
 
     chart_placeholder = slide.placeholders[1]
@@ -421,7 +422,50 @@ def main(
     body = slide.placeholders[2]
 
     summary = "\n"
-    summary += "There are {num_parents} parental combinations.\n".format(
+    summary += "There are {num_parents} clade combinations.\n".format(
+        num_parents=num_parents
+    )
+
+    for parent in parents:
+        seq_count = int(sum(parents_df[parent].dropna()))
+        summary += "  - {parent} ({seq_count})\n".format(
+            parent=parent, seq_count=seq_count
+        )
+
+    body.text_frame.text = summary
+
+    # Adjust font size of body
+    for paragraph in body.text_frame.paragraphs:
+        for run in paragraph.runs:
+            run.font.size = pptx.util.Pt(14)
+
+    # ---------------------------------------------------------------------
+    # Parents Summary (Lineage)
+
+    plot_path = plot_dict["parents_lineage"]["plot_path"]
+    parents_df = plot_dict["parents_lineage"]["df"]
+
+    parents = list(parents_df.columns)
+    parents.remove("epiweek")
+
+    parents_counts = {p: int(sum(parents_df[p])) for p in parents}
+    parents = sorted(parents_counts, key=parents_counts.get, reverse=True)
+
+    num_parents = len(parents)
+
+    graph_slide_layout = presentation.slide_layouts[8]
+    slide = presentation.slides.add_slide(graph_slide_layout)
+    title = slide.shapes.title
+
+    title.text_frame.text = "Parents (Lineage)"
+    title.text_frame.paragraphs[0].font.bold = True
+
+    chart_placeholder = slide.placeholders[1]
+    chart_placeholder.insert_picture(plot_path)
+    body = slide.placeholders[2]
+
+    summary = "\n"
+    summary += "There are {num_parents} lineage combinations.\n".format(
         num_parents=num_parents
     )
 

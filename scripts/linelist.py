@@ -20,7 +20,9 @@ LINELIST_COLS = {
     "sc2rf_lineage": "lineage_sc2rf",
     "sc2rf_status": "status_sc2rf",
     "Nextclade_pango": "lineage_nextclade",
-    "sc2rf_parents": "parents",
+    "sc2rf_parents": "parents_clade",
+    "cov-spectrum_parents": "parents_lineage",
+    "cov-spectrum_parents_confidence": "parents_lineage_confidence",
     "sc2rf_breakpoints": "breakpoints",
     "usher_num_best": "placements",
     "usher_subtree": "subtree",
@@ -147,8 +149,8 @@ def main(
             if breakpoints == NO_DATA_CHAR:
                 breakpoints = match["breakpoints_curated"].values[0]
                 linelist_df.at[rec[0], "breakpoints"] = breakpoints
-                parents = match["parents_curated"].values[0]
-                linelist_df.at[rec[0], "parents"] = parents
+                parents_clade = match["parents_curated"].values[0]
+                linelist_df.at[rec[0], "parents_clade"] = parents_clade
 
                 # TBD: regions if desired
 
@@ -208,7 +210,10 @@ def main(
     for rec in linelist_df.iterrows():
         strain = rec[1]["strain"]
         lineage = rec[1]["lineage_usher"]
-        parents = rec[1]["parents"]
+        # Parents by clade (ex. 21K,21L)
+        parents_clade = rec[1]["parents_clade"]
+        # Parents by lineage (ex. BA.1.1,BA.2.3)
+        parents_lineage = rec[1]["parents_lineage"]
         breakpoints = rec[1]["breakpoints"]
         subtree = rec[1]["subtree"]
         match = None
@@ -219,7 +224,8 @@ def main(
             # one of bp or subtree has to match
             if (
                 rec_lin["lineage"] == lineage
-                and rec_lin["parents"] == parents
+                and rec_lin["parents_clade"] == parents_clade
+                and rec_lin["parents_lineage"] == parents_lineage
                 and (
                     rec_lin["breakpoints"] == breakpoints
                     or rec_lin["subtree"] == subtree
@@ -235,11 +241,16 @@ def main(
             rec_seen[seen_i] = {
                 "lineage": lineage,
                 "breakpoints": breakpoints,
-                "parents": parents,
+                "parents_clade": parents_clade,
+                "parents_lineage": parents_lineage,
                 "subtree": subtree,
                 "strains": [strain],
             }
             seen_i += 1
+
+    for i in rec_seen:
+        if rec_seen[i]["breakpoints"] == NO_DATA_CHAR:
+            continue
 
     # -------------------------------------------------------------------------
     # Lineage ID
