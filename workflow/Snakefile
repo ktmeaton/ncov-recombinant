@@ -296,6 +296,7 @@ rule nextclade:
   params:
     outdir        = "results/{build}/{nextclade_prefix}",
     basename      = "nextclade",
+    selection     = "fasta,tsv"
   benchmark:
     "benchmarks/{{nextclade_prefix}}/{{build}}_{today}.tsv".format(today=today),
   log:
@@ -305,12 +306,13 @@ rule nextclade:
     # Align sequences
     nextclade run \
       --jobs {resources.cpus} \
-      --input-fasta {input.sequences} \
       --input-dataset {input.dataset} \
-      --output-dir {params.outdir} \
+      --output-all {params.outdir} \
+      --output-selection {params.selection} \
       --output-tsv {output.qc} \
       --output-fasta {output.alignment} \
       --output-basename {params.basename} \
+      {input.sequences} \
       > {log} 2>&1;
 
     # Merge QC output with metadata
@@ -337,6 +339,8 @@ rule nextclade_recombinants:
   output:
     alignment      = "results/{build}/nextclade/recombinants.fasta",
     strains        = "results/{build}/nextclade/recombinants.txt",
+    qc             = "results/{build}/nextclade/recombinants.qc.tsv",
+    non            = "results/{build}/nextclade/non-recombinants.qc.tsv",
   params:
     exclude_clades = lambda wildcards: "|".join(config["builds"][wildcards.build]["nextclade_recombinants"]["exclude_clades"]),
     fields         = "clade,Nextclade_pango,qc.overallStatus",
@@ -353,12 +357,19 @@ rule nextclade_recombinants:
     # Extract recombinant strains
     csvtk grep -t -f "{params.fields}" -r -p "{params.values}" {input.qc} 2> {log} \
       | csvtk grep -t -v -f "clade" -r -p ".*({params.exclude_clades}).*" 2>> {log} \
+      | csvtk grep -t -f "qc.mixedSites.status" -p "bad" -v \
       | csvtk cut -t -f "seqName" 2>> {log} \
       | tail -n+2 \
       > {output.strains};
 
     # Extract recombinant sequences
-    seqkit grep -f "{output.strains}"    {input.alignment} 1> {output.alignment} 2>> {log};
+    seqkit grep -f {output.strains} {input.alignment} 1> {output.alignment} 2>> {log};
+
+    # Extract recombinant qc
+    csvtk grep -t -P {output.strains} {input.qc} 1> {output.qc} 2>> {log};
+
+    # Extract non-recombinants qc
+    csvtk grep -t -P {output.strains} -v {input.qc} 1> {output.non} 2>> {log};
     """
 
 # -----------------------------------------------------------------------------#
@@ -537,7 +548,7 @@ rule nextclade_exclude_false_positives:
   """
 
   input:
-    alignment = rules.nextclade.output.alignment,
+    alignment = "results/{build}/nextclade/alignment.fasta",
     stats     = rules.sc2rf_recombinants.output.stats,
   output:
     alignment = "results/{build}/nextclade/alignment.exclude_false_positives.fasta",
@@ -877,7 +888,7 @@ rule usher_metadata:
             base_input=config["builds"][wildcards.build]["base_input"]
           ),
     clades          = rules.usher_stats.output.clades,
-    nextclade       = rules.nextclade.output.metadata,
+    nextclade       = "results/{build}/nextclade/metadata.tsv",
     sc2rf           = rules.sc2rf_recombinants.output.stats,
     placement_stats = rules.usher_stats.output.placement_stats,
     issue_to_lineage = rules.issues_download.output.issue_to_lineage,

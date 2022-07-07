@@ -26,16 +26,16 @@ rule_params:
   - name: nextclade_recombinants
     exclude_clades:
         - "19" # From 2019
-        - "20A" # Non-VoC From 2020
-        - "20B"
-        - "20C"
-        - "20D"
-        - "20E"
-        - "20F"
-        - "20G"
-        - "Alpha"
-        - "Beta"
-        - "Gamma"
+        #- "20A" # Non-VoC From 2020
+        #- "20B"
+        #- "20C"
+        #- "20D"
+        #- "20E"
+        #- "20F"
+        #- "20G"
+        #- "Alpha"
+        #- "Beta"
+        #- "Gamma"
 
   # ---------------------------------------------------------------------------
   # exclude_negatives : true if sequences that are not recombinants (according to Nextclade) should be excluded from sc2rf analysis.
@@ -50,10 +50,18 @@ rule_params:
     exclude_negatives: false
     max_name_length: 50
     clades:
+      - "20I" # Alpha
+      - "20H" # Beta
+      - "20J" # Gamma
       - "21I" # Delta
       - "21J" # Delta
-      - "21K" # Omicron
-      - "21L" # Omicron
+      - "21K" # Omicron BA.1
+      - "21L" # Omicron BA.2
+      #- "21B" # Kappa
+      #- "21C" # Episilon
+      #- "21D" # Eta
+      #- "21G" # Lambda
+      #- "21H" # Mu
     mutation_threshold: 0.25
     # Note : If you want sc2rf to update its mutation database everytime, add --rebuild-examples to `sc2rf_args`.
     sc2rf_args: "--ansi --parents 2-4 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
