@@ -197,8 +197,8 @@ def main(
     # Lineage Grouping
     # Group sequences into lineages by:
     #   - Lineage
-    #   - Parents
-    #   - Breakpoints OR Phylogenetic placement (subtree)
+    #   - Parents (clades and lineages)
+    #   - Breakpoints
 
     # Different recombinant types can have the same breakpoint
     # but different placement: ex. XE and XH
@@ -215,7 +215,7 @@ def main(
         # Parents by lineage (ex. BA.1.1,BA.2.3)
         parents_lineage = rec[1]["parents_lineage"]
         breakpoints = rec[1]["breakpoints"]
-        subtree = rec[1]["subtree"]
+        # subtree = rec[1]["subtree"]
         match = None
 
         for i in rec_seen:
@@ -227,8 +227,9 @@ def main(
                 and rec_lin["parents_clade"] == parents_clade
                 and rec_lin["parents_lineage"] == parents_lineage
                 and (
-                    rec_lin["breakpoints"] == breakpoints
-                    or rec_lin["subtree"] == subtree
+                    rec_lin["breakpoints"]
+                    == breakpoints
+                    # or rec_lin["subtree"] == subtree
                 )
             ):
                 match = i
@@ -243,7 +244,7 @@ def main(
                 "breakpoints": breakpoints,
                 "parents_clade": parents_clade,
                 "parents_lineage": parents_lineage,
-                "subtree": subtree,
+                # "subtree": subtree,
                 "strains": [strain],
             }
             seen_i += 1
