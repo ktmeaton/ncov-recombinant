@@ -11,7 +11,7 @@ dependencies:
   - bioconda::csvtk=0.23.0
   - bioconda::seqkit=2.2.0
   # Alignmnent and Clade QC
-  - bioconda::nextclade=1.11.0
+  - bioconda::nextclade=2.2.0
   # Usher
   - bioconda::usher=0.5.3
   - anaconda::protobuf=3.18.1
