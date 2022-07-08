@@ -62,13 +62,11 @@ builds:
   - name: controls-negative
     base_input: public-latest
 
-    # All sequences are negatives, must keep!
     sc2rf:
       exclude_negatives: false
 
-    # There are no false positives, this is for testing
     faToVcf:
-      exclude_false_positives: true
+      exclude_false_positives: false
 
     plot:
       weeks: 16
