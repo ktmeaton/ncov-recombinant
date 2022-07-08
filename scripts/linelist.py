@@ -23,9 +23,9 @@ LINELIST_COLS = {
     "sc2rf_parents": "parents_clade",
     "cov-spectrum_parents": "parents_lineage",
     "cov-spectrum_parents_confidence": "parents_lineage_confidence",
+    "cov-spectrum_parents_subs": "parents_subs",
     "sc2rf_breakpoints": "breakpoints",
     "usher_num_best": "placements",
-    "usher_subtree": "subtree",
     "sc2rf_regions": "regions",
     "date": "date",
     "country": "country",
@@ -105,6 +105,7 @@ def main(
     # Initialize columns
     linelist_df.insert(1, "status", [NO_DATA_CHAR] * len(linelist_df))
     linelist_df.insert(3, "issue", [NO_DATA_CHAR] * len(linelist_df))
+    linelist_df["cov-spectrum_query"] = [NO_DATA_CHAR] * len(linelist_df)
 
     for rec in linelist_df.iterrows():
         strain = rec[0]
@@ -195,13 +196,11 @@ def main(
 
     # -------------------------------------------------------------------------
     # Lineage Grouping
-    # Group sequences into lineages by:
-    #   - Lineage
-    #   - Parents (clades and lineages)
-    #   - Breakpoints
-
-    # Different recombinant types can have the same breakpoint
-    # but different placement: ex. XE and XH
+    # Group sequences into lineages that share
+    #   - Lineage (UShER)
+    #   - Parent clades (sc2rf)
+    #   - Parent lineages (sc2rf, lapis cov-spectrum)
+    #   - Breakpoints (sc2rf)
 
     # Create a dictionary of recombinant lineages seen
     rec_seen = {}
@@ -215,37 +214,50 @@ def main(
         # Parents by lineage (ex. BA.1.1,BA.2.3)
         parents_lineage = rec[1]["parents_lineage"]
         breakpoints = rec[1]["breakpoints"]
-        # subtree = rec[1]["subtree"]
+        # Format: "C234T,A54354G|Omicron/BA.1/21K;A423T|Omicron/BA.2/21L"
+        parents_subs_raw = rec[1]["parents_subs"].split(";")
+        # Format: ["C234T,A54354G|Omicron/BA.1/21K", "A423T|Omicron/BA.2/21L"]
+        parents_subs_csv = [sub.split("|")[0] for sub in parents_subs_raw]
+        # Format: ["C234T,A54354G", "A423T"]
+        parents_subs_str = ",".join(parents_subs_csv)
+        # Format: "C234T,A54354G,A423T"
+        parents_subs_list = parents_subs_str.split(",")
+        # Format: ["C234T","A54354G","A423T"]
+
         match = None
 
         for i in rec_seen:
             rec_lin = rec_seen[i]
-            # lineage and parents have to match
-            # one of bp or subtree has to match
+            # lineage, parents, breakpoints, and subs have to match
             if (
                 rec_lin["lineage"] == lineage
                 and rec_lin["parents_clade"] == parents_clade
                 and rec_lin["parents_lineage"] == parents_lineage
-                and (
-                    rec_lin["breakpoints"]
-                    == breakpoints
-                    # or rec_lin["subtree"] == subtree
-                )
+                and rec_lin["breakpoints"] == breakpoints
+                # and rec_lin["parents_subs"] == parents_subs
             ):
                 match = i
                 break
 
         # If we found a match, increment our dict
         if match is not None:
+            # Add the strain to this lineage
             rec_seen[match]["strains"].append(strain)
+            # Adjust the cov-spectrum subs /parents subs to include the new strain
+            lineage_parents_subs = rec_seen[match]["cov-spectrum_query"]
+            for sub in lineage_parents_subs:
+                if sub not in lineage_parents_subs:
+                    rec_seen[match]["cov-spectrum_query"].remove(sub)
+
+        # This is the first appearance
         else:
             rec_seen[seen_i] = {
                 "lineage": lineage,
                 "breakpoints": breakpoints,
                 "parents_clade": parents_clade,
                 "parents_lineage": parents_lineage,
-                # "subtree": subtree,
                 "strains": [strain],
+                "cov-spectrum_query": parents_subs_list,
             }
             seen_i += 1
 
@@ -262,6 +274,7 @@ def main(
         earliest_datetime = datetime.today()
         earliest_strain = None
 
+        # Identify the earliest strain to the cluster ID
         for strain in rec_seen[i]["strains"]:
             strain_date = linelist_df[linelist_df["strain"] == strain]["date"].values[0]
             strain_datetime = datetime.strptime(strain_date, "%Y-%m-%d")
@@ -269,9 +282,13 @@ def main(
                 earliest_datetime = strain_datetime
                 earliest_strain = strain
 
+        subs_query = ",".join(rec_seen[i]["cov-spectrum_query"])
+
+        # Add the cluster ID for all strains
         for strain in rec_seen[i]["strains"]:
             strain_i = linelist_df[linelist_df["strain"] == strain].index[0]
             linelist_df.at[strain_i, "cluster_id"] = earliest_strain
+            linelist_df.at[strain_i, "cov-spectrum_query"] = subs_query
 
     # -------------------------------------------------------------------------
     # Assign status and curated lineage

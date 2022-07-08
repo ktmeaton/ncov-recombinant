@@ -32,6 +32,7 @@ rule_params:
   #                   : only set to true if there is at least 1 guaranteed recombinant sequence in your input!
   # max_name_length   : The maximum character length of strain names
   # clades            : Restrict parent search to these clades
+  # secondary_clades  : To detect recombination in BA.4 and BA.5, these clades must be run separately
   # sc2rf_args        : Additional arguments supplied to the program sc2rf
   # debug_args        : Ultra-sensitive arguments for debugging
   # primers           : Path to primers, relative to sc2rf directory.
@@ -60,13 +61,15 @@ rule_params:
       - "21H" # Mu
       - "21K" # Omicron BA.1
       - "21L" # Omicron BA.2
+      - "B.1.438.1" # proposed808
+    secondary_clades:
+      - "21K" # Omicron BA.1
+      - "21L" # Omicron BA.1
       - "22A" # Omicron BA.4
       - "22B" # Omicron BA.5
-      - "B.1.438.1" # proposed808
     mutation_threshold: 0.25
     # Note : If you want sc2rf to update its mutation database everytime, add --rebuild-examples to `sc2rf_args`.
     sc2rf_args: "--ansi --parents 2-100 --breakpoints 0-100 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
-    debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --enable-deletions"
 
   # ---------------------------------------------------------------------------
   # lapis           : If true, query cov-spectrum using LAPIS to identify parental lineages
@@ -89,15 +92,8 @@ rule_params:
     exclude_false_positives: false
 
   # ---------------------------------------------------------------------------
-  # k               : The number of contextual samples to select when extracting subtrees.
-  # low_memory_mode : true if you have <= 4GB of memory, so that the usher metadata will not be used.
-  - name: usher_subtree
-    k: 500
-    low_memory_mode: true
-
-  # ---------------------------------------------------------------------------
   # extra_cols : (Optional) list of metadata columns to output going forwards (aside from defaults of strain,date,country)
-  - name: usher_metadata
+  - name: summary
     extra_cols:
     #  - gisaid_epi_isl
     #  - genbank_accession

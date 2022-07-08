@@ -37,7 +37,6 @@ LINEAGES_COLS = [
     "parents_lineage",
     "breakpoints",
     "issue",
-    "subtree",
     "sequences",
     "growth_score",
     "earliest_date",
@@ -541,7 +540,6 @@ def main(
         lineages_data["parents_lineage"].append(match_df["parents_lineage"].values[0])
         lineages_data["breakpoints"].append(match_df["breakpoints"].values[0])
         lineages_data["issue"].append(match_df["issue"].values[0])
-        lineages_data["subtree"].append(match_df["subtree"].values[0])
 
         lineages_data["sequences"].append(sequences)
         lineages_data["earliest_date"].append(earliest_date)

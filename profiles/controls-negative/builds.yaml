@@ -16,6 +16,18 @@
 
 inputs:
 
+  # ---------------------------------------------------------------------------
+  # An UShER base phylogeny of all publicly available samples (genbank).
+  # The protobuf will be downloaded to: `data/public-latest/usher.pb.gz
+  # The metadata will be downloaded to: `data/public-latest/usher.metadata.tsv
+  - name: public-latest
+    type:
+      - usher
+    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.all.masked.pb.gz
+    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.metadata.tsv.gz
+    ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.version.txt
+
+
   # A time-stamped UShER base phylogeny of all publicly available samples (genbank) available on 2022-04-17
   # The protobuf will be downloaded to: `data/public-20220417/usher.pb.gz
   # The metadata will be downloaded to: `data/public-20220417/usher.metadata.tsv
@@ -48,7 +60,7 @@ builds:
   # `negatives` uses sequences that ARE NOT recombinants
 
   - name: controls-negative
-    base_input: public-20220417
+    base_input: public-latest
 
     # All sequences are negatives, must keep!
     sc2rf:

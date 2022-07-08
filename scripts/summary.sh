@@ -36,11 +36,6 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    --subtrees)
-      subtrees=$2
-      shift # past argument
-      shift # past value
-      ;;
     --extra-cols)
       extra_cols=$2
       shift # past argument
@@ -82,7 +77,7 @@ usher_dataset_name=$(basename $(dirname $usher_dataset))
 usher_dataset_ver=$(cut -d " " -f 8 $usher_dataset | sed 's/(\|)\|;//g')
 usher_dataset_ver="${usher_dataset_name}:${usher_dataset_ver}"
 
-sort_col="usher_subtree"
+sort_col="usher_pango_lineage"
 
 default_cols="strain,date,country"
 
@@ -96,7 +91,6 @@ fi
 csvtk cut -t -f "${default_cols}${extra_cols}clade,Nextclade_pango" ${nextclade} \
   | csvtk rename -t -f "clade" -n "Nextclade_clade" \
   | csvtk merge -t --na "NA" -f "strain" - ${sc2rf} \
-  | csvtk merge -t -k --na "NA" -f "strain" ${subtrees} - \
   | csvtk merge -t -k --na "NA" -f "strain" ${usher_placements} - \
   | csvtk merge -t -k --na "NA" -f "strain" ${usher_clades} - \
   | csvtk sort -t -k "$sort_col" \

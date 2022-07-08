@@ -16,6 +16,17 @@
 
 inputs:
 
+  # ---------------------------------------------------------------------------
+  # An UShER base phylogeny of all publicly available samples (genbank).
+  # The protobuf will be downloaded to: `data/public-latest/usher.pb.gz
+  # The metadata will be downloaded to: `data/public-latest/usher.metadata.tsv
+  - name: public-latest
+    type:
+      - usher
+    pb_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.all.masked.pb.gz
+    metadata_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.metadata.tsv.gz
+    ver_url: http://hgdownload.soe.ucsc.edu/goldenPath/wuhCor1/UShER_SARS-CoV-2/public-latest.version.txt
+
   # A time-stamped UShER base phylogeny of all publicly available samples (genbank) available on 2022-04-17
   # The protobuf will be downloaded to: `data/public-20220417/usher.pb.gz
   # The metadata will be downloaded to: `data/public-20220417/usher.metadata.tsv
@@ -48,20 +59,20 @@ builds:
   # `tutorial` is a custom build, that uses a toy dataset
 
   - name: tutorial
-    base_input: public-20220417
-
-    # Universal rule parameters can (optionally) be overridden for a specific build.
-    usher_metadata:
-      extra_cols:
-        - genbank_accession
+    base_input: public-latest
 
     # There are no negatives, this is for testing
     sc2rf:
-      exclude_negatives: true
+      exclude_negatives: false
 
     # There are no false positives, this is for testing
     faToVcf:
       exclude_false_positives: true
+
+    # Universal rule parameters can (optionally) be overridden for a specific build.
+    summary:
+      extra_cols:
+        - genbank_accession
 
     plot:
       weeks: 16

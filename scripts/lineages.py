@@ -17,7 +17,6 @@ LINEAGE_COLS = [
     "parents_lineage",
     "breakpoints",
     "issue",
-    "subtree",
     "sequences",
     "growth_score",
     "earliest_date",
@@ -91,7 +90,6 @@ def main(
         )
         recombinants_data["breakpoints"].append(match_df["breakpoints"].values[0])
         recombinants_data["issue"].append(match_df["issue"].values[0])
-        recombinants_data["subtree"].append(match_df["subtree"].values[0])
 
         recombinants_data["sequences"].append(sequences)
         recombinants_data["earliest_date"].append(earliest_date)

@@ -103,6 +103,10 @@ rule all:
   Default workflow targets.
   """
     input:
+        # Config files
+        expand("results/{build_name}/config.json",
+          build_name=BUILDS,
+          ),
         # Stage 1: Nextclade
         expand("results/{build_name}/nextclade/alignment.fasta",
           build_name=BUILDS,
@@ -112,14 +116,10 @@ rule all:
           build_name=BUILDS,
           ),
         # Stage 3: UShER
-        expand("results/{build_name}/subtrees",
+        expand("results/{build_name}/usher/usher.clades.tsv",
           build_name=BUILDS,
           ),
-        # Stage 4: Linelist
-        expand("results/{build_name}/linelists/positives.tsv",
-          build_name=BUILDS,
-          ),
-        # Stage 5: Reports
+        # Stage 4: Reports
         expand("results/{build_name}/report/report.xlsx",
           build_name=BUILDS,
           ),
@@ -141,15 +141,34 @@ rule print_config:
     config_json = json.dumps(config, indent = 2)
     print(config_json)
 
-    # Save to json files
-    for build in BUILDS:
-      outfile_dir = os.path.join("results", build)
-      if not os.path.exists(outfile_dir):
-        os.mkdir(outfile_dir)
-      outfile_path = os.path.join(outfile_dir, "config.json")
-      with open(outfile_path, "w") as outfile:
-        outfile.write(config_json)
 
+# -----------------------------------------------------------------------------#
+rule save_config:
+  """
+  Save full config.
+  """
+  message: "Saving full config."
+  output:
+    json = "results/{build}/config.json",
+  params:
+    output_dir = "results/{build}/",
+  run:
+    config_copy = copy.deepcopy(config)
+    # Remove other builds from config
+    for build in config["builds"]:
+      if build != wildcards.build:
+        del config_copy["builds"][build]
+
+    config_json = json.dumps(config_copy, indent = 2)
+
+    # Create output directory
+    if not os.path.exists(params.output_dir):
+      os.mkdir(params.output_dir)
+
+    # Save to json file
+    outfile_path = output.json
+    with open(outfile_path, "w") as outfile:
+      outfile.write(config_json)
 
 # -----------------------------------------------------------------------------#
 rule help:
@@ -407,12 +426,9 @@ rule sc2rf:
 
   message: """Identifying recombinants with sc2rf.\n
   build:       {wildcards.build}
-  log:         {log.regular}
-  log_debug:   {log.debug}
+  log:         {log.primary}
   ansi:        {output.ansi}
-  ansi_debug:  {output.ansi_debug}
   stats:       {output.csv}
-  stats_debug: {output.csv_debug}
   """
 
   input:
@@ -420,14 +436,14 @@ rule sc2rf:
   output:
     ansi                 = "results/{build}/sc2rf/ansi.txt",
     csv                  = "results/{build}/sc2rf/stats.csv",
-    ansi_debug           = "results/{build}/sc2rf/debug.ansi.txt",
-    csv_debug            = "results/{build}/sc2rf/debug.stats.csv",
+    ansi_secondary       = "results/{build}/sc2rf/ansi.secondary.txt",
+    csv_secondary        = "results/{build}/sc2rf/stats.secondary.csv",
   params:
     outdir               = "results/{build}",
     clades               = lambda wildcards: " ".join(config["builds"][wildcards.build]["sc2rf"]["clades"]),
+    secondary_clades     = lambda wildcards: " ".join(config["builds"][wildcards.build]["sc2rf"]["secondary_clades"]),
     mutation_threshold   = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["mutation_threshold"],
     sc2rf_args           = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"],
-    debug_args           = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["debug_args"],
     max_name_length      = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["max_name_length"]
   threads: 1
   resources:
@@ -435,31 +451,31 @@ rule sc2rf:
   benchmark:
     "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
   log:
-    regular = "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
-    debug   = "logs/{rule}/{{build}}_debug_{today}.log".format(today=today, rule=rule_name),
+    primary   = "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+    secondary = "logs/{rule}/{{build}}_secondary_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    # Regular Mode
+    # Primary Mode
     bash scripts/sc2rf.sh \
       --alignment {input.alignment} \
       --output-ansi {output.ansi} \
       --output-csv {output.csv} \
-      --log {log.regular} \
+      --log {log.primary} \
       --max-name-length {params.max_name_length} \
       --clades "{params.clades}" \
       --mutation-threshold {params.mutation_threshold} \
       {params.sc2rf_args};
 
-    # Debugging Mode (for troubleshooting)
+    # Secondary Mode
     bash scripts/sc2rf.sh \
       --alignment {input.alignment} \
-      --output-ansi {output.ansi_debug} \
-      --output-csv {output.csv_debug} \
-      --log {log.debug} \
+      --output-ansi {output.ansi_secondary} \
+      --output-csv {output.csv_secondary} \
+      --log {log.secondary} \
       --max-name-length {params.max_name_length} \
-      --clades "{params.clades}" \
+      --clades "{params.secondary_clades}" \
       --mutation-threshold {params.mutation_threshold} \
-      {params.debug_args};
+      {params.sc2rf_args};
     """
 
 # -----------------------------------------------------------------------------
@@ -509,6 +525,8 @@ rule sc2rf_recombinants:
   input:
     ansi            = rules.sc2rf.output.ansi,
     csv             = rules.sc2rf.output.csv,
+    #ansi_secondary  = rules.sc2rf.output.ansi_secondary,
+    csv_secondary   = rules.sc2rf.output.csv_secondary,
     issues          = rules.issues_download.output.issues,
     alignment       = lambda wildcards: _inputs_sc2rf(wildcards.build)["alignment"],
     nextclade       = "results/{build}/nextclade_no-recomb/qc.tsv",
@@ -536,6 +554,7 @@ rule sc2rf_recombinants:
     """
     python3 sc2rf/postprocess.py \
       --csv {input.csv} \
+      --csv-secondary {input.csv_secondary} \
       --ansi {input.ansi} \
       --prefix {params.prefix} \
       --outdir {params.outdir} \
@@ -869,159 +888,25 @@ rule usher_stats:
     csvtk cut -t -f "strain" {output.clades}  2>> {log} | tail -n+2 > {output.strains};
     """
 
-# -----------------------------------------------------------------------------
-rule_name = "usher_metadata"
+# -----------------------------------------------------------------------------#
+#  STAGE 4: Summarize and sReport
+# -----------------------------------------------------------------------------#
+
+rule_name = "summary"
 
 # Parameters function
-def _params_usher_metadata(build):
-  """Parse parameters from wildcards for rule usher_metadata."""
+def _params_summary(build):
+  """Parse parameters from wildcards for rule summary."""
 
   params = {}
 
-  extra_cols = config["builds"][build]["usher_metadata"]["extra_cols"]
+  extra_cols = config["builds"][build]["summary"]["extra_cols"]
   if extra_cols: params["extra_cols"] = "--extra-cols {}".format(",".join(extra_cols))
   else: params["extra_cols"] = ""
-
-  low_memory_mode = config["builds"][build]["usher_subtree"]["low_memory_mode"]
-  if low_memory_mode: params["low_memory_mode"] = "--low-memory"
-  else: params["low_memory_mode"] = ""
 
   return params
 
 # Snakemake rule
-rule usher_metadata:
-  """
-  Merge metadata for UShER protobuf.
-  """
-  message: """Merging metadata for UShER protobuf and converting to decimal date.\n
-  build:      {wildcards.build}
-  low_memory: {params.low_memory_mode}
-  log:        {log}
-  metadata:   {output.decimal_date}
-  """
-
-  wildcard_constraints:
-    mode = "|".join(LOCAL_INPUTS),
-  input:
-    base_metadata  = lambda wildcards: "data/{base_input}/metadata.tsv".format(
-            base_input=config["builds"][wildcards.build]["base_input"]
-          ),
-    clades          = rules.usher_stats.output.clades,
-    nextclade       = "results/{build}/nextclade/metadata.tsv",
-    sc2rf           = rules.sc2rf_recombinants.output.stats,
-    placement_stats = rules.usher_stats.output.placement_stats,
-    issue_to_lineage = rules.issues_download.output.issue_to_lineage,
-  output:
-    metadata        = "results/{build}/usher/usher.metadata.tsv",
-    decimal_date    = "results/{build}/usher/usher.metadata.decimal_date.tsv",
-  params:
-    extra_cols      = lambda wildcards: _params_usher_metadata(wildcards.build)["extra_cols"],
-    low_memory_mode = lambda wildcards: _params_usher_metadata(wildcards.build)["low_memory_mode"],
-  threads: 1
-  resources:
-    cpus = 1,
-  benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
-  shell:
-    """
-    bash scripts/usher_metadata.sh \
-      --base-metadata {input.base_metadata} \
-      --nextclade {input.nextclade} \
-      --sc2rf {input.sc2rf} \
-      --clades {input.clades} \
-      --placement-stats {input.placement_stats} \
-      --issue-to-lineage {input.issue_to_lineage} \
-      --output {output.metadata} \
-      {params.extra_cols} \
-      {params.low_memory_mode} \
-      > {log} 2>&1;
-
-    # Convert date col to decimal date
-    python3 scripts/date_to_decimal.py {output.metadata} {output.decimal_date} >> {log} 2>&1;
-    """
-
-# -----------------------------------------------------------------------------
-# The outdir param doesn't work correctly, hence the cd and relative paths
-
-rule_name = "usher_subtree"
-rule usher_subtree:
-  """
-  Create subtrees from UShER protobuf.
-  """
-
-  message: """Creating subtrees from UShER protobuf.\n
-  build:      {wildcards.build}
-  log:        {log}
-  subtrees:   {output.subtrees_dir}
-  """
-
-  input:
-    pb       = rules.usher.output.pb,
-    strains  = rules.usher_stats.output.strains,
-    metadata = rules.usher_metadata.output.decimal_date,
-  output:
-    subtrees_dir = directory("results/{build}/usher/subtrees"),
-  params:
-    k           = lambda wildcards: config["builds"][wildcards.build]["usher_subtree"]["k"],
-    base_input  = lambda wildcards: config["builds"][wildcards.build]["base_input"],
-  benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
-  shell:
-    """
-    mkdir -p {output.subtrees_dir}
-    cd {output.subtrees_dir}
-
-    matUtils extract \
-      -i ../../../../{input.pb} \
-      --nearest-k-batch ../../../../{input.strains}:{params.k} \
-      -M ../../../../{input.metadata} \
-      --threads {resources.cpus} \
-      > ../../../../{log} 2>&1;
-    """
-
-# -----------------------------------------------------------------------------
-rule_name = "usher_subtree_collapse"
-rule usher_subtree_collapse:
-  """
-  Collapse duplicate UShER subtrees.
-  """
-
-  message: """Collapse duplicate UShER subtrees.\n
-  build:      {wildcards.build}
-  log:        {log}
-  subtrees:   {output.collapse_dir}
-  metadata:   {output.metadata}
-  """
-
-  wildcard_constraints:
-    build = "|".join(BUILDS),
-
-  input:
-    subtrees_dir  = rules.usher_subtree.output.subtrees_dir,
-  output:
-    collapse_dir = directory("results/{build}/subtrees"),
-    metadata     = "results/{build}/subtrees/metadata.tsv",
-  threads: 1
-  resources:
-    cpus = 1,
-  benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
-  shell:
-    """
-    python3 scripts/usher_collapse.py --indir {input.subtrees_dir} --outdir {output.collapse_dir} --log {log};
-    """
-
-# -----------------------------------------------------------------------------#
-#  STAGE 4: Summarize and Report
-# -----------------------------------------------------------------------------#
-
-rule_name = "summary"
 rule summary:
   """Summarize results from pipeline tools."""
 
@@ -1036,7 +921,6 @@ rule summary:
     sc2rf            = rules.sc2rf_recombinants.output.stats,
     usher_clades     = rules.usher_stats.output.clades,
     usher_placements = rules.usher_stats.output.placement_stats,
-    subtrees         = rules.usher_subtree_collapse.output.metadata,
     usher_ver        = lambda wildcards: "data/{base_input}/version.txt".format(
                         base_input=config["builds"][wildcards.build]["base_input"]
                       ),
@@ -1044,7 +928,7 @@ rule summary:
   output:
     summary = "results/{build}/linelists/summary.tsv",
   params:
-    extra_cols         = lambda wildcards: _params_usher_metadata(wildcards.build)["extra_cols"],
+    extra_cols         = lambda wildcards: _params_summary(wildcards.build)["extra_cols"],
     nextclade_dataset  = lambda wildcards: config["builds"][wildcards.build]["nextclade_dataset"]["dataset"],
     nextclade_tag      = lambda wildcards: config["builds"][wildcards.build]["nextclade_dataset"]["tag"],
   threads: 1
@@ -1063,7 +947,6 @@ rule summary:
       --usher-clades {input.usher_clades} \
       --usher-placements {input.usher_placements} \
       --usher-dataset {input.usher_ver} \
-      --subtrees {input.subtrees} \
       --nextclade-dataset {params.nextclade_dataset}_{params.nextclade_tag} \
       {params.extra_cols} \
       > {log} 2>&1;
@@ -1115,7 +998,7 @@ rule linelist:
     parents         = "results/{build}/linelists/parents.tsv",
   params:
     outdir         = "results/{build}/linelists",
-    extra_cols     = lambda wildcards: _params_usher_metadata(wildcards.build)["extra_cols"],
+    extra_cols     = lambda wildcards: _params_summary(wildcards.build)["extra_cols"],
     geo            = lambda wildcards: _params_linelist(wildcards.build)["geo"],
     max_placements = lambda wildcards: _params_linelist(wildcards.build)["max_placements"],
   threads: 1
