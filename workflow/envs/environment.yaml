@@ -21,8 +21,6 @@ dependencies:
   - anaconda::click>=8.0.2
   - conda-forge::pandas=1.4.1
   - conda-forge::seaborn
-  - conda-forge::plotly
-  - conda-forge::python-kaleido
   # Report Generation
   - conda-forge:python-pptx
   - bioconda::epiweeks
