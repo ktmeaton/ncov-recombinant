@@ -156,7 +156,6 @@ def main(
 
     lineages = list(lineage_df.columns)
     lineages.remove("epiweek")
-    print(len(lineages), lineages)
 
     status_counts = {}
     status_df = plot_dict["status"]["df"]
@@ -483,15 +482,31 @@ def main(
             run.font.size = pptx.util.Pt(14)
 
     # ---------------------------------------------------------------------
-    # Breakpoints Summary
+    # Breakpoints Clade Summary
 
-    plot_path = plot_dict["breakpoints"]["plot_path"]
+    plot_path = plot_dict["breakpoints_clade"]["plot_path"]
 
     graph_slide_layout = presentation.slide_layouts[8]
     slide = presentation.slides.add_slide(graph_slide_layout)
     title = slide.shapes.title
 
-    title.text_frame.text = "Breakpoints"
+    title.text_frame.text = "Breakpoints (Clade)"
+    title.text_frame.paragraphs[0].font.bold = True
+
+    chart_placeholder = slide.placeholders[1]
+    chart_placeholder.insert_picture(plot_path)
+    body = slide.placeholders[2]
+
+    # ---------------------------------------------------------------------
+    # Breakpoints Lineage Summary
+
+    plot_path = plot_dict["breakpoints_lineage"]["plot_path"]
+
+    graph_slide_layout = presentation.slide_layouts[8]
+    slide = presentation.slides.add_slide(graph_slide_layout)
+    title = slide.shapes.title
+
+    title.text_frame.text = "Breakpoints (Lineage)"
     title.text_frame.paragraphs[0].font.bold = True
 
     chart_placeholder = slide.placeholders[1]
