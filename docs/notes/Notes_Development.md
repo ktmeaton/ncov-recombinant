@@ -14,3 +14,11 @@
 - Renamed `parents` column to `parents_clade`.
 - Added `parents_lineage` column.
 - Restrict `nextclade` output to `fasta,tsv` (alignment and QC table).
+
+## Params
+
+- Tested out `--enable-deletions` for `sc2rf` again, caused issues for `XD`, as the first breakpoint no longer contains a breakpoint motif.
+
+## Data
+
+- Add proposed771 (BA.5,BA.2) to positive controls.

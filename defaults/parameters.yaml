@@ -26,16 +26,6 @@ rule_params:
   - name: nextclade_recombinants
     exclude_clades:
         - "19" # From 2019
-        #- "20A" # Non-VoC From 2020
-        #- "20B"
-        #- "20C"
-        #- "20D"
-        #- "20E"
-        #- "20F"
-        #- "20G"
-        #- "Alpha"
-        #- "Beta"
-        #- "Gamma"
 
   # ---------------------------------------------------------------------------
   # exclude_negatives : true if sequences that are not recombinants (according to Nextclade) should be excluded from sc2rf analysis.
@@ -50,32 +40,47 @@ rule_params:
     exclude_negatives: false
     max_name_length: 50
     clades:
+      - "20A" # Non-VOC 2020
+      - "20B" # Non-VOC 2020
+      - "20C" # Non-VOC 2020
+      - "20D" # Non-VOC 2020
+      - "20E" # Non-VOC 2020
+      - "20F" # Non-VOC 2020
+      - "20G" # Non-VOC 2020
       - "20I" # Alpha
       - "20H" # Beta
       - "20J" # Gamma
       - "21I" # Delta
       - "21J" # Delta
+      - "21C" # Episilon
+      - "21D" # Eta
+      - "21E" # Theta
+      - "21B" # Kappa
+      - "21G" # Lambda
+      - "21H" # Mu
       - "21K" # Omicron BA.1
       - "21L" # Omicron BA.2
-      #- "21B" # Kappa
-      #- "21C" # Episilon
-      #- "21D" # Eta
-      #- "21G" # Lambda
-      #- "21H" # Mu
+      - "22A" # Omicron BA.4
+      - "22B" # Omicron BA.5
+      - "B.1.438.1" # proposed808
     mutation_threshold: 0.25
     # Note : If you want sc2rf to update its mutation database everytime, add --rebuild-examples to `sc2rf_args`.
-    sc2rf_args: "--ansi --parents 2-4 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
+    sc2rf_args: "--ansi --parents 2-100 --breakpoints 0-100 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
     debug_args: "--ansi --parents 1-10 --breakpoints 0-100 --unique 1 --max-ambiguous 1000 --max-intermission-length 1 --max-intermission-count 999 --enable-deletions"
 
   # ---------------------------------------------------------------------------
-  # min_len     : Ignore recombinants regions shorter than this
-  # max_parents : Exlude samples with greater than this number of parents
-  # max_parents : Exlude samples with greater than this number of breakpoints
-  # motifs      : (optional, experimental) Path to a breakpoints motif file
+  # lapis           : If true, query cov-spectrum using LAPIS to identify parental lineages
+  #                 : recommended false if number of sequences > 100.
+  # min_len         : (optional) Ignore recombinants regions shorter than this
+  # max_breakpoints : (optional) Exlude samples with greater than this number of parents
+  # max_parents     : (optional) Exlude samples with greater than this number of breakpoints
+  # motifs          : (optional, experimental) Path to a breakpoints motif file
+  # lapis
   - name: sc2rf_recombinants
+    lapis: true
     min_len: 1000
     max_parents: 2
-    max_breakpoints: 2
+    max_breakpoints:
     motifs:
 
   # ---------------------------------------------------------------------------

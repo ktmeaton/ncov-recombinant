@@ -473,14 +473,32 @@ def _params_sc2rf_recombinants(build):
   motifs = config["builds"][build]["sc2rf_recombinants"]["motifs"]
   if motifs: params["motifs"] = "--motifs {}".format(motifs)
   else: params["motifs"] = ""
+
+  min_len = config["builds"][build]["sc2rf_recombinants"]["min_len"]
+  if min_len: params["min_len"] = "--min-len {}".format(min_len)
+  else: params["min_len"] = ""
+
+  max_breakpoints = config["builds"][build]["sc2rf_recombinants"]["max_breakpoints"]
+  if max_breakpoints: params["max_breakpoints"] = "--max-breakpoints {}".format(max_breakpoints)
+  else: params["max_breakpoints"] = ""
+
+  max_parents = config["builds"][build]["sc2rf_recombinants"]["max_parents"]
+  if max_parents: params["max_parents"] = "--max-parents {}".format(max_parents)
+  else: params["max_parents"] = ""
+
+  lapis = config["builds"][build]["sc2rf_recombinants"]["lapis"]
+  nextclade_qc = "results/{build}/nextclade_no-recomb/qc.tsv".format(build=build)
+  if lapis: params["lapis"] = "--nextclade {}".format(nextclade_qc)
+  else: params["lapis"] = ""
+
   return params
 
 
 # Snakemake rule
 rule sc2rf_recombinants:
-  """Post process the sc2rf output to identify recombinants."""
+  """Postprocessing the sc2rf output to identify recombinants."""
 
-  message: """Post process the sc2rf output to identify recombinants.\n
+  message: """Postprocessing the sc2rf output to identify recombinants.\n
   build:       {wildcards.build}
   log:         {log}
   stats:       {output.stats}
@@ -502,10 +520,11 @@ rule sc2rf_recombinants:
   params:
     outdir          = "results/{build}/sc2rf",
     prefix          = "recombinants",
-    min_len         = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["min_len"],
-    max_parents     = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_parents"],
-    max_breakpoints = lambda wildcards: config["builds"][wildcards.build]["sc2rf_recombinants"]["max_breakpoints"],
+    min_len         = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["min_len"],
+    max_parents     = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_parents"],
+    max_breakpoints = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_breakpoints"],
     motifs          = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["motifs"],
+    lapis           = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["lapis"],
   threads: 1
   resources:
     cpus = 1,
@@ -519,15 +538,15 @@ rule sc2rf_recombinants:
       --csv {input.csv} \
       --ansi {input.ansi} \
       --prefix {params.prefix} \
-      --min-len {params.min_len} \
-      --max-parents {params.max_parents} \
-      --max-breakpoints {params.max_breakpoints} \
       --outdir {params.outdir} \
       --aligned {input.alignment} \
       --issues {input.issues} \
-      --nextclade {input.nextclade} \
       --log {log} \
       {params.motifs} \
+      {params.min_len} \
+      {params.max_parents} \
+      {params.max_breakpoints} \
+      {params.lapis} \
       >> {log} 2>&1;
 
     # Cleanup
