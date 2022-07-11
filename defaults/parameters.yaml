@@ -22,10 +22,33 @@ rule_params:
     tag_no-recomb: "2022-04-28T12:00:00Z"
 
   # ---------------------------------------------------------------------------
-  # exclude_clades    : Exclude strains that are recombinants of these clades
+  # exclude_clades    : (optional) Exclude strains that are recombinants of these clades
   - name: nextclade_recombinants
     exclude_clades:
-        - "19" # From 2019
+      #- "19" # From 2019
+      #- "20" # From 2020
+      #- "21" # From 2021
+      #- "22" # From 2022
+      #- "20A" # Non-VOC 2020
+      #- "20B" # Non-VOC 2020
+      #- "20C" # Non-VOC 2020
+      #- "20D" # Non-VOC 2020
+      #- "20E" # Non-VOC 2020
+      #- "20F" # Non-VOC 2020
+      #- "20G" # Non-VOC 2020
+      #- "20I" # Alpha
+      #- "20H" # Beta
+      #- "20J" # Gamma
+      #- "21I" # Delta
+      #- "21J" # Delta
+      #- "21C" # Episilon
+      #- "21D" # Eta
+      #- "21E" # Theta
+      #- "21B" # Kappa
+      #- "21G" # Lambda
+      #- "21H" # Mu
+      #- "21K" # Omicron BA.1
+      #- "21L" # Omicron BA.2
 
   # ---------------------------------------------------------------------------
   # exclude_negatives : true if sequences that are not recombinants (according to Nextclade) should be excluded from sc2rf analysis.
@@ -34,7 +57,6 @@ rule_params:
   # clades            : Restrict parent search to these clades
   # secondary_clades  : To detect recombination in BA.4 and BA.5, these clades must be run separately
   # sc2rf_args        : Additional arguments supplied to the program sc2rf
-  # debug_args        : Ultra-sensitive arguments for debugging
   # primers           : Path to primers, relative to sc2rf directory.
   # primers_name      : The name of the primer set to display in output.
   - name: sc2rf
@@ -62,6 +84,8 @@ rule_params:
       - "21K" # Omicron BA.1
       - "21L" # Omicron BA.2
       - "B.1.438.1" # proposed808
+      - "B.1.631" # XB parent 1
+      - "B.1.634" # XB parent 2
     secondary_clades:
       - "21K" # Omicron BA.1
       - "21L" # Omicron BA.1
@@ -83,7 +107,7 @@ rule_params:
     lapis: true
     min_len: 1000
     max_parents: 2
-    max_breakpoints:
+    max_breakpoints: 2
     motifs:
 
   # ---------------------------------------------------------------------------
@@ -125,5 +149,5 @@ rule_params:
   # template    : (Optional) path to a powerpoint template
   # Note: the rule `report` is also going to use the `geo` param of rule `linelist`, to summarize recombinants by geographic location
   - name: report
-    changelog: "CHANGELOG.md"
+    changelog:
     template: "resources/template.pptx"
