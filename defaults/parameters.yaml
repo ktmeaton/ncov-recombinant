@@ -25,28 +25,28 @@ rule_params:
   # exclude_clades    : (optional) Exclude strains that are recombinants of these clades
   - name: nextclade_recombinants
     exclude_clades:
-      #- "19" # From 2019
-      #- "20" # From 2020
-      #- "21" # From 2021
-      #- "22" # From 2022
-      #- "20A" # Non-VOC 2020
-      #- "20B" # Non-VOC 2020
-      #- "20C" # Non-VOC 2020
-      #- "20D" # Non-VOC 2020
-      #- "20E" # Non-VOC 2020
-      #- "20F" # Non-VOC 2020
-      #- "20G" # Non-VOC 2020
-      #- "20I" # Alpha
-      #- "20H" # Beta
-      #- "20J" # Gamma
+      - "19" # From 2019
+      - "20" # From 2020
+      - "21" # From 2021
+      - "22" # From 2022
+      - "20A" # Non-VOC 2020
+      - "20B" # Non-VOC 2020
+      - "20C" # Non-VOC 2020
+      - "20D" # Non-VOC 2020
+      - "20E" # Non-VOC 2020
+      - "20F" # Non-VOC 2020
+      - "20G" # Non-VOC 2020
+      - "20I" # Alpha
+      - "20H" # Beta
+      - "20J" # Gamma
       #- "21I" # Delta
       #- "21J" # Delta
-      #- "21C" # Episilon
-      #- "21D" # Eta
-      #- "21E" # Theta
-      #- "21B" # Kappa
-      #- "21G" # Lambda
-      #- "21H" # Mu
+      - "21C" # Episilon
+      - "21D" # Eta
+      - "21E" # Theta
+      - "21B" # Kappa
+      - "21G" # Lambda
+      - "21H" # Mu
       #- "21K" # Omicron BA.1
       #- "21L" # Omicron BA.2
 
@@ -63,24 +63,24 @@ rule_params:
     exclude_negatives: false
     max_name_length: 50
     clades:
-      - "20A" # Non-VOC 2020
-      - "20B" # Non-VOC 2020
-      - "20C" # Non-VOC 2020
-      - "20D" # Non-VOC 2020
-      - "20E" # Non-VOC 2020
-      - "20F" # Non-VOC 2020
-      - "20G" # Non-VOC 2020
-      - "20I" # Alpha
-      - "20H" # Beta
-      - "20J" # Gamma
+      #- "20A" # Non-VOC 2020
+      #- "20B" # Non-VOC 2020
+      #- "20C" # Non-VOC 2020
+      #- "20D" # Non-VOC 2020
+      #- "20E" # Non-VOC 2020
+      #- "20F" # Non-VOC 2020
+      #- "20G" # Non-VOC 2020
+      #- "20I" # Alpha
+      #- "20H" # Beta
+      #- "20J" # Gamma
       - "21I" # Delta
       - "21J" # Delta
-      - "21C" # Episilon
-      - "21D" # Eta
-      - "21E" # Theta
-      - "21B" # Kappa
-      - "21G" # Lambda
-      - "21H" # Mu
+      #- "21C" # Episilon
+      #- "21D" # Eta
+      #- "21E" # Theta
+      #- "21B" # Kappa
+      #- "21G" # Lambda
+      # "21H" # Mu
       - "21K" # Omicron BA.1
       - "21L" # Omicron BA.2
       - "B.1.438.1" # proposed808
