@@ -1113,10 +1113,10 @@ rule plot:
       > {log} 2>&1;
 
     # Plot breakpoints by clade
-    python3 scripts/plot_breakpoints.py --lineages {input.lineages} --outdir {params.outdir} --parent-col parents_clade --parent-type clade --cluster-col cluster_id;
+    python3 scripts/plot_breakpoints.py --lineages {input.lineages} --outdir {params.outdir} --parent-col parents_clade --parent-type clade --cluster-col cluster_id >> {log} 2>&1;
 
     # Plot breakpoints by lineage
-    python3 scripts/plot_breakpoints.py --lineages {input.lineages} --outdir {params.outdir} --parent-col parents_lineage --parent-type lineage --cluster-col cluster_id;
+    python3 scripts/plot_breakpoints.py --lineages {input.lineages} --outdir {params.outdir} --parent-col parents_lineage --parent-type lineage --cluster-col cluster_id >> {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------#
@@ -1132,6 +1132,7 @@ rule plot_historical:
 
   input:
     positives  = rules.linelist.output.positives,
+    lineages   = rules.linelist.output.lineages,
   output:
     plots      = directory("results/{build}/plots_historical"),
   params:
@@ -1155,6 +1156,12 @@ rule plot_historical:
       {params.geo} \
       {params.singletons} \
       > {log} 2>&1;
+
+    # Plot breakpoints by clade
+    python3 scripts/plot_breakpoints.py --lineages {input.lineages} --outdir {params.outdir} --parent-col parents_clade --parent-type clade --cluster-col cluster_id >> {log} 2>&1;
+
+    # Plot breakpoints by lineage
+    python3 scripts/plot_breakpoints.py --lineages {input.lineages} --outdir {params.outdir} --parent-col parents_lineage --parent-type lineage --cluster-col cluster_id >> {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------#
