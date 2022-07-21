@@ -5,6 +5,12 @@ channels:
   - anaconda
   - defaults
 dependencies:
+  # Python
+  - anaconda::python=3.9.10
+  - anaconda::pip=22.0.3
+  - anaconda::click>=8.0.2
+  - conda-forge::pandas=1.4.1
+  - conda-forge::seaborn
   # Workflow
   - bioconda::snakemake=7.3.6
   # Metadata and Sequence Manipulation
@@ -15,12 +21,6 @@ dependencies:
   # Usher
   - bioconda::usher=0.5.3
   - anaconda::protobuf=3.18.1
-  # Python
-  - anaconda::python=3.9.10
-  - anaconda::pip=22.0.3
-  - anaconda::click>=8.0.2
-  - conda-forge::pandas=1.4.1
-  - conda-forge::seaborn
   # Report Generation
   - conda-forge:python-pptx
   - bioconda::epiweeks
