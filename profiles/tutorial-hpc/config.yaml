@@ -32,7 +32,6 @@ default-resources:
 # What commands should be run to DISPATCH a job?
 cluster:
   mkdir -p logs/slurm/{rule} &&
-  source activate ncov-recombinant &&
   sbatch
     --cpus-per-task={resources.cpus}
     --mem={resources.mem_mb}

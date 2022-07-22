@@ -27,8 +27,8 @@ rule_params:
     exclude_clades:
       - "19" # From 2019
       - "20" # From 2020
-      - "21" # From 2021
-      - "22" # From 2022
+      #- "21" # From 2021
+      #- "22" # From 2022
       - "20A" # Non-VOC 2020
       - "20B" # Non-VOC 2020
       - "20C" # Non-VOC 2020
