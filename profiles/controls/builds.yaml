@@ -72,5 +72,5 @@ builds:
 
     plot:
       min_date: "2022-01-10"
-      max_date: "2022-04-25"
+      max_date: "2022-07-04"
       singletons: true

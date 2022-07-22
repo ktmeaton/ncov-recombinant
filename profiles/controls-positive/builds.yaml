@@ -71,5 +71,5 @@ builds:
 
     plot:
       weeks: 16
-      max_date: "2022-04-25"
+      max_date: "2022-07-04"
       singletons: true
