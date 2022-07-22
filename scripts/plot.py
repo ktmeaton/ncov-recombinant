@@ -431,6 +431,8 @@ def main(
             plot_df.at[one_week_prev, "dummy"] = 1
             plot_df.sort_values(by="epiweek", inplace=True)
 
+            plot_palette = categorical_palette(num_cat=1)
+
         plot_df.plot.bar(
             stacked=True,
             ax=ax,
