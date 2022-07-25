@@ -177,9 +177,6 @@ def main(
     # Colors
 
     # Pick paletted based on number of parents
-    if len(parents_colors) <= 10:
-        parents_palette = plt.cm.Set1.colors[i]
-
     parents_palette = categorical_palette(num_cat=len(parents_colors))
 
     i = 0
