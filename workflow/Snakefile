@@ -336,7 +336,7 @@ rule nextclade:
       --output-fasta {output.alignment} \
       --output-basename {params.basename} \
       {input.sequences} \
-      > {log} 2>&1;
+      >> {log} 2>&1;
 
     # Merge QC output with metadata
     csvtk rename -t -f "seqName" -n "strain" {output.qc} 2>> {log} \
@@ -378,8 +378,8 @@ rule nextclade_recombinants:
     non            = "results/{build}/nextclade/non-recombinants.qc.tsv",
   params:
     exclude_clades = lambda wildcards: _params_nextclade_recombinants(wildcards.build)["exclude_clades"],
-    fields         = "clade,Nextclade_pango,qc.overallStatus",
-    values         = ".*(recombinant|X|bad|mediocre).*",
+    fields         = "clade,Nextclade_pango,qc.overallStatus,privateNucMutations.labeledSubstitutions",
+    values         = ".*(recombinant|X|bad|mediocre|\|).*", # \| is a char for the labelSubstitutions column
   threads: 1
   resources:
     cpus = 1,
@@ -390,9 +390,9 @@ rule nextclade_recombinants:
   shell:
     """
     # Extract recombinant strains
-    csvtk grep -t -f "{params.fields}" -r -p "{params.values}" {input.qc} 2> {log} \
-      | csvtk grep -t -v -f "clade" -r -p "{params.exclude_clades}" 2>> {log} \
-      | csvtk grep -t -f "qc.mixedSites.status" -p "bad" -v \
+    csvtk grep -t -v -f "clade" -r -p "{params.exclude_clades}" {input.qc}  2> {log} \
+      | csvtk grep -t -f "qc.mixedSites.status" -p "bad" -v 2>> {log} \
+      | csvtk grep -t -f "{params.fields}" -r -p "{params.values}" 2>> {log} \
       | csvtk cut -t -f "seqName" 2>> {log} \
       | tail -n+2 \
       > {output.strains};
