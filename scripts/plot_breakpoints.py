@@ -8,8 +8,6 @@ import matplotlib.pyplot as plt
 from matplotlib import patches, colors, lines
 from functions import categorical_palette
 
-print(categorical_palette)
-
 NO_DATA_CHAR = "NA"
 # This is the aspect ratio/dpi for ppt embeds
 # The dimensions are set in the powerpoint template (resources/template.pttx)
@@ -166,12 +164,12 @@ def main(
             breakpoints_data["start"].append(start_coord)
             breakpoints_data["end"].append(end_coord)
 
-        # Convert the dictionary to a dataframe
-        breakpoints_df = pd.DataFrame(breakpoints_data)
-        breakpoints_dist_df = pd.DataFrame(breakpoints_dist_data)
+    # Convert the dictionary to a dataframe
+    breakpoints_df = pd.DataFrame(breakpoints_data)
+    breakpoints_dist_df = pd.DataFrame(breakpoints_dist_data)
 
-        # Sort by coordinates
-        breakpoints_df.sort_values(by=["parent", "start", "end"], inplace=True)
+    # Sort by coordinates
+    breakpoints_df.sort_values(by=["parent", "start", "end"], inplace=True)
 
     # -------------------------------------------------------------------------
     # Colors
@@ -208,7 +206,10 @@ def main(
             num_dist_plots += 1
 
     # I want the breakpoints subplot to be twice as big as the dist plots area
-    height_ratios = [1] * num_dist_plots + [num_dist_plots * 2]
+    if num_dist_plots > 0:
+        height_ratios = [1] * num_dist_plots + [num_dist_plots * 2]
+    else:
+        height_ratios = [1]
 
     if autoscale:
         figsize = [FIGSIZE[0], 1 * num_dist_plots]
@@ -282,8 +283,10 @@ def main(
 
     # -------------------------------------------------------------------------
     # Plot Breakpoint Regions
-
-    ax = axes[-1]
+    if num_dist_plots > 0:
+        ax = axes[-1]
+    else:
+        ax = axes
 
     rect_height = 1
     start_y = 0
@@ -357,7 +360,13 @@ def main(
     # -------------------------------------------------------------------------
     # Vertical lines every 5000 nuc
 
-    for ax in axes:
+    if type(axes) == list:
+        for ax in axes:
+            for coord in range(COORD_ITER, GENOME_LENGTH, COORD_ITER):
+                ax.axvline(
+                    x=coord, linestyle="--", linewidth=0.5, color="black", alpha=0.5
+                )
+    else:
         for coord in range(COORD_ITER, GENOME_LENGTH, COORD_ITER):
             ax.axvline(x=coord, linestyle="--", linewidth=0.5, color="black", alpha=0.5)
 
