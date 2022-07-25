@@ -53,17 +53,22 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# ncov-recombinant pipeline version
 git_commit_hash=$(git rev-parse HEAD)
 git_commit=${git_commit_hash:0:8}
 git_tag=$(git tag | tail -n1)
-#git_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-
-nextclade_ver=$(nextclade --version)
-usher_ver=$(usher --version | cut -d " " -f 2 | sed 's/(\|)\|v//g')
-
-
 ncov_recombinant_ver="${git_tag}:${git_commit}"
 
+# Nextclade version
+nextclade_ver=$(nextclade --version)
+
+# Usher version
+usher_ver=$(usher --version | cut -d " " -f 2 | sed 's/(\|)\|v//g')
+usher_dataset_name=$(basename $(dirname $usher_dataset))
+usher_dataset_ver=$(cut -d " " -f 8 $usher_dataset | sed 's/(\|)\|;//g')
+usher_dataset_ver="${usher_dataset_name}:${usher_dataset_ver}"
+
+# sc2rf version
 cd sc2rf
 git_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p' | sed 's/)//g' | rev | cut -d " " -f 1 | rev)
 git_commit_hash=$(git rev-parse HEAD)
@@ -73,12 +78,8 @@ sc2rf_muts_date=$(stat virus_properties.json | grep "Modify" | cut -d " " -f 2)
 sc2rf_muts_ver="virus_properties:${sc2rf_muts_date}"
 cd ..
 
-usher_dataset_name=$(basename $(dirname $usher_dataset))
-usher_dataset_ver=$(cut -d " " -f 8 $usher_dataset | sed 's/(\|)\|;//g')
-usher_dataset_ver="${usher_dataset_name}:${usher_dataset_ver}"
 
 sort_col="usher_pango_lineage"
-
 default_cols="strain,date,country"
 
 # Hack to fix commas if extra_cols is empty
