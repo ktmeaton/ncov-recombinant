@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from matplotlib import patches, colors, lines
+from matplotlib import patches, colors, lines, collections
 from functions import categorical_palette
 
 NO_DATA_CHAR = "NA"
@@ -58,11 +58,26 @@ plt.rcParams["svg.fonttype"] = "none"
     required=False,
     default="clade",
 )
-@click.option("--cluster-col", help="Column name of cluster ID", required=False)
+@click.option(
+    "--cluster-col", help="Column name of cluster ID (ex. cluster_id)", required=False
+)
+@click.option(
+    "--clusters", help="Restrict plotting to only these cluster IDs", required=False
+)
+@click.option(
+    "--figsize",
+    help="Figure dimensions as h,w in inches (ex. 6.75,5.33)",
+    default=",".join([str(d) for d in FIGSIZE]),
+)
 @click.option(
     "--autoscale",
-    help="Autoscale plot dimensions to the number of lineages",
+    help="Autoscale plot dimensions to the number of lineages (overrides --figsize)",
     is_flag=True,
+)
+@click.option(
+    "--positives",
+    help="Table of positive recombinants",
+    required=False,
 )
 def main(
     lineages,
@@ -70,8 +85,11 @@ def main(
     parent_col,
     breakpoint_col,
     cluster_col,
+    clusters,
     parent_type,
     autoscale,
+    figsize,
+    positives,
 ):
     """Plot recombinant lineage breakpoints"""
 
@@ -80,9 +98,21 @@ def main(
         os.mkdir(outdir)
 
     # -------------------------------------------------------------------------
-    # Import dataframe
+    # Import dataframes
     lineages_df = pd.read_csv(lineages, sep="\t")
     lineages_df.fillna(NO_DATA_CHAR, inplace=True)
+
+    # Filter dataframe on cluster IDs
+    if cluster_col and clusters:
+        clusters_list = clusters.split(",")
+        lineages_df = lineages_df[lineages_df[cluster_col].isin(clusters_list)]
+
+    if positives:
+        positives_df = pd.read_csv(positives, sep="\t")
+        positives_df.fillna(NO_DATA_CHAR, inplace=True)
+
+    # Figsize format back to list
+    figsize = [float(d) for d in figsize.split(",")]
 
     # -------------------------------------------------------------------------
 
@@ -212,9 +242,7 @@ def main(
         height_ratios = [1]
 
     if autoscale:
-        figsize = [FIGSIZE[0], 1 * num_dist_plots]
-    else:
-        figsize = FIGSIZE
+        figsize = [figsize[0], 1 * num_dist_plots]
 
     fig, axes = plt.subplots(
         num_dist_plots + 1,
@@ -308,6 +336,7 @@ def main(
 
         y_tick_locs.append(y + (rect_height / 2))
         lineage_label = lineage.split(" ")[0]
+        cluster_id_label = lineage.split(" ")[1]
         y_tick_labs_lineage.append(lineage_label)
 
         lineage_df = breakpoints_df[breakpoints_df["lineage"] == lineage]
@@ -329,6 +358,30 @@ def main(
                 facecolor=color,
             )
             ax.add_patch(region_rect)
+
+        # Iterate through substitutions to plot
+        positive_rec = positives_df[(positives_df["lineage"] == lineage_label)]
+        # If we're using a cluster id col, further filter on that
+        if cluster_col:
+            positive_rec = positive_rec[(positive_rec[cluster_col] == cluster_id_label)]
+
+        # Extract the substitutions, just taking the first as representative
+        cov_spectrum_subs = list(positive_rec["cov-spectrum_query"])[0]
+
+        if cov_spectrum_subs != NO_DATA_CHAR:
+            # Split into a list, and extract coordinates
+            coord_list = [int(s[1:-1]) for s in cov_spectrum_subs.split(",")]
+            subs_lines = []
+            # Create vertical bars for each sub
+            for coord in coord_list:
+                sub_line = [(coord, y), (coord, y + rect_height)]
+                subs_lines.append(sub_line)
+            # Combine all bars into a collection
+            collection_subs = collections.LineCollection(
+                subs_lines, color="black", linewidth=0.25
+            )
+            # Add the subs bars to the plot
+            ax.add_collection(collection_subs)
 
         # Jump to the next y coordinate
         y -= y_increment
@@ -358,19 +411,6 @@ def main(
     ax.set_xlabel("Genomic Coordinate")
 
     # -------------------------------------------------------------------------
-    # Vertical lines every 5000 nuc
-
-    if type(axes) == list:
-        for ax in axes:
-            for coord in range(COORD_ITER, GENOME_LENGTH, COORD_ITER):
-                ax.axvline(
-                    x=coord, linestyle="--", linewidth=0.5, color="black", alpha=0.5
-                )
-    else:
-        for coord in range(COORD_ITER, GENOME_LENGTH, COORD_ITER):
-            ax.axvline(x=coord, linestyle="--", linewidth=0.5, color="black", alpha=0.5)
-
-    # -------------------------------------------------------------------------
     # Manually create legend
 
     legend_handles = []
@@ -383,6 +423,18 @@ def main(
             legend_labels.append(parent.title())
         else:
             legend_labels.append(parent)
+
+    subs_handle = lines.Line2D(
+        [],
+        [],
+        color="black",
+        marker="|",
+        linestyle="None",
+        markersize=10,
+        markeredgewidth=1,
+    )
+    legend_handles.append(subs_handle)
+    legend_labels.append("Substitution")
 
     legend = ax.legend(
         handles=legend_handles,
