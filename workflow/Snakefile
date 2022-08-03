@@ -252,7 +252,7 @@ rule issues_download:
     """
     python3 scripts/download_issues.py --breakpoints {input.breakpoints} 1> {output.issues} 2> {log};
     csvtk cut -t -f "issue,lineage" {output.issues} | tail -n+2   1> {output.issue_to_lineage} 2>> {log};
-    python3 scripts/plot_breakpoints.py --lineages {input.breakpoints} --outdir {params.outdir} >> {log} 2>&1;
+    python3 scripts/plot_breakpoints.py --lineages {input.breakpoints} --outdir {params.outdir} --autoscale >> {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------#
@@ -1123,30 +1123,29 @@ rule plot:
       {params.singletons} \
       > {log} 2>&1;
 
+    # Extract the cluster IDs to be plotted
+    cluster_ids=$(csvtk headers -t {output.plots}/cluster_id.tsv | tail -n+2 | tr "\\n" "," | sed 's/,$/\\n/g')
+
     # Plot breakpoints by clade
     python3 scripts/plot_breakpoints.py \
       --lineages {input.lineages} \
+      --positives {input.positives} \
       --outdir {params.outdir} \
       --parent-col parents_clade \
       --parent-type clade \
       --cluster-col cluster_id \
-      {params.weeks} \
-      {params.min_date} \
-      {params.max_date} \
-      {params.singletons} \
+      --clusters "${{cluster_ids}}" \
       >> {log} 2>&1;
 
     # Plot breakpoints by lineage
     python3 scripts/plot_breakpoints.py \
       --lineages {input.lineages} \
+      --positives {input.positives} \
       --outdir {params.outdir} \
       --parent-col parents_lineage \
       --parent-type lineage \
       --cluster-col cluster_id \
-      {params.weeks} \
-      {params.min_date} \
-      {params.max_date} \
-      {params.singletons} \
+      --clusters "${{cluster_ids}}" \
       >> {log} 2>&1;
     """
 
@@ -1189,10 +1188,26 @@ rule plot_historical:
       > {log} 2>&1;
 
     # Plot breakpoints by clade
-    python3 scripts/plot_breakpoints.py --lineages {input.lineages} --outdir {params.outdir} --parent-col parents_clade --parent-type clade --cluster-col cluster_id >> {log} 2>&1;
+    python3 scripts/plot_breakpoints.py \
+      --lineages {input.lineages} \
+      --positives {input.positives} \
+      --outdir {params.outdir} \
+      --parent-col parents_clade \
+      --parent-type clade \
+      --cluster-col cluster_id \
+      --autoscale \
+      >> {log} 2>&1;
 
     # Plot breakpoints by lineage
-    python3 scripts/plot_breakpoints.py --lineages {input.lineages} --outdir {params.outdir} --parent-col parents_lineage --parent-type lineage --cluster-col cluster_id >> {log} 2>&1;
+    python3 scripts/plot_breakpoints.py \
+      --lineages {input.lineages} \
+      --positives {input.positives} \
+      --outdir {params.outdir} \
+      --parent-col parents_lineage \
+      --parent-type lineage \
+      --cluster-col cluster_id \
+      --autoscale \
+      >> {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------#
