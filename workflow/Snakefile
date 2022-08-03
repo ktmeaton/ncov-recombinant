@@ -94,6 +94,13 @@ BUILDS = list(config["builds"].keys())
 USHER_INPUTS = [input for input in config["inputs"] if "usher" in config["inputs"][input]["type"]]
 LOCAL_INPUTS = [input for input in config["inputs"] if "local" in config["inputs"][input]["type"]]
 
+# Check if any builds are controls for validation
+validation_df = pd.read_csv("defaults/validation.tsv", sep="\t")
+BUILDS_VALIDATE = []
+for build in BUILDS:
+  if build in list(validation_df["build"]):
+    BUILDS_VALIDATE.append(build)
+
 # -----------------------------------------------------------------------------#
 #  Default Target
 # -----------------------------------------------------------------------------#
@@ -126,6 +133,10 @@ rule all:
         expand("results/{build_name}/report_historical/report.pptx",
                   build_name=BUILDS,
                   ),
+       # Stage 5: Validation (optional)
+        expand("results/{build_name}/validate/validation.tsv",
+          build_name=BUILDS_VALIDATE,
+          ),
 
 # -----------------------------------------------------------------------------#
 #  Accessory Rules
@@ -1113,10 +1124,30 @@ rule plot:
       > {log} 2>&1;
 
     # Plot breakpoints by clade
-    python3 scripts/plot_breakpoints.py --lineages {input.lineages} --outdir {params.outdir} --parent-col parents_clade --parent-type clade --cluster-col cluster_id >> {log} 2>&1;
+    python3 scripts/plot_breakpoints.py \
+      --lineages {input.lineages} \
+      --outdir {params.outdir} \
+      --parent-col parents_clade \
+      --parent-type clade \
+      --cluster-col cluster_id \
+      {params.weeks} \
+      {params.min_date} \
+      {params.max_date} \
+      {params.singletons} \
+      >> {log} 2>&1;
 
     # Plot breakpoints by lineage
-    python3 scripts/plot_breakpoints.py --lineages {input.lineages} --outdir {params.outdir} --parent-col parents_lineage --parent-type lineage --cluster-col cluster_id >> {log} 2>&1;
+    python3 scripts/plot_breakpoints.py \
+      --lineages {input.lineages} \
+      --outdir {params.outdir} \
+      --parent-col parents_lineage \
+      --parent-type lineage \
+      --cluster-col cluster_id \
+      {params.weeks} \
+      {params.min_date} \
+      {params.max_date} \
+      {params.singletons} \
+      >> {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------#
@@ -1166,6 +1197,7 @@ rule plot_historical:
 
 # -----------------------------------------------------------------------------#
 # Report
+# -----------------------------------------------------------------------------#
 
 rule_name = "report"
 
@@ -1265,4 +1297,59 @@ rule report_historical:
     """
     # Create the powerpoint slides
     python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.changelog} {params.template} {params.singletons} > {log} 2>&1;
+    """
+
+# -----------------------------------------------------------------------------#
+# Validation
+# -----------------------------------------------------------------------------#
+
+rule_name = "validate"
+
+rule validate:
+  """Validate recombinants of controlled datasets."""
+
+  message: """Validating recombinants of controlled datasets.\n
+  build:   {wildcards.build}
+  log:     {log}
+  table:   {output.table}
+  """
+
+  input:
+    validation = "defaults/validation.tsv",
+    linelist   = "results/{build}/linelists/linelist.tsv",
+  output:
+    table      = "results/{build}/validate/validation.tsv",
+  params:
+    header     = "build\tpositives\texpected\tstatus"
+  threads: 1
+  resources:
+    cpus = 1,
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    # Compare the expected number of positives
+    num_positives=$(csvtk grep -t -f "status" -r -p "(designated|proposed)"  {input.linelist} | tail -n+2 | wc -l)
+    num_expected=$(csvtk grep -t -f "build" -p "controls" defaults/validation.tsv | csvtk cut -t -f "positives" | tail -n+2)
+
+    if [[ $num_positives -eq $num_expected ]]; then
+      build_status="PASS"
+    else
+      build_status="FAIL"
+    fi
+
+    # Create the output file
+    echo "{params.header}" > {output.table};
+    echo "{wildcards.build}\t${{num_positives}}\t${{num_expected}}\t${{build_status}}" >> {output.table}
+
+    # Throw a pipeline error if it failed
+    if [[ $build_status == "FAIL" ]]; then
+      echo "Build failed validation: {wildcards.build}"
+      echo
+      csvtk csv2md -t {output.table}
+      echo
+      exit 1
+    fi
     """
