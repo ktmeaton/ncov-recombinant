@@ -1330,12 +1330,13 @@ rule validate:
   """
 
   input:
-    validation = "defaults/validation.tsv",
-    linelist   = "results/{build}/linelists/linelist.tsv",
+    validation      = "defaults/validation.tsv",
+    linelist        = "results/{build}/linelists/linelist.tsv",
   output:
-    table      = "results/{build}/validate/validation.tsv",
+    table           = "results/{build}/validate/validation.tsv",
   params:
-    header     = "build\tpositives\texpected\tstatus"
+    header          = "build\tpositives\texpected\tstatus",
+    positive_status = "(designated|proposed|unpublished)",
   threads: 1
   resources:
     cpus = 1,
@@ -1346,7 +1347,7 @@ rule validate:
   shell:
     """
     # Compare the expected number of positives
-    num_positives=$(csvtk grep -t -f "status" -r -p "(designated|proposed)"  {input.linelist} | tail -n+2 | wc -l)
+    num_positives=$(csvtk grep -t -f "status" -r -p "{params.positive_status}"  {input.linelist} | tail -n+2 | wc -l)
     num_expected=$(csvtk grep -t -f "build" -p "{wildcards.build}" defaults/validation.tsv | csvtk cut -t -f "positives" | tail -n+2)
 
     if [[ $num_positives -eq $num_expected ]]; then
