@@ -21,11 +21,6 @@ EPIWEEK_MAX_BUFF_FACTOR = 1.1
 DPI = 96 * 2
 FIGSIZE = [6.75, 5.33]
 
-# Breakpoint Plotting
-GENOME_LENGTH = 29903
-X_BUFF = 1000
-BREAKPOINT_COLOR = "lightgrey"
-UNKNOWN_COLOR = "dimgrey"
 
 # Select and rename columns from linelist
 LINEAGES_COLS = [
@@ -157,7 +152,6 @@ def main(
     if not singletons:
         df.drop(labels=drop_singleton_ids, axis="rows", inplace=True)
 
-    # Make NA parents_clade "Unknown"
     df["parents_clade"] = df["parents_clade"].fillna("Unknown")
     df["parents_lineage"] = df["parents_lineage"].fillna("Unknown")
 
