@@ -82,7 +82,7 @@ jobs:
 
   #----------------------------------------------------------------------------
   tutorial_hpc:
-    name: tututorial-hpc
+    name: tutorial-hpc
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -142,7 +142,7 @@ jobs:
 
   #----------------------------------------------------------------------------
   tutorial_controls:
-    name: tututorial-controls
+    name: tutorial-controls
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -202,7 +202,7 @@ jobs:
 
 #----------------------------------------------------------------------------
   tutorial_controls_hpc:
-    name: tututorial-controls-hpc
+    name: tutorial-controls-hpc
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
