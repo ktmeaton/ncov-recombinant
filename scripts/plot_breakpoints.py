@@ -138,6 +138,7 @@ def main(
     # -------------------------------------------------------------------------
     # Create a dataframe to hold plot data
 
+    # Iterate through lineages
     for rec in lineages_df.iterrows():
         lineage = rec[1]["lineage"]
 
@@ -153,6 +154,7 @@ def main(
 
         prev_start_coord = 0
 
+        # Iterate through the parents
         for i in range(0, len(parents_split)):
             parent = parents_split[i]
             if parent not in parents_colors:
@@ -160,6 +162,10 @@ def main(
 
             if i < (len(parents_split) - 1):
                 breakpoint = breakpoints_split[i]
+                # Check that we actually found a breakpoint
+                if ":" not in breakpoint:
+                    continue
+
                 breakpoint_start_coord = int(breakpoint.split(":")[0])
                 breakpoint_end_coord = int(breakpoint.split(":")[1])
                 breakpoint_mean_coord = round(
@@ -336,7 +342,8 @@ def main(
 
         y_tick_locs.append(y + (rect_height / 2))
         lineage_label = lineage.split(" ")[0]
-        cluster_id_label = lineage.split(" ")[1]
+        if cluster_col:
+            cluster_id_label = lineage.split(" ")[1]
         y_tick_labs_lineage.append(lineage_label)
 
         lineage_df = breakpoints_df[breakpoints_df["lineage"] == lineage]
@@ -360,28 +367,31 @@ def main(
             ax.add_patch(region_rect)
 
         # Iterate through substitutions to plot
-        positive_rec = positives_df[(positives_df["lineage"] == lineage_label)]
-        # If we're using a cluster id col, further filter on that
-        if cluster_col:
-            positive_rec = positive_rec[(positive_rec[cluster_col] == cluster_id_label)]
+        if positives:
+            positive_rec = positives_df[(positives_df["lineage"] == lineage_label)]
+            # If we're using a cluster id col, further filter on that
+            if cluster_col:
+                positive_rec = positive_rec[
+                    (positive_rec[cluster_col] == cluster_id_label)
+                ]
 
-        # Extract the substitutions, just taking the first as representative
-        cov_spectrum_subs = list(positive_rec["cov-spectrum_query"])[0]
+            # Extract the substitutions, just taking the first as representative
+            cov_spectrum_subs = list(positive_rec["cov-spectrum_query"])[0]
 
-        if cov_spectrum_subs != NO_DATA_CHAR:
-            # Split into a list, and extract coordinates
-            coord_list = [int(s[1:-1]) for s in cov_spectrum_subs.split(",")]
-            subs_lines = []
-            # Create vertical bars for each sub
-            for coord in coord_list:
-                sub_line = [(coord, y), (coord, y + rect_height)]
-                subs_lines.append(sub_line)
-            # Combine all bars into a collection
-            collection_subs = collections.LineCollection(
-                subs_lines, color="black", linewidth=0.25
-            )
-            # Add the subs bars to the plot
-            ax.add_collection(collection_subs)
+            if cov_spectrum_subs != NO_DATA_CHAR:
+                # Split into a list, and extract coordinates
+                coord_list = [int(s[1:-1]) for s in cov_spectrum_subs.split(",")]
+                subs_lines = []
+                # Create vertical bars for each sub
+                for coord in coord_list:
+                    sub_line = [(coord, y), (coord, y + rect_height)]
+                    subs_lines.append(sub_line)
+                # Combine all bars into a collection
+                collection_subs = collections.LineCollection(
+                    subs_lines, color="black", linewidth=0.25
+                )
+                # Add the subs bars to the plot
+                ax.add_collection(collection_subs)
 
         # Jump to the next y coordinate
         y -= y_increment
