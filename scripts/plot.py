@@ -210,6 +210,7 @@ def main(
             "legend_title": "Parents (Lineage)",
             "cols": ["parents_lineage"],
         },
+        "cluster_id": {"legend_title": "Cluster ID", "cols": ["cluster_id"]},
     }
 
     for plot in plot_dict:
