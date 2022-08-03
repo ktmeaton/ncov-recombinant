@@ -121,17 +121,11 @@ Powerpoint/google slides with plots embedded for presenting.
 
 Visualization of breakpoints by lineage.
 
-![breakpoints_output](images/breakpoints_output.png)
+![breakpoints_output](images/breakpoints_clade.png)
 
 Visualization of breakpoints by parent from [sc2rf](https://github.com/lenaschimmel/sc2rf).
 
 ![sc2rf_output](images/sc2rf_output.png)
-
-### Phylogenetic Context
-
-Placement of samples on the latest global phylogeny using [UShER](https://github.com/yatisht/usher).
-
-![usher_output](images/usher_output.png)
 
 ## Controls
 
