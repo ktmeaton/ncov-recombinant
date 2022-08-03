@@ -461,8 +461,10 @@ def main(
     # Export
 
     # plt.suptitle("Recombination Breakpoints by Lineage")
-    plt.tight_layout()
-    plt.subplots_adjust(hspace=0)
+    if num_dist_plots > 0:
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0)
+
     outpath = os.path.join(outdir, "breakpoints_{}".format(parent_type))
     breakpoints_df.to_csv(outpath + ".tsv", sep="\t", index=False)
     plt.savefig(outpath + ".png")
