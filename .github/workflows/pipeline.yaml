@@ -11,6 +11,7 @@ on:
       - 'docs/**'
       - 'ncov/**'
       - 'sc2rf/**'
+      - 'images/**'
   pull_request:
     branches:
       - '*'
