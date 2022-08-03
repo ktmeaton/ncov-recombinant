@@ -157,6 +157,10 @@ def main(
         # Iterate through the parents
         for i in range(0, len(parents_split)):
             parent = parents_split[i]
+
+            # Convert NA parents to Unknown
+            if parent == NO_DATA_CHAR:
+                parent = "Unknown"
             if parent not in parents_colors:
                 parents_colors[parent] = ""
 
@@ -217,7 +221,7 @@ def main(
 
     for parent in parents_colors:
         if parent == "Unknown":
-            parents_colors["Unknown"] = UNKNOWN_COLOR
+            # We'll sort this out after, so it will be at the end
             continue
 
         color_rgb = parents_palette[i]
@@ -225,6 +229,10 @@ def main(
         parents_colors[parent] = color
         i += 1
 
+    # Reorder unknown parents to the end
+    if "Unknown" in parents_colors:
+        del parents_colors["Unknown"]
+        parents_colors["Unknown"] = UNKNOWN_COLOR
     parents_colors["breakpoint"] = BREAKPOINT_COLOR
 
     # -------------------------------------------------------------------------
@@ -247,7 +255,7 @@ def main(
     else:
         height_ratios = [1]
 
-    if autoscale:
+    if autoscale and num_dist_plots > 0:
         figsize = [figsize[0], 1 * num_dist_plots]
 
     fig, axes = plt.subplots(
