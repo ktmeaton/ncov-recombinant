@@ -10,7 +10,7 @@ configfile:
 # Snakemake config
 #------------------------------------------------------------------------------#
 
-restart-times: 1
+restart-times: 0
 max-jobs-per-second: 1
 latency-wait: 10
 keep-going: True
