@@ -61,14 +61,6 @@ builds:
   - name: tutorial
     base_input: public-latest
 
-    # There are no negatives, this is for testing
-    sc2rf:
-      exclude_negatives: false
-
-    # There are no false positives, this is for testing
-    faToVcf:
-      exclude_false_positives: true
-
     # Universal rule parameters can (optionally) be overridden for a specific build.
     summary:
       extra_cols:
