@@ -51,9 +51,6 @@ CLADES_RENAME = {
     "--geo", help="Geography column to summarize", required=False, default="country"
 )
 @click.option(
-    "--changelog", help="Markdown changelog", required=False, default="CHANGELOG.md"
-)
-@click.option(
     "--singletons",
     help="Whether singletons were included in plots",
     is_flag=True,
@@ -68,7 +65,6 @@ def main(
     plot_dir,
     template,
     geo,
-    changelog,
     output,
     singletons,
 ):
@@ -113,28 +109,6 @@ def main(
             plot_dict["largest"]["cluster_id"] = largest_cluster_id
 
             del plot_dict[label]
-
-    # Import changelog (just the first header 2 section)
-    with open(changelog) as infile:
-        changelog_lines = infile.read().split("\n")
-        changelog_date = ""
-        changelog_content = []
-        in_header_two = False
-
-        for line in changelog_lines:
-
-            # Stop at the second one
-            if line.startswith("## ") and in_header_two:
-                break
-            elif in_header_two:
-                if line.startswith("#"):
-                    continue
-                if not line:
-                    continue
-                changelog_content.append(line.replace("1. ", ""))
-            elif line.startswith("## ") and not in_header_two:
-                in_header_two = True
-                changelog_date = line.replace("## ", "")
 
     # ---------------------------------------------------------------------
     # Presentation
@@ -512,21 +486,6 @@ def main(
     chart_placeholder = slide.placeholders[1]
     chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
-
-    # ---------------------------------------------------------------------
-    # Changelog
-    text_slide_layout = presentation.slide_layouts[1]
-    slide = presentation.slides.add_slide(text_slide_layout)
-    title = slide.shapes.title
-
-    title.text_frame.text = "Changelog ({})".format(changelog_date)
-    title.text_frame.paragraphs[0].font.bold = True
-
-    body = slide.placeholders[1]
-    body.text_frame.text = "\n".join(changelog_content)
-
-    for paragraph in body.text_frame.paragraphs:
-        paragraph.font.size = pptx.util.Pt(18)
 
     # ---------------------------------------------------------------------
     # Saving file

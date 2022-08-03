@@ -145,9 +145,7 @@ rule_params:
     singletons: true
 
   # ---------------------------------------------------------------------------
-  # changelog   : (Optional) path to a CHANGELOG.md to append to the report
   # template    : (Optional) path to a powerpoint template
   # Note: the rule `report` is also going to use the `geo` param of rule `linelist`, to summarize recombinants by geographic location
   - name: report
-    changelog:
     template: "resources/template.pptx"

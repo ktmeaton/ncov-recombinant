@@ -1225,10 +1225,6 @@ def _params_report(build):
   if geo: params["geo"] = "--geo {}".format(geo)
   else: params["geo"] = ""
 
-  changelog = config["builds"][build]["report"]["changelog"]
-  if changelog: params["changelog"] = "--changelog {}".format(changelog)
-  else: params["changelog"] = ""
-
   template = config["builds"][build]["report"]["template"]
   if template: params["template"] = "--template {}".format(template)
   else: params["template"] = ""
@@ -1262,7 +1258,6 @@ rule report:
     xlsx            = "results/{build}/report/report.xlsx",
   params:
     geo       = lambda wildcards: _params_report(wildcards.build)["geo"],
-    changelog = lambda wildcards: _params_report(wildcards.build)["changelog"],
     template  = lambda wildcards: _params_report(wildcards.build)["template"],
     singletons = lambda wildcards: _params_plot(wildcards.build)["singletons"],
 
@@ -1279,7 +1274,7 @@ rule report:
     csvtk csv2xlsx -t -o {output.xlsx} {input.tables} > {log} 2>&1;
 
     # Create the powerpoint slides
-    python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.changelog} {params.template} {params.singletons} >> {log} 2>&1;
+    python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.template} {params.singletons} >> {log} 2>&1;
     """
 
 rule report_historical:
@@ -1297,7 +1292,6 @@ rule report_historical:
     pptx            = "results/{build}/report_historical/report.pptx",
   params:
     geo       = lambda wildcards: _params_report(wildcards.build)["geo"],
-    changelog = lambda wildcards: _params_report(wildcards.build)["changelog"],
     template  = lambda wildcards: _params_report(wildcards.build)["template"],
     singletons = lambda wildcards: _params_plot(wildcards.build)["singletons"],
 
@@ -1311,7 +1305,7 @@ rule report_historical:
   shell:
     """
     # Create the powerpoint slides
-    python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.changelog} {params.template} {params.singletons} > {log} 2>&1;
+    python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.template} {params.singletons} > {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------#
