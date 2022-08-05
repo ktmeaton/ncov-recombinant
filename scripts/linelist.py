@@ -304,8 +304,11 @@ def main(
         if status == "negative":
             linelist_df.at[rec[0], "recombinant_lineage_curated"] = "negative"
 
+        elif status == "false_positive":
+            linelist_df.at[rec[0], "recombinant_lineage_curated"] = "false_positive"
+
         # If designated, override with actual lineage
-        if status == "designated":
+        elif status == "designated":
             linelist_df.at[rec[0], "recombinant_lineage_curated"] = lineage
 
         # If proposed and the lineage is actually proposed*, override
