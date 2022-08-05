@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import epiweeks
 import matplotlib.pyplot as plt
-from matplotlib import patches
+from matplotlib import patches, colors
 from datetime import datetime, timedelta
 import sys
 import copy
@@ -21,6 +21,8 @@ EPIWEEK_MAX_BUFF_FACTOR = 1.1
 DPI = 96 * 2
 FIGSIZE = [6.75, 5.33]
 
+UNKNOWN_COLOR = "dimgrey"
+UNKNOWN_RGB = colors.to_rgb(UNKNOWN_COLOR)
 
 # Select and rename columns from linelist
 LINEAGES_COLS = [
@@ -195,9 +197,21 @@ def main(
         },
         "designated": {
             "legend_title": "lineage",
-            "cols": ["lineage"],
+            "cols": ["recombinant_lineage_curated", "cluster_id"],
             "filter": "status",
             "value": "Designated",
+        },
+        "proposed": {
+            "legend_title": "lineage",
+            "cols": ["recombinant_lineage_curated", "cluster_id"],
+            "filter": "status",
+            "value": "Proposed",
+        },
+        "unpublished": {
+            "legend_title": "lineage",
+            "cols": ["recombinant_lineage_curated", "cluster_id"],
+            "filter": "status",
+            "value": "Unpublished",
         },
         "parents_clade": {"legend_title": "Parents (Clade)", "cols": ["parents_clade"]},
         "parents_lineage": {
@@ -234,7 +248,12 @@ def main(
             )
 
         # Lineage df needs special changes
-        if plot == "lineage":
+        if (
+            plot == "lineage"
+            or plot == "designated"
+            or plot == "proposed"
+            or plot == "unpublished"
+        ):
             lineage_seen = []
             # What are the duplicate lineages?
             lineages = [col[0] for col in plot_df.columns]
@@ -347,6 +366,11 @@ def main(
             legend_ncol = 2
 
         plot_palette = categorical_palette(num_cat=num_cat)
+
+        # Recolor unknown
+        if "Unknown" in plot_df.columns:
+            unknown_i = list(plot_df.columns).index("Unknown")
+            plot_palette[unknown_i] = list(UNKNOWN_RGB)
 
         # Setup up Figure
         fig, ax = plt.subplots(1, figsize=FIGSIZE, dpi=DPI)
