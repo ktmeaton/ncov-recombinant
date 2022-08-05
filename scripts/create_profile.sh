@@ -69,13 +69,11 @@ fi
 NUM_REQUIRED_COLS=3
 REQUIRED_COLS="strain|date|country"
 FIRST_COL="strain"
-DEFAULT_INPUTS="defaults/inputs.yaml"
 DEFAULT_PARAMS="defaults/parameters.yaml"
 DEFAULT_BUILDS="defaults/builds.yaml"
 EXCLUDE_CONTROLS_BUILDS="defaults/builds-exclude-controls.yaml"
 DEFAULT_CONFIG="profiles/controls/config.yaml"
 DEFAULT_CONFIG_HPC="profiles/controls-hpc/config.yaml"
-DEFAULT_BASE_INPUT="public-latest"
 
 profile_dir=${profile_dir:-my_profiles}
 
@@ -169,31 +167,12 @@ mkdir -p $profile_dir/$profile
 # Create builds.yaml
 echo -e "$(date "+%Y-%m-%d %T")\tCreating build file ($profile_dir/$profile/builds.yaml)"
 
-# Add default inputs to builds.yaml
-echo -e "$(date "+%Y-%m-%d %T")\tAdding default input data ($DEFAULT_INPUTS)"
-cat $DEFAULT_INPUTS > $profile_dir/$profile/builds.yaml
-
-# Add custom inputs to builds.yaml
-echo -e "$(date "+%Y-%m-%d %T")\tAdding $(basename $data) input data ($data)"
-echo -e "\n
-  # custom data: $(basename $data)
-  - name: $(basename $data)
-    type:
-      - local
-    metadata: $data/metadata.tsv
-    sequences: $data/sequences.fasta
-" >> $profile_dir/$profile/builds.yaml
-
-# Add default rule parameters
-echo -e "$(date "+%Y-%m-%d %T")\tAdding default rule parameters ($data)"
-cat $DEFAULT_PARAMS >> $profile_dir/$profile/builds.yaml
-
 # Add controls build, unless excluded
 if [[ $controls == "true" ]]; then
   echo -e "$(date "+%Y-%m-%d %T")\tAdding \`controls\` as a build"
-  cat $DEFAULT_BUILDS >> $profile_dir/$profile/builds.yaml
+  cat $DEFAULT_BUILDS > $profile_dir/$profile/builds.yaml
 else
-  cat $EXCLUDE_CONTROLS_BUILDS >> $profile_dir/$profile/builds.yaml
+  cat $EXCLUDE_CONTROLS_BUILDS > $profile_dir/$profile/builds.yaml
 fi
 
 #Add custom build
@@ -203,7 +182,8 @@ echo -e "\n
   # ---------------------------------------------------------------------------
   # $(basename $data) build\n
   - name: $(basename $data)
-    base_input: $DEFAULT_BASE_INPUT
+    metadata: $data/metadata.tsv
+    sequences: $data/sequences.fasta
 " >> $profile_dir/$profile/builds.yaml
 
 # -----------------------------------------------------------------------------

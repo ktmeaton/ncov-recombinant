@@ -11,27 +11,25 @@ import numpy as np
 NO_DATA_CHAR = "NA"
 
 PIPELINE = "ncov-recombinant"
-CLASSIFIER = "UShER"
 
 # Select and rename columns from summary
 LINELIST_COLS = {
     "strain": "strain",
-    "usher_pango_lineage_map": "lineage_usher",
     "sc2rf_lineage": "lineage_sc2rf",
     "sc2rf_status": "status_sc2rf",
     "Nextclade_pango": "lineage_nextclade",
+    "Nextclade_clade": "clade_nextclade",
     "sc2rf_parents": "parents_clade",
     "cov-spectrum_parents": "parents_lineage",
     "cov-spectrum_parents_confidence": "parents_lineage_confidence",
     "cov-spectrum_parents_subs": "parents_subs",
     "sc2rf_breakpoints": "breakpoints",
-    "usher_num_best": "placements",
     "sc2rf_regions": "regions",
     "date": "date",
     "country": "country",
-    "ncov-recombinant_version": "recombinant_pipeline",
-    "usher_version": "recombinant_classifier",
-    "usher_dataset": "recombinant_classifier_dataset",
+    "ncov-recombinant_version": "ncov-recombinant_version",
+    "nextclade_version": "nextclade_version",
+    "sc2rf_version": "sc2rf_version",
 }
 
 
@@ -49,12 +47,6 @@ LINELIST_COLS = {
     required=False,
 )
 @click.option(
-    "--max-placements",
-    help="Maximum number of UShER placements before labeling false_positive",
-    required=False,
-    default=-1,
-)
-@click.option(
     "--outdir",
     help="Output directory for linelists",
     required=True,
@@ -63,7 +55,6 @@ def main(
     input,
     issues,
     extra_cols,
-    max_placements,
     outdir,
 ):
     """Create a linelist and recombinant report"""
@@ -100,28 +91,32 @@ def main(
 
     # -------------------------------------------------------------------------
     # Lineage Status
-    # Use lineage calls by UShER and sc2rf to classify recombinants status
+    # Use lineage calls by sc2rf and nextclade to classify recombinants status
 
     # Initialize columns
     linelist_df.insert(1, "status", [NO_DATA_CHAR] * len(linelist_df))
+    linelist_df.insert(2, "lineage", [NO_DATA_CHAR] * len(linelist_df))
     linelist_df.insert(3, "issue", [NO_DATA_CHAR] * len(linelist_df))
     linelist_df["cov-spectrum_query"] = [NO_DATA_CHAR] * len(linelist_df)
 
     for rec in linelist_df.iterrows():
-        strain = rec[0]
-        lineage = NO_DATA_CHAR
+        strain = rec[1]["strain"]
         issue = NO_DATA_CHAR
         is_recombinant = False
+        lineage = NO_DATA_CHAR
+
+        # Nextclade can only have one lineage assignment, typically this
+        # will be the "majority" parent
+        lineage_nextclade = rec[1]["lineage_nextclade"]
+        clade_nextclade = rec[1]["clade_nextclade"]
 
         # sc2rf can have multiple lineages, because different lineages
         # can have the same breakpoint
         lineages_sc2rf = rec[1]["lineage_sc2rf"].split(",")
         status_sc2rf = rec[1]["status_sc2rf"]
         breakpoints = rec[1]["breakpoints"]
-        lineage_usher = rec[1]["lineage_usher"]
-        usher_placements = rec[1]["placements"]
 
-        # Check if sc2rf or UShER thinks its a recombinant
+        # Check if sc2rf thinks its a recombinant
         if (
             breakpoints != NO_DATA_CHAR
             and status_sc2rf[0] != "false_positive"
@@ -129,36 +124,23 @@ def main(
         ):
             is_recombinant = True
 
-        if (
-            lineage_usher.startswith("X")
-            or lineage_usher.startswith("proposed")
-            or lineage_usher.startswith("misc")
-        ):
-            is_recombinant = True
+        # Option 1. sc2rf couldn't find a definitive lineage
+        if len(lineages_sc2rf) > 1 or lineages_sc2rf[0] == NO_DATA_CHAR:
+            lineage = lineage_nextclade
 
-        # Use UShER as the definitive lineage caller
-        lineage = lineage_usher
+        # Option 2. sc2rf found a definitive match
+        else:
+            lineage = lineages_sc2rf[0]
 
         # Try to get find a related pango-designation by lineage name
-        # This will work for designated (X*) or proposed UShER lineages
+        # This will work for designated (X*) lineages
         if lineage in list(issues_df["lineage"]):
             match = issues_df[issues_df["lineage"] == lineage]
             issue = match["issue"].values[0]
-
-            # if there are no breakpoints, this was a nextclade recombinant
-            # that auto-passed sc2rf. Use breakpoints in issues table
-            if breakpoints == NO_DATA_CHAR:
-                breakpoints = match["breakpoints_curated"].values[0]
-                linelist_df.at[rec[0], "breakpoints"] = breakpoints
-                parents_clade = match["parents_curated"].values[0]
-                linelist_df.at[rec[0], "parents_clade"] = parents_clade
-
-                # TBD: regions if desired
-
             linelist_df.at[rec[0], "issue"] = str(issue)
 
         # Alternatively, try to find related pango-designation issues by breakpoint
-        # Multiple matches are possible here
+        # This will work for proposed* lineages.
         else:
             issues = []
             for lin in lineages_sc2rf:
@@ -171,36 +153,32 @@ def main(
                 issue = ",".join(issues)
 
         # Add status
-        status = "unpublished"
 
-        # Positive recombinants
         if lineage.startswith("X"):
             status = "designated"
-
         elif lineage.startswith("proposed") or issue != NO_DATA_CHAR:
             status = "proposed"
+        else:
+            status = "unpublished"
 
-        # Negatives recombinants
-        if not is_recombinant and status_sc2rf == "negative":
+        # false positive recombinants
+        if clade_nextclade == "recombinant" and status_sc2rf == "negative":
+            status = "false_positive"
+        elif not is_recombinant:
             status = "negative"
 
-        # False Positives recombinants
-        elif max_placements != -1 and usher_placements > max_placements:
-            status = "false_positive"
-
-        elif not is_recombinant:
-            status = "false_positive"
-
+        # Update the database values
+        linelist_df.at[rec[0], "lineage"] = lineage
         linelist_df.at[rec[0], "status"] = str(status)
         linelist_df.at[rec[0], "issue"] = str(issue)
 
     # -------------------------------------------------------------------------
     # Lineage Grouping
-    # Group sequences into lineages that share
-    #   - Lineage (UShER)
-    #   - Parent clades (sc2rf)
-    #   - Parent lineages (sc2rf, lapis cov-spectrum)
-    #   - Breakpoints (sc2rf)
+    # Group sequences into lineages that have a unique combination of
+    #   1. Lineage
+    #   2. Parent clades (sc2rf)
+    #   3. Parent lineages (sc2rf, lapis cov-spectrum)
+    #   4. Breakpoints (sc2rf)
 
     # Create a dictionary of recombinant lineages seen
     rec_seen = {}
@@ -208,12 +186,19 @@ def main(
 
     for rec in linelist_df.iterrows():
         strain = rec[1]["strain"]
-        lineage = rec[1]["lineage_usher"]
-        # Parents by clade (ex. 21K,21L)
+
+        # 1. Lineage assignment (nextclade or sc2rf)
+        lineage = rec[1]["lineage"]
+
+        # 2. Parents by clade (ex. 21K,21L)
         parents_clade = rec[1]["parents_clade"]
-        # Parents by lineage (ex. BA.1.1,BA.2.3)
+
+        # 3. Parents by lineage (ex. BA.1.1,BA.2.3)
         parents_lineage = rec[1]["parents_lineage"]
+
+        # 4. Breakpoints
         breakpoints = rec[1]["breakpoints"]
+
         # Format: "C234T,A54354G|Omicron/BA.1/21K;A423T|Omicron/BA.2/21L"
         parents_subs_raw = rec[1]["parents_subs"].split(";")
         # Format: ["C234T,A54354G|Omicron/BA.1/21K", "A423T|Omicron/BA.2/21L"]
@@ -294,7 +279,7 @@ def main(
     # Assign status and curated lineage
 
     for rec in linelist_df.iterrows():
-        lineage = rec[1]["lineage_usher"]
+        lineage = rec[1]["lineage"]
         status = rec[1]["status"]
         cluster_id = rec[1]["cluster_id"]
 
@@ -317,23 +302,24 @@ def main(
 
     # -------------------------------------------------------------------------
     # Pipeline Versions
-    pipeline_ver = linelist_df["recombinant_pipeline"].values[0]
-    linelist_df.loc[linelist_df.index, "recombinant_pipeline"] = "{}-{}".format(
-        PIPELINE, pipeline_ver
+    pipeline_ver = linelist_df["ncov-recombinant_version"].values[0]
+    linelist_df.loc[linelist_df.index, "pipeline_version"] = "{pipeline}".format(
+        pipeline="ncov-recombinant:{}".format(pipeline_ver)
     )
-    classifer_ver = linelist_df["recombinant_classifier"].values[0]
-    linelist_df.loc[linelist_df.index, "recombinant_classifier"] = "{}-{}".format(
-        CLASSIFIER, classifer_ver
+    nextclade_ver = linelist_df["nextclade_version"].values[0]
+    sc2rf_ver = linelist_df["nextclade_version"].values[0]
+    linelist_df.loc[
+        linelist_df.index, "recombinant_classifier"
+    ] = "{nextclade}-{sc2rf}".format(
+        nextclade="nextclade:{}".format(nextclade_ver),
+        sc2rf="nextclade:{}".format(sc2rf_ver),
     )
 
     # -------------------------------------------------------------------------
     # Save to File
 
     # Drop Unnecessary columns
-    linelist_df.drop(
-        columns=["lineage_sc2rf", "lineage_nextclade", "status_sc2rf"], inplace=True
-    )
-    linelist_df.rename(columns={"lineage_usher": "lineage"}, inplace=True)
+    linelist_df.drop(columns=["status_sc2rf", "clade_nextclade"], inplace=True)
 
     # Recode NA
     linelist_df.fillna(NO_DATA_CHAR, inplace=True)

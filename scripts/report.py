@@ -140,12 +140,13 @@ def main(
         status_lin_df = plot_dict[status]["df"]
         status_lin = list(status_lin_df.columns)
         status_lin.remove("epiweek")
-        for lin in status_lin:
-            num_status_lin = int(sum(status_lin_df[lin]))
-            num_status_seq = int(sum(lineages_df[lin]))
 
+        num_status_lin = len(status_lin)
+        status_counts[status]["lineages"] += num_status_lin
+
+        for lin in status_lin:
+            num_status_seq = int(sum(lineages_df[lin]))
             status_counts[status]["sequences"] += num_status_seq
-            status_counts[status]["lineages"] += num_status_lin
 
     # Number of lineages and sequences
     total_sequences = int(sum([status_counts[s]["sequences"] for s in status_counts]))
@@ -168,7 +169,7 @@ def main(
             count = status_counts[status]["sequences"]
         else:
             count = 0
-        summary += "  - {sequences} sequences are {status}.\n".format(
+        summary += "  - {sequences} lineages are {status}.\n".format(
             sequences=count, status=status
         )
 

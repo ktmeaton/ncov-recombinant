@@ -24,6 +24,9 @@ FIGSIZE = [6.75, 5.33]
 UNKNOWN_COLOR = "dimgrey"
 UNKNOWN_RGB = colors.to_rgb(UNKNOWN_COLOR)
 
+# Show the first N char of the cluster id in the plot
+CLUSTER_ID_LEN = 10
+
 # Select and rename columns from linelist
 LINEAGES_COLS = [
     "cluster_id",
@@ -271,7 +274,9 @@ def main(
 
                 # Uh oh, lineage name is not unqiue, need cluster id
                 if lineage in lineages_non_unique:
-                    lineage = "{} ({})".format(lineage, cluster_id)
+                    lineage = "{} ({})".format(lineage, cluster_id[0:CLUSTER_ID_LEN])
+                    if len(cluster_id) > CLUSTER_ID_LEN:
+                        lineage = lineage.replace(")", "...)")
 
                 lineage_seen.append(lineage)
             plot_df.columns = lineage_seen
@@ -405,7 +410,13 @@ def main(
         )
 
         # Plot the reporting lag
-        lag_i = epiweek_map[lag_epiweek]
+
+        # If the scope of the data is smaller than the lag
+        if lag_epiweek in epiweek_map:
+            lag_i = epiweek_map[lag_epiweek]
+        else:
+            lag_i = epiweek_map[min_epiweek]
+
         lag_rect_height = len(df)
 
         # If we had to use dummy data for an empty dataframe, shift lag by 1

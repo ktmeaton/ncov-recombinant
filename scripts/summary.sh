@@ -26,23 +26,8 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    --usher-clades)
-      usher_clades=$2
-      shift # past argument
-      shift # past value
-      ;;
-    --usher-placements)
-      usher_placements=$2
-      shift # past argument
-      shift # past value
-      ;;
     --extra-cols)
       extra_cols=$2
-      shift # past argument
-      shift # past value
-      ;;
-    --usher-dataset)
-      usher_dataset=$2
       shift # past argument
       shift # past value
       ;;
@@ -60,13 +45,7 @@ git_tag=$(git tag | tail -n1)
 ncov_recombinant_ver="${git_tag}:${git_commit}"
 
 # Nextclade version
-nextclade_ver=$(nextclade --version)
-
-# Usher version
-usher_ver=$(usher --version | cut -d " " -f 2 | sed 's/(\|)\|v//g')
-usher_dataset_name=$(basename $(dirname $usher_dataset))
-usher_dataset_ver=$(cut -d " " -f 8 $usher_dataset | sed 's/(\|)\|;//g')
-usher_dataset_ver="${usher_dataset_name}:${usher_dataset_ver}"
+nextclade_ver=$(nextclade --version | cut -d " " -f 2)
 
 # sc2rf version
 cd sc2rf
@@ -79,7 +58,7 @@ sc2rf_muts_ver="virus_properties:${sc2rf_muts_date}"
 cd ..
 
 
-sort_col="usher_pango_lineage"
+sort_col="Nextclade_pango"
 default_cols="strain,date,country"
 
 # Hack to fix commas if extra_cols is empty
@@ -92,14 +71,10 @@ fi
 csvtk cut -t -f "${default_cols}${extra_cols}clade,Nextclade_pango" ${nextclade} \
   | csvtk rename -t -f "clade" -n "Nextclade_clade" \
   | csvtk merge -t --na "NA" -f "strain" - ${sc2rf} \
-  | csvtk merge -t -k --na "NA" -f "strain" ${usher_placements} - \
-  | csvtk merge -t -k --na "NA" -f "strain" ${usher_clades} - \
   | csvtk sort -t -k "$sort_col" \
   | csvtk mutate2 -t -n "ncov-recombinant_version" -e "\"$ncov_recombinant_ver\"" \
   | csvtk mutate2 -t -n "nextclade_version" -e "\"$nextclade_ver\"" \
   | csvtk mutate2 -t -n "sc2rf_version" -e "\"$sc2rf_ver\"" \
   | csvtk mutate2 -t -n "sc2rf_mutations_version" -e "\"${sc2rf_muts_ver}\"" \
-  | csvtk mutate2 -t -n "usher_version" -e "\"$usher_ver\"" \
   | csvtk mutate2 -t -n "nextclade_dataset" -e "\"$nextclade_dataset\"" \
-  | csvtk mutate2 -t -n "usher_dataset" -e "\"$usher_dataset_ver\"" \
   > $output

@@ -22,6 +22,9 @@ BREAKPOINT_COLOR = "lightgrey"
 UNKNOWN_COLOR = "dimgrey"
 COORD_ITER = 5000
 
+# Show the first N char of the cluster id in the plot
+CLUSTER_ID_LEN = 10
+
 # Select and rename columns from linelist
 LINEAGES_COLS = [
     "cluster_id",
@@ -102,10 +105,24 @@ def main(
     lineages_df = pd.read_csv(lineages, sep="\t")
     lineages_df.fillna(NO_DATA_CHAR, inplace=True)
 
-    # Filter dataframe on cluster IDs
-    if cluster_col and clusters:
-        clusters_list = clusters.split(",")
-        lineages_df = lineages_df[lineages_df[cluster_col].isin(clusters_list)]
+    if cluster_col:
+
+        # Filter dataframe on cluster IDs
+        if clusters:
+            clusters_list = clusters.split(",")
+            lineages_df = lineages_df[lineages_df[cluster_col].isin(clusters_list)]
+
+        # Which lineages have the same name but different cluster ID?
+        lineages_seen = []
+        lineages_dup = []
+        for lineage in list(lineages_df["lineage"]):
+            if lineage not in lineages_seen:
+                lineages_seen.append(lineage)
+            else:
+                lineages_dup.append(lineage)
+
+    else:
+        lineages_dup = []
 
     if positives:
         positives_df = pd.read_csv(positives, sep="\t")
@@ -351,8 +368,18 @@ def main(
         y_tick_locs.append(y + (rect_height / 2))
         lineage_label = lineage.split(" ")[0]
         if cluster_col:
+
             cluster_id_label = lineage.split(" ")[1]
-        y_tick_labs_lineage.append(lineage_label)
+
+        # Non-unique, use cluster ID in y axis
+        if lineage_label in lineages_dup:
+            ylabel = "{} ({})".format(lineage_label, cluster_id_label[0:CLUSTER_ID_LEN])
+            if len(cluster_id_label) > CLUSTER_ID_LEN:
+                ylabel = ylabel.replace(")", "...)")
+        else:
+            ylabel = lineage_label
+
+        y_tick_labs_lineage.append(ylabel)
 
         lineage_df = breakpoints_df[breakpoints_df["lineage"] == lineage]
 

@@ -43,23 +43,10 @@ today = datetime.date.today()
 # Load the default parameters
 configfile: "defaults/parameters.yaml"
 
-# Convert config into an OrderedDict with keys of "name" for use by the pipeline.
-if isinstance(config.get("inputs"), list):
-    config["inputs"] = OrderedDict((v["name"], v) for v in config["inputs"])
 if isinstance(config.get("builds"), list):
     config["builds"] = OrderedDict((v["name"], v) for v in config["builds"])
 if isinstance(config.get("rule_params"), list):
     config["rule_params"] = OrderedDict((v["name"], v) for v in config["rule_params"])
-
-# Check for missing inputs.
-if "inputs" not in config:
-    logger.error("ERROR: Your workflow does not define any input files to start with.")
-    logger.error("Update your configuration file (e.g., 'builds.yaml') to define at least one input dataset as follows and try running the workflow again:")
-    logger.error(textwrap.indent(
-        f"\ninputs:\n  name: local-data\n  metadata: data/example_metadata.tsv\n  sequences: data/example_sequences.fasta.gz\n",
-        "  "
-    ))
-    sys.exit(1)
 
 # Check for missing builds
 if "builds" not in config:
@@ -73,8 +60,8 @@ if "builds" not in config:
 
 # End Code: https://github.com/nextstrain/ncov/blob/master/Snakefile
 
-default_keys = ["inputs", "builds", "rule_params"]
-default_build_keys = ["name", "base_input"]
+default_keys = ["builds", "rule_params"]
+default_build_keys = ["name"]
 
 # Set default rule parameters for each build
 for build in config["builds"]:
@@ -89,10 +76,8 @@ for build in config["builds"]:
         if param not in config["builds"][build][rule]:
           config["builds"][build][rule][param] = config["rule_params"][rule][param]
 
-# Store list of builds and inputs for rule wildcard constraints
+# Store list of builds for rule wildcard constraints
 BUILDS = list(config["builds"].keys())
-USHER_INPUTS = [input for input in config["inputs"] if "usher" in config["inputs"][input]["type"]]
-LOCAL_INPUTS = [input for input in config["inputs"] if "local" in config["inputs"][input]["type"]]
 
 # Check if any builds are controls for validation
 validation_df = pd.read_csv("defaults/validation.tsv", sep="\t")
@@ -122,18 +107,14 @@ rule all:
         expand("results/{build_name}/sc2rf/stats.tsv",
           build_name=BUILDS,
           ),
-        # Stage 3: UShER
-        expand("results/{build_name}/usher/usher.clades.tsv",
-          build_name=BUILDS,
-          ),
-        # Stage 4: Reports
+        # Stage 3: Reports
         expand("results/{build_name}/report/report.xlsx",
           build_name=BUILDS,
           ),
         expand("results/{build_name}/report_historical/report.pptx",
                   build_name=BUILDS,
                   ),
-       # Stage 5: Validation (optional)
+       # Stage 4: Validation (optional)
         expand("results/{build_name}/validate/validation.tsv",
           build_name=BUILDS_VALIDATE,
           ),
@@ -355,97 +336,12 @@ rule nextclade:
       1> {output.metadata} 2>> {log};
     """
 
-# ----------------------------------------------------------------------------#
-rule_name = "nextclade_recombinants"
-
-# Parameters function
-def _params_nextclade_recombinants(build):
-  """Parse conditional parameters for rule nextclade_recombinants."""
-
-  params = {}
-  exclude_clades = config["builds"][build]["nextclade_recombinants"]["exclude_clades"]
-  if exclude_clades: params["exclude_clades"] = ".*(" + "|".join(exclude_clades) + ").*"
-  else: params["exclude_clades"] = "None"
-
-  return params
-
-rule nextclade_recombinants:
-  """Extract recombinants from nextclade output."""
-
-  message: """Extracting recombinant candidates from nextclade output.\n
-  build:     {wildcards.build}
-  log:       {log}
-  alignment: {output.alignment}
-  strains:   {output.strains}
-  """
-
-  input:
-    alignment      = "results/{build}/nextclade/alignment.fasta",
-    qc             = "results/{build}/nextclade/qc.tsv",
-  output:
-    alignment      = "results/{build}/nextclade/recombinants.fasta",
-    strains        = "results/{build}/nextclade/recombinants.txt",
-    qc             = "results/{build}/nextclade/recombinants.qc.tsv",
-    non            = "results/{build}/nextclade/non-recombinants.qc.tsv",
-  params:
-    exclude_clades = lambda wildcards: _params_nextclade_recombinants(wildcards.build)["exclude_clades"],
-    fields         = "clade,Nextclade_pango,qc.overallStatus,privateNucMutations.labeledSubstitutions",
-    values         = ".*(recombinant|X|bad|mediocre|\|).*", # \| is a char for the labelSubstitutions column
-  threads: 1
-  resources:
-    cpus = 1,
-  benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
-  shell:
-    """
-    # Extract recombinant strains
-    csvtk grep -t -v -f "clade" -r -p "{params.exclude_clades}" {input.qc}  2> {log} \
-      | csvtk grep -t -f "qc.mixedSites.status" -p "bad" -v 2>> {log} \
-      | csvtk grep -t -f "{params.fields}" -r -p "{params.values}" 2>> {log} \
-      | csvtk cut -t -f "seqName" 2>> {log} \
-      | tail -n+2 \
-      > {output.strains};
-
-    # Extract recombinant sequences
-    seqkit grep -f {output.strains} {input.alignment} 1> {output.alignment} 2>> {log};
-
-    # Extract recombinant qc
-    csvtk grep -t -P {output.strains} {input.qc} 1> {output.qc} 2>> {log};
-
-    # Extract non-recombinants qc
-    csvtk grep -t -P {output.strains} -v {input.qc} 1> {output.non} 2>> {log};
-    """
-
 # -----------------------------------------------------------------------------#
 #  STAGE 3: sc2rf
 # -----------------------------------------------------------------------------#
 
 rule_name = "sc2rf"
 
-# Input function
-def _inputs_sc2rf(build):
-  """Parse conditional inputs for rule sc2rf."""
-
-  inputs = {}
-  exclude_negatives = config["builds"][build]["sc2rf"]["exclude_negatives"]
-
-  # nextclade/alignment.fasta: positives, negatives, and false_positives
-  # nextclade/recombinants.fasta: positives (and false_positives)
-
-  # Option 1: Everything (positives, negatives, false_positives)
-  if not exclude_negatives:
-    inputs["alignment"] = "results/{build}/nextclade/alignment.fasta".format(build=build)
-
-  # Option 2: Positives only
-  else:
-    inputs["alignment"] = "results/{build}/nextclade/recombinants.fasta".format(build=build)
-
-  return inputs
-
-
-# Snakemake rule
 rule sc2rf:
   """
   Identify recombinants with sc2rf.
@@ -459,7 +355,7 @@ rule sc2rf:
   """
 
   input:
-    alignment            = lambda wildcards: _inputs_sc2rf(wildcards.build)["alignment"],
+    alignment            = "results/{build}/nextclade/alignment.fasta",
   output:
     ansi                 = "results/{build}/sc2rf/ansi.txt",
     csv                  = "results/{build}/sc2rf/stats.csv",
@@ -555,7 +451,7 @@ rule sc2rf_recombinants:
     #ansi_secondary  = rules.sc2rf.output.ansi_secondary,
     csv_secondary   = rules.sc2rf.output.csv_secondary,
     issues          = rules.issues_download.output.issues,
-    alignment       = lambda wildcards: _inputs_sc2rf(wildcards.build)["alignment"],
+    alignment       = "results/{build}/nextclade/alignment.fasta",
     nextclade       = "results/{build}/nextclade_no-recomb/qc.tsv",
   output:
     stats           = "results/{build}/sc2rf/stats.tsv",
@@ -600,323 +496,8 @@ rule sc2rf_recombinants:
     rm -f {params.outdir}/recombinants.exclude.tsv >> {log} 2>&1;
     """
 
-# -----------------------------------------------------------------------------
-
-rule_name = "nextclade_exclude_false_positives"
-rule nextclade_exclude_false_positives:
-  """Exclude false positives from the nextclade alignment."""
-
-  message: """Excluding false positives from the nextclade alignment.\n
-  build:       {wildcards.build}
-  log:         {log}
-  alignment:   {output.alignment}
-  """
-
-  input:
-    alignment = "results/{build}/nextclade/alignment.fasta",
-    stats     = rules.sc2rf_recombinants.output.stats,
-  output:
-    alignment = "results/{build}/nextclade/alignment.exclude_false_positives.fasta",
-  threads: 1
-  resources:
-    cpus = 1,
-  benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
-  shell:
-    """
-    csvtk grep -t -f "sc2rf_status" -p "false_positive" -v {input.stats} 2> {log} \
-      | csvtk cut -t -f "strain" \
-      | tail -n+2  \
-      | seqkit grep -f - {input.alignment} 1> {output.alignment} 2>> {log} ;
-    """
-
 # -----------------------------------------------------------------------------#
-#  STAGE 3: UShER
-# -----------------------------------------------------------------------------#
-
-rule_name = "faToVcf"
-
-# Input function
-def _inputs_faToVcf(build):
-  """Parse conditional inputs for rule faToVcf."""
-
-  inputs = {}
-  exclude_negatives = config["builds"][build]["sc2rf"]["exclude_negatives"]
-  exclude_false_positives = config["builds"][build]["faToVcf"]["exclude_false_positives"]
-
-  # nextclade/alignment.fasta: positives, negatives, and false_positives
-  # nextclade/recombinants.fasta: positives and false_positives
-  # sc2rf/recombinants.fasta: positives
-
-  # Option 1: Everything (positives, negatives, false_positives)
-  # nextclade/alignment.fasta
-  if not exclude_false_positives and not exclude_negatives:
-    inputs["alignment"] = "results/{build}/nextclade/alignment.fasta".format(build=build)
-
-  # Option 2: Positives and false_positives
-  elif not exclude_false_positives and exclude_negatives:
-    inputs["alignment"] = "results/{build}/nextclade/recombinants.fasta".format(build=build)
-
-  # Option 3: Positives and negatives (no false_positives)
-  elif exclude_false_positives and not exclude_negatives:
-    inputs["alignment"] = "results/{build}/nextclade/alignment.exclude_false_positives.fasta".format(build=build)
-
-  # Option 4: Positives only
-  elif exclude_false_positives and exclude_negatives:
-    inputs["alignment"] = "results/{build}/sc2rf/recombinants.fasta".format(build=build)
-
-  # I think that covers it?
-  else:
-    print("ERROR: Unhandled exception in _inputs_faToVcf")
-    quit()
-
-  return inputs
-
-# Snakemake rule
-rule faToVcf:
-  """
-  Construct VCF from alignment.
-  """
-  message: """Constructing VCF from alignment.\n
-  build: {wildcards.build}
-  log:   {log}
-  vcf:   {output.vcf}
-  """
-
-  input:
-    reference               = "data/reference/reference.fasta",
-    stats                   = rules.sc2rf_recombinants.output.stats,
-    alignment               = lambda wildcards: _inputs_faToVcf(wildcards.build)["alignment"],
-    prob_sites              = "data/reference/problematic_sites.vcf",
-  output:
-    alignment               = "results/{build}/faToVcf/alignment.fasta",
-    vcf                     = "results/{build}/faToVcf/alignment.vcf.gz",
-  params:
-    prefix                  = "results/{build}/faToVcf/alignment.vcf",
-  threads: 1
-  resources:
-    cpus = 1,
-  benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
-  shell:
-    """
-    # Add the reference genome
-    cat {input.reference} {input.alignment} > {output.alignment} 2> {log};
-
-    # Construct VCF
-    faToVcf -ambiguousToN -maskSites={input.prob_sites} {output.alignment} {params.prefix} >> {log} 2>&1;
-
-    # Compress Output
-    gzip -f {params.prefix} >> {log} 2>&1;
-    """
-
-# -----------------------------------------------------------------------------
-rule_name = "usher_download"
-
-rule usher_download:
-  """
-  Download UShER protobuf.
-  """
-
-  message: """Downloading UShER protobuf.\n
-  input:    {wildcards.input}
-  log:      {log}
-  protobuf: {output.pb}
-  metadata: {output.metadata}
-  """
-
-  wildcard_constraints:
-    input = "|".join(USHER_INPUTS),
-  output:
-    pb           = "data/{input}/usher.pb.gz",
-    metadata     = "data/{input}/metadata.tsv.gz",
-    ver          = "data/{input}/version.txt",
-  params:
-    pb_url       = lambda wildcards: config["inputs"][wildcards.input]["pb_url"],
-    metadata_url = lambda wildcards: config["inputs"][wildcards.input]["metadata_url"],
-    ver_url      = lambda wildcards: config["inputs"][wildcards.input]["ver_url"],
-  benchmark:
-    "benchmarks/{rule}/{{input}}_{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{{input}}_{today}.log".format(today=today, rule=rule_name),
-  threads: 1
-  resources:
-    cpus = 1,
-  shell:
-    """
-    wget -O {output.pb} {params.pb_url} > {log} 2>&1;
-    wget -O {output.metadata} {params.metadata_url} >> {log} 2>&1;
-    wget -O {output.ver} {params.ver_url} >> {log} 2>&1;
-    """
-
-# -----------------------------------------------------------------------------#
-rule_name = "usher_columns"
-rule usher_columns:
-  """Add columns to the base phylogeny metadata."""
-
-  message: """Adding extra columns to the UShER metadata.\n
-  input:    {wildcards.input}
-  log:      {log}
-  metadata: {output.metadata}
-  """
-
-  wildcard_constraints:
-    input = "|".join(USHER_INPUTS),
-  input:
-    metadata = "data/{input}/metadata.tsv.gz",
-  output:
-    metadata      = "data/{input}/metadata.tsv",
-    gisaid_id_map = "data/{input}/gisaid_id_map.tsv",
-  params:
-    gisaid_regex = "^.*EPI_ISL_[0-9|-]*"
-  benchmark:
-    "benchmarks/{rule}/{{input}}_{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{{input}}_{today}.txt".format(today=today, rule=rule_name),
-  threads: 1
-  resources:
-    cpus = 1,
-    mem_mb = 4000,
-  # Note: We use pipefail to allow `grep` to return a non-zero exit codes (1)
-  #       which will happen if no GISAID IDs could be identified.
-  shell:
-    """
-    set +o pipefail;
-
-    # Extract strains with embedded GISID IDs
-    csvtk cut -t -f "strain" {input.metadata} \
-      | grep -o -E "{params.gisaid_regex}" \
-      | awk -F "|" '{{print $0"\\t"$2}}' \
-      > {output.gisaid_id_map};
-
-    # Extract strains without GISAID IDs
-    csvtk cut -t -f "strain" {input.metadata} \
-      | tail -n+2 \
-      | grep -v -E "{params.gisaid_regex}" \
-      | awk '{{print $0"\\tNone"}}' \
-      >> {output.gisaid_id_map};
-
-    csvtk mutate2 -t -n "dataset" -e '"{wildcards.input}"' {input.metadata} \
-      | csvtk rename -t -f "pangolin_lineage" -n "pango_lineage" \
-      | csvtk mutate -t -f "strain" -n "gisaid_epi_isl" \
-      | csvtk replace -t -f "gisaid_epi_isl" -p "(.*)" -k {output.gisaid_id_map} -r "{{kv}}" \
-      1> {output.metadata} 2>> {log};
-    """
-
-# -----------------------------------------------------------------------------
-rule_name = "usher"
-
-# Input function
-def _inputs_usher(build):
-  """Parse conditional inputs for rule usher."""
-
-  inputs = {}
-  base_input = config["builds"][build]["base_input"]
-  base_pb = "data/{base_input}/usher.pb.gz".format(base_input=base_input)
-  inputs["base_input"] = base_input
-  inputs["base_pb"] = base_pb
-  return inputs
-
-rule usher:
-  """
-  Place VCF samples with UShER.
-  """
-
-  message: """Placing VCF samples with UShER.\n
-  build:    {wildcards.build}
-  log:      {log}
-  protobuf: {output.pb}
-  """
-
-  input:
-    vcf             = rules.faToVcf.output.vcf,
-    pb              = lambda wildcards: _inputs_usher(wildcards.build)["base_pb"],
-  output:
-    pb              = "results/{build}/usher/usher.pb.gz",
-    final_tree      = "results/{build}/usher/final-tree.nh",
-    placement_stats = "results/{build}/usher/placement_stats.tsv",
-    clades          = "results/{build}/usher/clades.txt",
-    mut_paths       = "results/{build}/usher/mutation-paths.txt",
-  params:
-    outdir = "results/{build}/usher",
-  benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
-  shell:
-    """
-    usher \
-      -i {input.pb} \
-      -o {output.pb} \
-      -v {input.vcf} \
-      --threads {resources.cpus} \
-      --outdir {params.outdir} \
-      > {log} 2>&1;
-    """
-
-# -----------------------------------------------------------------------------
-rule_name = "usher_stats"
-rule usher_stats:
-  """
-  Parse statistics from UShER.
-  """
-  message: """Parsing statistics from UShER.\n
-  build:      {wildcards.build}
-  log:        {log}
-  placements: {output.placement_stats}
-  mutations:  {output.mut_paths}
-  clades:     {output.clades}
-  """
-
-  input:
-    placement_stats  = rules.usher.output.placement_stats,
-    clades           = rules.usher.output.clades,
-    mut_paths        = rules.usher.output.mut_paths,
-    issue_to_lineage = rules.issues_download.output.issue_to_lineage,
-  output:
-    placement_stats  = "results/{build}/usher/usher.placement_stats.tsv",
-    mut_paths        = "results/{build}/usher/usher.mutation_paths.tsv",
-    clades           = "results/{build}/usher/usher.clades.tsv",
-    strains          = "results/{build}/usher/usher.strains.txt",
-  params:
-    outdir = "results/{build}/usher",
-  benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
-  shell:
-    """
-    # Rename and reformat output
-    cp -f {input.mut_paths} {output.mut_paths};
-
-    echo -e "strain\\tusher_best_set_difference\\tusher_num_best" > {output.placement_stats} 2> {log};
-    sed 's/[[:space:]]*$//' {input.placement_stats} >> {output.placement_stats} 2>> {log};
-
-    echo -e "strain\\tusher_clade\\tusher_pango_lineage" > {output.clades};
-
-    # Some UShER trees may have 3 or 4 columns
-    num_clade_cols=$(head -n 1 {input.clades} | tr "\\t" "\\n" | wc -l)
-    if [[ $num_clade_cols -eq 4 ]]; then
-      csvtk cut -t -H -f 1,2,4 {input.clades} >> {output.clades} 2>> {log};
-    else
-      cat {input.clades} >> {output.clades} 2>> {log};
-    fi
-
-    csvtk mutate -t -f "usher_pango_lineage" -n "usher_pango_lineage_map" {output.clades} 2>> {log} \
-      | csvtk replace -t -f "usher_pango_lineage_map" -p "proposed([0-9]+)" -k {input.issue_to_lineage} -r "{{kv}}" 2>> {log} \
-      1> {output.clades}.tmp 2>> {log};
-    mv {output.clades}.tmp {output.clades} 2>> {log}
-
-    # Strain List
-    csvtk cut -t -f "strain" {output.clades}  2>> {log} | tail -n+2 > {output.strains};
-    """
-
-# -----------------------------------------------------------------------------#
-#  STAGE 4: Summarize and sReport
+#  STAGE 4: Summarize and Report
 # -----------------------------------------------------------------------------#
 
 rule_name = "summary"
@@ -946,11 +527,6 @@ rule summary:
   input:
     nextclade        = "results/{build}/nextclade/metadata.tsv",
     sc2rf            = rules.sc2rf_recombinants.output.stats,
-    usher_clades     = rules.usher_stats.output.clades,
-    usher_placements = rules.usher_stats.output.placement_stats,
-    usher_ver        = lambda wildcards: "data/{base_input}/version.txt".format(
-                        base_input=config["builds"][wildcards.build]["base_input"]
-                      ),
 
   output:
     summary = "results/{build}/linelists/summary.tsv",
@@ -971,9 +547,6 @@ rule summary:
       --output {output.summary} \
       --nextclade {input.nextclade} \
       --sc2rf {input.sc2rf} \
-      --usher-clades {input.usher_clades} \
-      --usher-placements {input.usher_placements} \
-      --usher-dataset {input.usher_ver} \
       --nextclade-dataset {params.nextclade_dataset}_{params.nextclade_tag} \
       {params.extra_cols} \
       > {log} 2>&1;
@@ -991,10 +564,6 @@ def _params_linelist(build):
   geo = config["builds"][build]["linelist"]["geo"]
   if geo: params["geo"] = "--geo {}".format(geo)
   else: params["geo"] = ""
-
-  max_placements = config["builds"][build]["linelist"]["max_placements"]
-  if max_placements: params["max_placements"] = "--max-placements {}".format(max_placements)
-  else: params["max_placements"] = ""
 
   return params
 
@@ -1027,7 +596,6 @@ rule linelist:
     outdir         = "results/{build}/linelists",
     extra_cols     = lambda wildcards: _params_summary(wildcards.build)["extra_cols"],
     geo            = lambda wildcards: _params_linelist(wildcards.build)["geo"],
-    max_placements = lambda wildcards: _params_linelist(wildcards.build)["max_placements"],
   threads: 1
   resources:
     cpus = 1,
@@ -1038,7 +606,7 @@ rule linelist:
   shell:
     """
     # Create the strain tables
-    python3 scripts/linelist.py --input {input.summary} --issues {input.issues} --outdir {params.outdir} {params.max_placements} {params.extra_cols} > {log} 2>&1;
+    python3 scripts/linelist.py --input {input.summary} --issues {input.issues} --outdir {params.outdir} {params.extra_cols} > {log} 2>&1;
 
     # Create the lineages table
     python3 scripts/lineages.py --input {output.positives} --output {output.lineages} {params.geo} >> {log} 2>&1;
