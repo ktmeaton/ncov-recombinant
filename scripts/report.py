@@ -4,32 +4,16 @@ import pptx
 from datetime import date
 import os
 import pandas as pd
-import re
-
 
 NO_DATA_CHAR = "NA"
 TITLE = "SARS-CoV-2 Recombinants"
 FONT_SIZE_PARAGRAPH = 20
 
-# designated: X*
-# proposed: proposed* or associated issue
-# unpublished: not designated or proposed
-
-RECOMBINANT_STATUS = {
-    "designated": "X.*",
-    "proposed": "proposed.*",
-    "unpublished": "^(?!X|proposed).*",
-}
-
-# Concise names for report
-CLADES_RENAME = {
-    "Alpha/B.1.1.7/20I": "Alpha (20I)",
-    "Delta/21I": "Delta (21I)",
-    "Delta/21J": "Delta (21J)",
-    "Omicron/21K": "BA.1",
-    "Omicron/21L": "BA.2",
-}
-
+RECOMBINANT_STATUS = [
+    "designated",
+    "proposed",
+    "unpublished",
+]
 
 """ Ref for slide types:
 0 ->  title and subtitle
@@ -102,7 +86,7 @@ def main(
         if label.startswith("largest_"):
 
             largest_lineage = label.split("_")[1]
-            largest_cluster_id = label.split("_")[2].replace("-DELIM-", "/")
+            largest_cluster_id = "_".join(label.split("_")[2:]).replace("-DELIM-", "/")
 
             plot_dict["largest"] = plot_dict[label]
             plot_dict["largest"]["lineage"] = largest_lineage
@@ -123,40 +107,10 @@ def main(
     slide.placeholders[1].text = subtitle
 
     # ---------------------------------------------------------------------
-    # Lineage Summary
+    # General Summary
 
+    # Slide setup
     plot_path = plot_dict["lineage"]["plot_path"]
-    lineage_df = plot_dict["lineage"]["df"]
-
-    lineages = list(lineage_df.columns)
-    lineages.remove("epiweek")
-
-    status_counts = {}
-    status_df = plot_dict["status"]["df"]
-    statuses = list(status_df.columns)
-    statuses.remove("epiweek")
-
-    for status in statuses:
-
-        status_counts[status.lower()] = {
-            "sequences": 0,
-            "lineages": 0,
-        }
-
-        if status.lower() in RECOMBINANT_STATUS:
-            regex = RECOMBINANT_STATUS[status.lower()]
-            for lineage in lineages:
-                if re.match(regex, lineage):
-
-                    seq_count = sum(lineage_df[lineage].dropna())
-
-                    status_counts[status.lower()]["sequences"] += int(seq_count)
-                    status_counts[status.lower()]["lineages"] += 1
-
-    # Number of lineages and sequences
-    num_lineages = int(sum([status_counts[s]["lineages"] for s in status_counts]))
-    num_sequences = int(sum([status_counts[s]["sequences"] for s in status_counts]))
-
     graph_slide_layout = presentation.slide_layouts[8]
     slide = presentation.slides.add_slide(graph_slide_layout)
     title = slide.shapes.title
@@ -167,34 +121,66 @@ def main(
     chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
 
+    # Stats
+
+    lineages_df = plot_dict["lineage"]["df"]
+    lineages = list(lineages_df.columns)
+    lineages.remove("epiweek")
+
+    status_counts = {
+        status: {"sequences": 0, "lineages": 0} for status in RECOMBINANT_STATUS
+    }
+
+    status_seq_df = plot_dict["status"]["df"]
+    statuses = list(status_seq_df.columns)
+    statuses.remove("epiweek")
+
+    for status in statuses:
+        status = status.lower()
+        status_lin_df = plot_dict[status]["df"]
+        status_lin = list(status_lin_df.columns)
+        status_lin.remove("epiweek")
+        for lin in status_lin:
+            num_status_lin = int(sum(status_lin_df[lin]))
+            num_status_seq = int(sum(lineages_df[lin]))
+
+            status_counts[status]["sequences"] += num_status_seq
+            status_counts[status]["lineages"] += num_status_lin
+
+    # Number of lineages and sequences
+    total_sequences = int(sum([status_counts[s]["sequences"] for s in status_counts]))
+    total_lineages = int(sum([status_counts[s]["lineages"] for s in status_counts]))
+
+    # Construct the summary text
     summary = "\n"
+
+    summary += "There are {total_lineages} recombinant lineages".format(
+        total_lineages=total_lineages
+    )
+    # Whether we need a footnote for singletons
     if singletons:
-        summary += "There are {num_lineages} recombinant lineages.\n".format(
-            num_lineages=num_lineages
-        )
+        summary += ".\n"
     else:
-        summary += "There are {num_lineages} recombinant lineages*.\n".format(
-            num_lineages=num_lineages
-        )
+        summary += "*.\n"
 
     for status in RECOMBINANT_STATUS:
         if status in status_counts:
-            count = status_counts[status]["lineages"]
+            count = status_counts[status]["sequences"]
         else:
             count = 0
-        summary += "  - {lineages} lineages are {status}.\n".format(
-            lineages=count, status=status
+        summary += "  - {sequences} sequences are {status}.\n".format(
+            sequences=count, status=status
         )
+
     summary += "\n"
+    summary += "There are {total_sequences} recombinant sequences".format(
+        total_sequences=total_sequences
+    )
     # Whether we need a footnote for singletons
     if singletons:
-        summary += "There are {num_sequences} recombinant sequences.\n".format(
-            num_sequences=num_sequences
-        )
+        summary += ".\n"
     else:
-        summary += "There are {num_sequences} recombinant sequences*.\n".format(
-            num_sequences=num_sequences
-        )
+        summary += "*.\n"
 
     for status in RECOMBINANT_STATUS:
         if status in status_counts:
@@ -214,6 +200,59 @@ def main(
     for paragraph in body.text_frame.paragraphs:
         for run in paragraph.runs:
             run.font.size = pptx.util.Pt(14)
+
+    # ---------------------------------------------------------------------
+    # Status Summary
+
+    for status in RECOMBINANT_STATUS:
+
+        status = status.lower()
+        if status not in plot_dict:
+            continue
+
+        plot_path = plot_dict[status]["plot_path"]
+
+        # Slide setup
+        graph_slide_layout = presentation.slide_layouts[8]
+        slide = presentation.slides.add_slide(graph_slide_layout)
+        title = slide.shapes.title
+
+        title.text_frame.text = status.title()
+        title.text_frame.paragraphs[0].font.bold = True
+
+        chart_placeholder = slide.placeholders[1]
+        chart_placeholder.insert_picture(plot_path)
+        body = slide.placeholders[2]
+
+        # Stats
+        status_df = plot_dict[status]["df"]
+        status_lineages = list(status_df.columns)
+        status_lineages.remove("epiweek")
+
+        # Order columns
+        status_counts = {
+            lineage: int(sum(status_df[lineage])) for lineage in status_lineages
+        }
+        status_lineages = sorted(status_counts, key=status_counts.get, reverse=True)
+        num_status_lineages = len(status_lineages)
+
+        summary = "\n"
+        summary += "There are {num_status_lineages} {status} lineages.\n".format(
+            status=status, num_status_lineages=num_status_lineages
+        )
+
+        for lineage in status_lineages:
+            seq_count = int(sum(status_df[lineage].dropna()))
+            summary += "  - {lineage} ({seq_count})\n".format(
+                lineage=lineage, seq_count=seq_count
+            )
+
+        body.text_frame.text = summary
+
+        # Adjust font size of body
+        for paragraph in body.text_frame.paragraphs:
+            for run in paragraph.runs:
+                run.font.size = pptx.util.Pt(14)
 
     # ---------------------------------------------------------------------
     # Geographic Summary
@@ -258,53 +297,6 @@ def main(
             run.font.size = pptx.util.Pt(14)
 
     # ---------------------------------------------------------------------
-    # Designated Summary
-
-    plot_path = plot_dict["designated"]["plot_path"]
-    designated_df = plot_dict["designated"]["df"]
-
-    designated_lineages = list(designated_df.columns)
-    designated_lineages.remove("epiweek")
-
-    # Order columns
-    designated_counts = {
-        lineage: int(sum(designated_df[lineage])) for lineage in designated_lineages
-    }
-    designated_lineages = sorted(
-        designated_counts, key=designated_counts.get, reverse=True
-    )
-    num_designated = len(designated_lineages)
-
-    graph_slide_layout = presentation.slide_layouts[8]
-    slide = presentation.slides.add_slide(graph_slide_layout)
-    title = slide.shapes.title
-
-    title.text_frame.text = "Designated"
-    title.text_frame.paragraphs[0].font.bold = True
-
-    chart_placeholder = slide.placeholders[1]
-    chart_placeholder.insert_picture(plot_path)
-    body = slide.placeholders[2]
-
-    summary = "\n"
-    summary += "There are {num_designated} designated lineage.\n".format(
-        num_designated=num_designated
-    )
-
-    for lineage in designated_lineages:
-        seq_count = int(sum(designated_df[lineage].dropna()))
-        summary += "  - {lineage} ({seq_count})\n".format(
-            lineage=lineage, seq_count=seq_count
-        )
-
-    body.text_frame.text = summary
-
-    # Adjust font size of body
-    for paragraph in body.text_frame.paragraphs:
-        for run in paragraph.runs:
-            run.font.size = pptx.util.Pt(14)
-
-    # ---------------------------------------------------------------------
     # Largest Summary
 
     plot_path = plot_dict["largest"]["plot_path"]
@@ -328,7 +320,7 @@ def main(
     largest_cluster_id = plot_dict["largest"]["cluster_id"]
 
     for lineage in lineages:
-        seq_count = int(sum(lineage_df[lineage].dropna()))
+        seq_count = int(sum(lineages_df[lineage].dropna()))
         if seq_count > largest_lineage_size:
             largest_lineage_size = seq_count
 
