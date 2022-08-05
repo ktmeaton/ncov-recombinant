@@ -177,7 +177,7 @@ def main(
         if lineage.startswith("X"):
             status = "designated"
 
-        elif issue != NO_DATA_CHAR:
+        elif lineage.startswith("proposed") or issue != NO_DATA_CHAR:
             status = "proposed"
 
         # Negatives recombinants
@@ -293,7 +293,6 @@ def main(
     # -------------------------------------------------------------------------
     # Assign status and curated lineage
 
-    recombinant_lineage = []
     for rec in linelist_df.iterrows():
         lineage = rec[1]["lineage_usher"]
         status = rec[1]["status"]
@@ -307,17 +306,11 @@ def main(
 
         # If designated, override with actual lineage
         if status == "designated":
-            recombinant_lineage.append(lineage)
             linelist_df.at[rec[0], "recombinant_lineage_curated"] = lineage
 
-        elif status == "proposed":
-            recombinant_lineage.append("proposed_recombinant")
-
-        elif status == "false_positive":
-            recombinant_lineage.append("false_positive_recombinant")
-
-        else:
-            recombinant_lineage.append("unpublished_recombinant")
+        # If proposed and the lineage is actually proposed*, override
+        elif status == "proposed" and lineage.startswith("proposed"):
+            linelist_df.at[rec[0], "recombinant_lineage_curated"] = lineage
 
     # -------------------------------------------------------------------------
     # Pipeline Versions
