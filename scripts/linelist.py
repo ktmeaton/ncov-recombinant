@@ -147,6 +147,14 @@ def main(
             if len(issues) > 1:
                 issue = ",".join(issues)
 
+        # Special Cases: XN, XP
+        # As of v0.4.0, XN and XP will be detected by sc2rf, but then labeled
+        # as a false positive, since all parental regions are collapsed
+        parents_clade = rec[1]["parents_clade"]
+        if (lineage == "XN" or lineage == "XP") and parents_clade != NO_DATA_CHAR:
+            status_sc2rf = "positive"
+            is_recombinant = True
+
         # Fine-tune positive status
         status = status_sc2rf
         if is_recombinant:
