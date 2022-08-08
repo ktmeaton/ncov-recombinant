@@ -408,7 +408,6 @@ def _inputs_sc2rf(build):
 
   inputs = {}
   exclude_negatives = config["builds"][build]["sc2rf"]["exclude_negatives"]
-  print(exclude_negatives)
 
   # nextclade/alignment.fasta: positives, negatives, and false_positives
   # nextclade/recombinants.fasta: positives (and false_positives)
@@ -508,8 +507,8 @@ rule sc2rf_recombinants:
   build:       {wildcards.build}
   log:         {log}
   stats:       {output.stats}
-  ansi:        {output.ansi}
   alignment:   {output.alignment}
+  ansi:        {output.ansi_primary},{output.ansi_secondary}
   """
 
   input:
@@ -518,13 +517,14 @@ rule sc2rf_recombinants:
     ansi_secondary  = "results/{build}/sc2rf/ansi.secondary.txt",
     csv_secondary   = "results/{build}/sc2rf/stats.secondary.csv",
     issues          = rules.issues_download.output.issues,
-    alignment       = "results/{build}/nextclade/alignment.fasta",
+    alignment       = lambda wildcards: _inputs_sc2rf(wildcards.build)["alignment"],
     nextclade       = "results/{build}/nextclade_no-recomb/qc.tsv",
   output:
     stats           = "results/{build}/sc2rf/stats.tsv",
     strains         = "results/{build}/sc2rf/recombinants.txt",
     alignment       = "results/{build}/sc2rf/recombinants.fasta",
-    ansi            = "results/{build}/sc2rf/recombinants.ansi.txt",
+    ansi_primary    = "results/{build}/sc2rf/recombinants.ansi.primary.txt",
+    ansi_secondary  = "results/{build}/sc2rf/recombinants.ansi.secondary.txt",
   params:
     outdir          = "results/{build}/sc2rf",
     prefix          = "recombinants",
@@ -543,9 +543,10 @@ rule sc2rf_recombinants:
   shell:
     """
     python3 sc2rf/postprocess.py \
-      --csv {input.csv_primary} \
+      --csv-primary {input.csv_primary} \
       --csv-secondary {input.csv_secondary} \
-      --ansi {input.ansi_primary} \
+      --ansi-primary {input.ansi_primary} \
+      --ansi-secondary {input.ansi_secondary} \
       --prefix {params.prefix} \
       --outdir {params.outdir} \
       --aligned {input.alignment} \
