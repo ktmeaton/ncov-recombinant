@@ -60,15 +60,15 @@ cd ..
 
 sort_col="Nextclade_pango"
 default_cols="strain,date,country"
+nextclade_cols="privateNucMutations.reversionSubstitutions,privateNucMutations.unlabeledSubstitutions,privateNucMutations.labeledSubstitutions"
 
 # Hack to fix commas if extra_cols is empty
+cols="${default_cols},${nextclade_cols}"
 if [[ $extra_cols ]]; then
-  extra_cols=",${extra_cols},"
-else
-  extra_cols=","
+  cols="${cols},${extra_cols}"
 fi
 
-csvtk cut -t -f "${default_cols}${extra_cols}clade,Nextclade_pango" ${nextclade} \
+csvtk cut -t -f "${cols},clade,Nextclade_pango" ${nextclade} \
   | csvtk rename -t -f "clade" -n "Nextclade_clade" \
   | csvtk merge -t --na "NA" -f "strain" - ${sc2rf} \
   | csvtk sort -t -k "$sort_col" \
