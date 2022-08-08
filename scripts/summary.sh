@@ -60,9 +60,10 @@ cd ..
 
 sort_col="Nextclade_pango"
 default_cols="strain,date,country"
+nextclade_cols="privateNucMutations.reversionSubstitutions,privateNucMutations.unlabeledSubstitutions,privateNucMutations.labeledSubstitutions"
 
 # Hack to fix commas if extra_cols is empty
-cols="${default_cols}"
+cols="${default_cols},${nextclade_cols}"
 if [[ $extra_cols ]]; then
   cols="${cols},${extra_cols}"
 fi

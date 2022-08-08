@@ -28,10 +28,19 @@ LINELIST_COLS = {
     "sc2rf_regions": "regions",
     "date": "date",
     "country": "country",
+    "privateNucMutations.reversionSubstitutions": "subs_reversion",
+    "privateNucMutations.unlabeledSubstitutions": "subs_unlabeled",
+    "privateNucMutations.labeledSubstitutions": "subs_labeled",
     "ncov-recombinant_version": "ncov-recombinant_version",
     "nextclade_version": "nextclade_version",
     "sc2rf_version": "sc2rf_version",
 }
+
+# If a designated lineage has more this number of strains
+# and more than this number of private muts, flag the assignment
+# as possibly incorrect
+MIN_LINEAGE_SIZE = 10
+MAX_PRIVATE_MUTS = 3
 
 
 @click.command()
@@ -90,83 +99,123 @@ def main(
 
     cols_list = list(LINELIST_COLS.keys())
 
-    # -------------------------------------------------------------------------
-    # Create the linelist (linelist.tsv)
-    # -------------------------------------------------------------------------
-
+    # Setup the linelist dataframe
     linelist_df = copy.deepcopy(summary_df[cols_list])
     linelist_df.rename(columns=LINELIST_COLS, inplace=True)
-
-    # -------------------------------------------------------------------------
-    # Lineage Consensus
-    # Use lineage calls by sc2rf and nextclade to classify recombinants status
-
-    logger.info("Comparing lineage assignments across tools")
 
     # Initialize columns
     linelist_df.insert(1, "status", [NO_DATA_CHAR] * len(linelist_df))
     linelist_df.insert(2, "lineage", [NO_DATA_CHAR] * len(linelist_df))
     linelist_df.insert(3, "issue", [NO_DATA_CHAR] * len(linelist_df))
+    linelist_df["privates"] = [NO_DATA_CHAR] * len(linelist_df)
     linelist_df["cov-spectrum_query"] = [NO_DATA_CHAR] * len(linelist_df)
+
+    # -------------------------------------------------------------------------
+    # Lineage Consensus
+    # -------------------------------------------------------------------------
+
+    # Use lineage calls by sc2rf and nextclade to classify recombinants status
+
+    logger.info("Comparing lineage assignments across tools")
 
     for rec in linelist_df.iterrows():
         strain = rec[1]["strain"]
+        status = rec[1]["status_sc2rf"]
+
         issue = NO_DATA_CHAR
         is_recombinant = False
         lineage = NO_DATA_CHAR
 
-        # Nextclade can only have one lineage assignment, typically this
-        # will be the "majority" parent
+        # ---------------------------------------------------------------------
+        # Lineage Assignments (Designated)
+
+        # Nextclade can only have one lineage assignment
         lineage_nextclade = rec[1]["lineage_nextclade"]
 
-        # sc2rf can have multiple lineages, because different lineages
-        # can have the same breakpoint
+        # sc2rf can be multiple lineages, same breakpoint, multiple possible lineages
         lineages_sc2rf = rec[1]["lineage_sc2rf"].split(",")
-        status_sc2rf = rec[1]["status_sc2rf"]
-        breakpoints = rec[1]["breakpoints"]
+        status = rec[1]["status_sc2rf"]
 
         # Check if sc2rf confirmed its a recombinant
-        if status_sc2rf == "positive":
+        if status == "positive":
             is_recombinant = True
 
-        # If sc2rf couldn't find a definitive match, use nextclade
-        if lineages_sc2rf[0] == NO_DATA_CHAR or len(lineages_sc2rf) > 1:
-            lineage = lineage_nextclade
+        # By default use nextclade
+        lineage = lineage_nextclade
+        classifier = "nextclade"
 
-        # Otherwise use the sc2rf lineage match
-        else:
+        # unless sc2rf found a definitive match
+        if lineages_sc2rf[0] != NO_DATA_CHAR and len(lineages_sc2rf) == 1:
             lineage = lineages_sc2rf[0]
+            classifier = "sc2rf"
 
-        # Try to get find a related pango-designation by lineage name
-        # This will work for designated (X*) lineages
-        if lineage in list(issues_df["lineage"]):
-            match = issues_df[issues_df["lineage"] == lineage]
-            issue = match["issue"].values[0]
-            linelist_df.at[rec[0], "issue"] = str(issue)
-
-        # Alternatively, try to find related pango-designation issues by breakpoint
-        # This will work for proposed* lineages.
-        else:
-            issues = []
-            for lin in lineages_sc2rf:
-                # ex. proposed517 is issue 517
-                if lin.startswith("proposed"):
-                    issue = lin.replace("proposed", "")
-                    issues.append(issue)
-
-            if len(issues) > 1:
-                issue = ",".join(issues)
+        # if nextclade and sc2rf disagree, flag it as X*-like
+        if len(lineages_sc2rf) > 1:
+            if lineage.startswith("X") and lineage not in lineages_sc2rf:
+                lineage = lineage + "-like"
+                status = "proposed"
 
         # Special Cases: XN, XP
         # As of v0.4.0, XN and XP will be detected by sc2rf, but then labeled
         # as a false positive, since all parental regions are collapsed
         parents_clade = rec[1]["parents_clade"]
         if (lineage == "XN" or lineage == "XP") and parents_clade != NO_DATA_CHAR:
-            status_sc2rf = "positive"
+            status = "positive"
             is_recombinant = True
 
-        # Fine-tune positive status
-        status = status_sc2rf
+        # ---------------------------------------------------------------------
+        # Issue
+
+        # Identify the possible pango-designation issue this is related to
+        issues = []
+
+        for lin in set(lineages_sc2rf + [lineage_nextclade]):
+            # ex. proposed517 is issue 517
+            if lin.startswith("proposed"):
+                issue = lin.replace("proposed", "")
+                issues.append(issue)
+
+            elif lin in list(issues_df["lineage"]):
+                match = issues_df[issues_df["lineage"] == lin]
+                issue = match["issue"].values[0]
+                issues.append(issue)
+
+        if len(issues) > 1:
+            issue = ",".join([str(iss) for iss in issues])
+        else:
+            issue = NO_DATA_CHAR
+
+        # ---------------------------------------------------------------------
+        # Private Substitutions
+
+        privates = []
+
+        # The private subs are only informative if we're using the nextclade lineage
+        if classifier == "nextclade":
+            reversions = rec[1]["subs_reversion"].split(",")
+            labeled = rec[1]["subs_labeled"].split(",")
+            unlabeled = rec[1]["subs_unlabeled"].split(",")
+
+            privates_dict = {}
+
+            for sub in reversions + labeled + unlabeled:
+                if sub == NO_DATA_CHAR:
+                    continue
+                # Labeled subs have special formatting
+                if "|" in sub:
+                    sub = sub.split("|")[0]
+                coord = int(sub[1:-1])
+                privates_dict[coord] = sub
+
+            # Convert back to sorted list
+            for coord in sorted(privates_dict):
+                sub = privates_dict[coord]
+                privates.append(sub)
+
+        # ---------------------------------------------------------------------
+        # Status
+
+        # Fine-tune the status of a positive recombinant
         if is_recombinant:
             if lineage.startswith("X"):
                 status = "designated"
@@ -175,54 +224,59 @@ def main(
             else:
                 status = "unpublished"
 
-        # Update the database values
+        # ---------------------------------------------------------------------
+        # Update Dataframe
+
         linelist_df.at[rec[0], "lineage"] = lineage
         linelist_df.at[rec[0], "status"] = str(status)
         linelist_df.at[rec[0], "issue"] = str(issue)
+        linelist_df.at[rec[0], "privates"] = privates
 
     # -------------------------------------------------------------------------
-    # Lineage Grouping
-    # Group sequences into lineages that have a unique combination of
+    # Lineage Assignment (Undesignated)
+    # -------------------------------------------------------------------------
+
+    # Group sequences into potential lineages that have a unique combination of
     #   1. Lineage
     #   2. Parent clades (sc2rf)
     #   3. Parent lineages (sc2rf, lapis cov-spectrum)
     #   4. Breakpoints (sc2rf)
+    #   5. Private substitutions (nextclade)
 
-    logger.info("Defining recombinant lineages")
+    logger.info("Grouping sequences into lineages.")
 
     # Create a dictionary of recombinant lineages seen
     rec_seen = {}
     seen_i = 0
 
     for rec in linelist_df.iterrows():
-        strain = rec[1]["strain"]
 
+        strain = rec[1]["strain"]
         status = rec[1]["status"]
 
         if status == "negative" or status == "false_positive":
             continue
 
         # 1. Lineage assignment (nextclade or sc2rf)
-        lineage = rec[1]["lineage"]
-
         # 2. Parents by clade (ex. 21K,21L)
-        parents_clade = rec[1]["parents_clade"]
-
         # 3. Parents by lineage (ex. BA.1.1,BA.2.3)
-        parents_lineage = rec[1]["parents_lineage"]
-
         # 4. Breakpoints
+        lineage = rec[1]["lineage"]
+        parents_clade = rec[1]["parents_clade"]
+        parents_lineage = rec[1]["parents_lineage"]
         breakpoints = rec[1]["breakpoints"]
+        privates = rec[1]["privates"]
 
-        # Format: "C234T,A54354G|Omicron/BA.1/21K;A423T|Omicron/BA.2/21L"
+        # Format substitutions into a tidy list
+        # "C234T,A54354G|Omicron/BA.1/21K;A423T|Omicron/BA.2/21L"
         parents_subs_raw = rec[1]["parents_subs"].split(";")
-        # Format: ["C234T,A54354G|Omicron/BA.1/21K", "A423T|Omicron/BA.2/21L"]
+        # ["C234T,A54354G|Omicron/BA.1/21K", "A423T|Omicron/BA.2/21L"]
         parents_subs_csv = [sub.split("|")[0] for sub in parents_subs_raw]
-        # Format: ["C234T,A54354G", "A423T"]
+        # ["C234T,A54354G", "A423T"]
         parents_subs_str = ",".join(parents_subs_csv)
-        # Format: "C234T,A54354G,A423T"
+        # "C234T,A54354G,A423T"
         parents_subs_list = parents_subs_str.split(",")
-        # Format: ["C234T","A54354G","A423T"]
+        # ["C234T","A54354G","A423T"]
 
         match = None
 
@@ -242,11 +296,18 @@ def main(
         if match is not None:
             # Add the strain to this lineage
             rec_seen[match]["strains"].append(strain)
+
             # Adjust the cov-spectrum subs /parents subs to include the new strain
             lineage_parents_subs = rec_seen[match]["cov-spectrum_query"]
             for sub in lineage_parents_subs:
-                if sub not in lineage_parents_subs:
+                if sub not in parents_subs_list:
                     rec_seen[match]["cov-spectrum_query"].remove(sub)
+
+            # Adjust the private subs to include the new strain
+            lineage_private_subs = rec_seen[match]["privates"]
+            for sub in lineage_private_subs:
+                if sub not in privates:
+                    rec_seen[match]["privates"].remove(sub)
 
         # This is the first appearance
         else:
@@ -257,18 +318,15 @@ def main(
                 "parents_lineage": parents_lineage,
                 "strains": [strain],
                 "cov-spectrum_query": parents_subs_list,
+                "privates": privates,
             }
             seen_i += 1
 
-    for i in rec_seen:
-        if rec_seen[i]["breakpoints"] == NO_DATA_CHAR:
-            continue
-
     # -------------------------------------------------------------------------
-    # Lineage ID
+    # Cluster ID
     # Assign an id to each lineage based on the first sequence collected
 
-    logger.info("Assigning cluster IDs to recombinant lineages")
+    logger.info("Assigning cluster IDs to lineages.")
 
     linelist_df["cluster_id"] = [NO_DATA_CHAR] * len(linelist_df)
 
@@ -294,9 +352,32 @@ def main(
             linelist_df.loc[strain_i, "cov-spectrum_query"] = subs_query
 
     # -------------------------------------------------------------------------
+    # Mimics
+
+    logger.info("Checking for mimics with too many private mutations.")
+    # Check for designated lineages that have too many private mutations
+    # This may indicate this is a novel lineage
+    for i in rec_seen:
+        lineage = rec_seen[i]["lineage"]
+        rec_strains = rec_seen[i]["strains"]
+        lineage_size = len(rec_strains)
+        num_privates = len(rec_seen[i]["privates"])
+
+        # Mark these lineages as "X*-like"
+        if (
+            lineage.startswith("X")
+            and not lineage.endswith("like")
+            and lineage_size > MIN_LINEAGE_SIZE
+            and num_privates > MAX_PRIVATE_MUTS
+        ):
+            lineage = lineage + "-like"
+            rec_rename = linelist_df["strain"].isin(rec_strains)
+            linelist_df.loc[rec_rename, "lineage"] = lineage
+
+    # -------------------------------------------------------------------------
     # Assign status and curated lineage
 
-    logger.info("Assigning a curated recombinant lineage")
+    logger.info("Assigning curated recombinant lineages.")
 
     for rec in linelist_df.iterrows():
         lineage = rec[1]["lineage"]
@@ -322,7 +403,7 @@ def main(
 
     # -------------------------------------------------------------------------
     # Pipeline Versions
-    logger.info("Recording pipeline versions")
+    logger.info("Recording pipeline versions.")
 
     pipeline_ver = linelist_df["ncov-recombinant_version"].values[0]
     linelist_df.loc[linelist_df.index, "pipeline_version"] = "{pipeline}".format(
@@ -347,12 +428,15 @@ def main(
         columns=[
             "status_sc2rf",
             "clade_nextclade",
-            "privateNucMutations.reversionSubstitutions",
-            "privateNucMutations.labeledSubstitutions",
-            "privateNucMutations.reversionSubstitutions",
+            "subs_reversion",
+            "subs_labeled",
+            "subs_unlabeled",
         ],
         inplace=True,
     )
+
+    # Convert privates from list to csv
+    linelist_df["privates"] = [",".join(p) for p in linelist_df["privates"]]
 
     # Recode NA
     linelist_df.fillna(NO_DATA_CHAR, inplace=True)
