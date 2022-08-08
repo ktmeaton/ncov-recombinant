@@ -2,6 +2,23 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import colors
+import logging
+import sys
+
+
+def create_logger(logfile=None):
+    # create logger
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+
+    # create file handler which logs even debug messages
+    if logfile:
+        handler = logging.FileHandler(logfile)
+    else:
+        handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    return logger
 
 
 def categorical_palette(num_cat=9, continuous=False):
