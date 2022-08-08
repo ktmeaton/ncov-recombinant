@@ -108,7 +108,6 @@ def main(
         # Nextclade can only have one lineage assignment, typically this
         # will be the "majority" parent
         lineage_nextclade = rec[1]["lineage_nextclade"]
-        clade_nextclade = rec[1]["clade_nextclade"]
 
         # sc2rf can have multiple lineages, because different lineages
         # can have the same breakpoint
@@ -117,11 +116,7 @@ def main(
         breakpoints = rec[1]["breakpoints"]
 
         # Check if sc2rf thinks its a recombinant
-        if (
-            breakpoints != NO_DATA_CHAR
-            and status_sc2rf[0] != "false_positive"
-            and status_sc2rf[0] != "negative"
-        ):
+        if status_sc2rf == "positive":
             is_recombinant = True
 
         # Option 1. sc2rf couldn't find a definitive lineage
@@ -152,20 +147,15 @@ def main(
             if len(issues) > 1:
                 issue = ",".join(issues)
 
-        # Add status
-
-        if lineage.startswith("X"):
-            status = "designated"
-        elif lineage.startswith("proposed") or issue != NO_DATA_CHAR:
-            status = "proposed"
-        else:
-            status = "unpublished"
-
-        # false positive recombinants
-        if clade_nextclade == "recombinant" and status_sc2rf == "negative":
-            status = "false_positive"
-        elif not is_recombinant:
-            status = "negative"
+        # Fine-tune positive status
+        status = status_sc2rf
+        if is_recombinant:
+            if lineage.startswith("X"):
+                status = "designated"
+            elif lineage.startswith("proposed") or issue != NO_DATA_CHAR:
+                status = "proposed"
+            else:
+                status = "unpublished"
 
         # Update the database values
         linelist_df.at[rec[0], "lineage"] = lineage
