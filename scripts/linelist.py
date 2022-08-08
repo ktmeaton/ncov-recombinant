@@ -5,6 +5,7 @@ import pandas as pd
 import copy
 from datetime import datetime
 import numpy as np
+from functions import create_logger
 
 # Hard-coded constants
 
@@ -51,11 +52,13 @@ LINELIST_COLS = {
     help="Output directory for linelists",
     required=True,
 )
+@click.option("--log", help="Logfile", required=False)
 def main(
     input,
     issues,
     extra_cols,
     outdir,
+    log,
 ):
     """Create a linelist and recombinant report"""
 
@@ -63,15 +66,20 @@ def main(
     # Setup
     # -------------------------------------------------------------------------
 
+    # create logger
+    logger = create_logger(logfile=log)
+
     # Misc variables
     if not os.path.exists(outdir):
         os.mkdir(outdir)
 
     # Import Summary Dataframe
+    logger.info("Parsing table: {}".format(input))
     summary_df = pd.read_csv(input, sep="\t")
     summary_df.fillna(NO_DATA_CHAR, inplace=True)
 
     # Import Issues Summary Dataframe
+    logger.info("Parsing issues: {}".format(issues))
     issues_df = pd.read_csv(issues, sep="\t")
     issues_df.fillna(NO_DATA_CHAR, inplace=True)
 
@@ -90,8 +98,10 @@ def main(
     linelist_df.rename(columns=LINELIST_COLS, inplace=True)
 
     # -------------------------------------------------------------------------
-    # Lineage Status
+    # Lineage Consensus
     # Use lineage calls by sc2rf and nextclade to classify recombinants status
+
+    logger.info("Comparing lineage assignments across tools")
 
     # Initialize columns
     linelist_df.insert(1, "status", [NO_DATA_CHAR] * len(linelist_df))
@@ -115,15 +125,15 @@ def main(
         status_sc2rf = rec[1]["status_sc2rf"]
         breakpoints = rec[1]["breakpoints"]
 
-        # Check if sc2rf thinks its a recombinant
+        # Check if sc2rf confirmed its a recombinant
         if status_sc2rf == "positive":
             is_recombinant = True
 
-        # Option 1. sc2rf couldn't find a definitive lineage
-        if len(lineages_sc2rf) > 1 or lineages_sc2rf[0] == NO_DATA_CHAR:
+        # If sc2rf couldn't find a definitive match, use nextclade
+        if lineages_sc2rf[0] == NO_DATA_CHAR or len(lineages_sc2rf) > 1:
             lineage = lineage_nextclade
 
-        # Option 2. sc2rf found a definitive match
+        # Otherwise use the sc2rf lineage match
         else:
             lineage = lineages_sc2rf[0]
 
@@ -178,12 +188,19 @@ def main(
     #   3. Parent lineages (sc2rf, lapis cov-spectrum)
     #   4. Breakpoints (sc2rf)
 
+    logger.info("Defining recombinant lineages")
+
     # Create a dictionary of recombinant lineages seen
     rec_seen = {}
     seen_i = 0
 
     for rec in linelist_df.iterrows():
         strain = rec[1]["strain"]
+
+        status = rec[1]["status"]
+
+        if status == "negative" or status == "false_positive":
+            continue
 
         # 1. Lineage assignment (nextclade or sc2rf)
         lineage = rec[1]["lineage"]
@@ -217,7 +234,6 @@ def main(
                 and rec_lin["parents_clade"] == parents_clade
                 and rec_lin["parents_lineage"] == parents_lineage
                 and rec_lin["breakpoints"] == breakpoints
-                # and rec_lin["parents_subs"] == parents_subs
             ):
                 match = i
                 break
@@ -251,30 +267,36 @@ def main(
     # -------------------------------------------------------------------------
     # Lineage ID
     # Assign an id to each lineage based on the first sequence collected
+
+    logger.info("Assigning cluster IDs to recombinant lineages")
+
     linelist_df["cluster_id"] = [NO_DATA_CHAR] * len(linelist_df)
 
     for i in rec_seen:
         earliest_datetime = datetime.today()
         earliest_strain = None
 
-        # Identify the earliest strain to the cluster ID
-        for strain in rec_seen[i]["strains"]:
-            strain_date = linelist_df[linelist_df["strain"] == strain]["date"].values[0]
-            strain_datetime = datetime.strptime(strain_date, "%Y-%m-%d")
-            if strain_datetime <= earliest_datetime:
-                earliest_datetime = strain_datetime
-                earliest_strain = strain
+        rec_strains = rec_seen[i]["strains"]
+        rec_df = linelist_df[linelist_df["strain"].isin(rec_strains)]
 
-        subs_query = ",".join(rec_seen[i]["cov-spectrum_query"])
+        earliest_datetime = min(rec_df["date"])
+        earliest_strain = rec_df[rec_df["date"] == earliest_datetime]["strain"].values[
+            0
+        ]
+        subs_query = rec_seen[i]["cov-spectrum_query"]
+        if subs_query != NO_DATA_CHAR:
+            subs_query = ",".join(subs_query)
 
-        # Add the cluster ID for all strains
-        for strain in rec_seen[i]["strains"]:
-            strain_i = linelist_df[linelist_df["strain"] == strain].index[0]
-            linelist_df.at[strain_i, "cluster_id"] = earliest_strain
-            linelist_df.at[strain_i, "cov-spectrum_query"] = subs_query
+        # indices are preserved from the original linelist_df
+        for strain in rec_strains:
+            strain_i = rec_df[rec_df["strain"] == strain].index[0]
+            linelist_df.loc[strain_i, "cluster_id"] = earliest_strain
+            linelist_df.loc[strain_i, "cov-spectrum_query"] = subs_query
 
     # -------------------------------------------------------------------------
     # Assign status and curated lineage
+
+    logger.info("Assigning a curated recombinant lineage")
 
     for rec in linelist_df.iterrows():
         lineage = rec[1]["lineage"]
@@ -300,6 +322,8 @@ def main(
 
     # -------------------------------------------------------------------------
     # Pipeline Versions
+    logger.info("Recording pipeline versions")
+
     pipeline_ver = linelist_df["ncov-recombinant_version"].values[0]
     linelist_df.loc[linelist_df.index, "pipeline_version"] = "{pipeline}".format(
         pipeline="ncov-recombinant:{}".format(pipeline_ver)
@@ -316,8 +340,19 @@ def main(
     # -------------------------------------------------------------------------
     # Save to File
 
+    logger.info("Sorting output tables.")
+
     # Drop Unnecessary columns
-    linelist_df.drop(columns=["status_sc2rf", "clade_nextclade"], inplace=True)
+    linelist_df.drop(
+        columns=[
+            "status_sc2rf",
+            "clade_nextclade",
+            "privateNucMutations.reversionSubstitutions",
+            "privateNucMutations.labeledSubstitutions",
+            "privateNucMutations.reversionSubstitutions",
+        ],
+        inplace=True,
+    )
 
     # Recode NA
     linelist_df.fillna(NO_DATA_CHAR, inplace=True)
@@ -344,6 +379,7 @@ def main(
 
     # All
     outpath = os.path.join(outdir, "linelist.tsv")
+    logger.info("Writing output: {}".format(outpath))
     linelist_df.to_csv(outpath, sep="\t", index=False)
 
     # Positives
@@ -352,16 +388,19 @@ def main(
         & (linelist_df["status"] != "negative")
     ]
     outpath = os.path.join(outdir, "positives.tsv")
+    logger.info("Writing output: {}".format(outpath))
     positive_df.to_csv(outpath, sep="\t", index=False)
 
     # False Positives
     false_positive_df = linelist_df[linelist_df["status"] == "false_positive"]
     outpath = os.path.join(outdir, "false_positives.tsv")
+    logger.info("Writing output: {}".format(outpath))
     false_positive_df.to_csv(outpath, sep="\t", index=False)
 
     # Negatives
     negative_df = linelist_df[linelist_df["status"] == "negative"]
     outpath = os.path.join(outdir, "negatives.tsv")
+    logger.info("Writing output: {}".format(outpath))
     negative_df.to_csv(outpath, sep="\t", index=False)
 
 
