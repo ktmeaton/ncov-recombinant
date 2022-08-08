@@ -336,35 +336,115 @@ rule nextclade:
       1> {output.metadata} 2>> {log};
     """
 
+# ----------------------------------------------------------------------------#
+rule_name = "nextclade_recombinants"
+
+# Parameters function
+def _params_nextclade_recombinants(build):
+  """Parse conditional parameters for rule nextclade_recombinants."""
+
+  params = {}
+  exclude_clades = config["builds"][build]["nextclade_recombinants"]["exclude_clades"]
+  if exclude_clades: params["exclude_clades"] = ".*(" + "|".join(exclude_clades) + ").*"
+  else: params["exclude_clades"] = "None"
+
+  return params
+
+rule nextclade_recombinants:
+  """Extract recombinants from nextclade output."""
+
+  message: """Extracting recombinant candidates from nextclade output.\n
+  build:     {wildcards.build}
+  log:       {log}
+  alignment: {output.alignment}
+  strains:   {output.strains}
+  """
+
+  input:
+    alignment      = "results/{build}/nextclade/alignment.fasta",
+    qc             = "results/{build}/nextclade/qc.tsv",
+  output:
+    alignment      = "results/{build}/nextclade/recombinants.fasta",
+    strains        = "results/{build}/nextclade/recombinants.txt",
+    qc             = "results/{build}/nextclade/recombinants.qc.tsv",
+    non            = "results/{build}/nextclade/non-recombinants.qc.tsv",
+  params:
+    exclude_clades = lambda wildcards: _params_nextclade_recombinants(wildcards.build)["exclude_clades"],
+    fields         = "clade,Nextclade_pango,qc.overallStatus,privateNucMutations.labeledSubstitutions",
+    values         = ".*(recombinant|X|bad|mediocre|\|).*", # \| is a char for the labelSubstitutions column
+  threads: 1
+  resources:
+    cpus = 1,
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    # Extract recombinant strains
+    csvtk grep -t -v -f "clade" -r -p "{params.exclude_clades}" {input.qc}  2> {log} \
+      | csvtk grep -t -f "qc.mixedSites.status" -p "bad" -v 2>> {log} \
+      | csvtk grep -t -f "{params.fields}" -r -p "{params.values}" 2>> {log} \
+      | csvtk cut -t -f "seqName" 2>> {log} \
+      | tail -n+2 \
+      > {output.strains};
+    # Extract recombinant sequences
+    seqkit grep -f {output.strains} {input.alignment} 1> {output.alignment} 2>> {log};
+    # Extract recombinant qc
+    csvtk grep -t -P {output.strains} {input.qc} 1> {output.qc} 2>> {log};
+    # Extract non-recombinants qc
+    csvtk grep -t -P {output.strains} -v {input.qc} 1> {output.non} 2>> {log};
+    """
+
 # -----------------------------------------------------------------------------#
 #  STAGE 3: sc2rf
 # -----------------------------------------------------------------------------#
 
 rule_name = "sc2rf"
 
+# Input function
+def _inputs_sc2rf(build):
+  """Parse conditional inputs for rule sc2rf."""
+
+  inputs = {}
+  exclude_negatives = config["builds"][build]["sc2rf"]["exclude_negatives"]
+  print(exclude_negatives)
+
+  # nextclade/alignment.fasta: positives, negatives, and false_positives
+  # nextclade/recombinants.fasta: positives (and false_positives)
+
+  # Option 1: Everything (positives, negatives, false_positives)
+  if not exclude_negatives:
+    inputs["alignment"] = "results/{build}/nextclade/alignment.fasta".format(build=build)
+
+  # Option 2: Positives only
+  else:
+    inputs["alignment"] = "results/{build}/nextclade/recombinants.fasta".format(build=build)
+
+  return inputs
+
+# Snakemake rule
 rule sc2rf:
   """
   Identify recombinants with sc2rf.
   """
 
   message: """Identifying recombinants with sc2rf.\n
+  mode:        {wildcards.mode}
   build:       {wildcards.build}
-  log:         {log.primary}
+  log:         {log}
   ansi:        {output.ansi}
   stats:       {output.csv}
   """
 
   input:
-    alignment            = "results/{build}/nextclade/alignment.fasta",
+    alignment            = lambda wildcards: _inputs_sc2rf(wildcards.build)["alignment"],
   output:
-    ansi                 = "results/{build}/sc2rf/ansi.txt",
-    csv                  = "results/{build}/sc2rf/stats.csv",
-    ansi_secondary       = "results/{build}/sc2rf/ansi.secondary.txt",
-    csv_secondary        = "results/{build}/sc2rf/stats.secondary.csv",
+    ansi                 = "results/{build}/sc2rf/ansi.{mode}.txt",
+    csv                  = "results/{build}/sc2rf/stats.{mode}.csv",
   params:
     outdir               = "results/{build}",
-    clades               = lambda wildcards: " ".join(config["builds"][wildcards.build]["sc2rf"]["clades"]),
-    secondary_clades     = lambda wildcards: " ".join(config["builds"][wildcards.build]["sc2rf"]["secondary_clades"]),
+    clades               = lambda wildcards: " ".join(config["builds"][wildcards.build]["sc2rf"][wildcards.mode + "_clades"]),
     mutation_threshold   = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["mutation_threshold"],
     sc2rf_args           = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"],
     max_name_length      = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["max_name_length"]
@@ -372,31 +452,18 @@ rule sc2rf:
   resources:
     cpus = 1,
   benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+    "benchmarks/{rule}/{{build}}_{{mode}}_{today}.tsv".format(today=today, rule=rule_name),
   log:
-    primary   = "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
-    secondary = "logs/{rule}/{{build}}_secondary_{today}.log".format(today=today, rule=rule_name),
+    "logs/{rule}/{{build}}_{{mode}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    # Primary Mode
     bash scripts/sc2rf.sh \
       --alignment {input.alignment} \
       --output-ansi {output.ansi} \
       --output-csv {output.csv} \
-      --log {log.primary} \
+      --log {log} \
       --max-name-length {params.max_name_length} \
       --clades "{params.clades}" \
-      --mutation-threshold {params.mutation_threshold} \
-      {params.sc2rf_args};
-
-    # Secondary Mode
-    bash scripts/sc2rf.sh \
-      --alignment {input.alignment} \
-      --output-ansi {output.ansi_secondary} \
-      --output-csv {output.csv_secondary} \
-      --log {log.secondary} \
-      --max-name-length {params.max_name_length} \
-      --clades "{params.secondary_clades}" \
       --mutation-threshold {params.mutation_threshold} \
       {params.sc2rf_args};
     """
@@ -446,10 +513,10 @@ rule sc2rf_recombinants:
   """
 
   input:
-    ansi            = rules.sc2rf.output.ansi,
-    csv             = rules.sc2rf.output.csv,
-    #ansi_secondary  = rules.sc2rf.output.ansi_secondary,
-    csv_secondary   = rules.sc2rf.output.csv_secondary,
+    ansi_primary    = "results/{build}/sc2rf/ansi.primary.txt",
+    csv_primary     = "results/{build}/sc2rf/stats.primary.csv",
+    ansi_secondary  = "results/{build}/sc2rf/ansi.secondary.txt",
+    csv_secondary   = "results/{build}/sc2rf/stats.secondary.csv",
     issues          = rules.issues_download.output.issues,
     alignment       = "results/{build}/nextclade/alignment.fasta",
     nextclade       = "results/{build}/nextclade_no-recomb/qc.tsv",
@@ -476,9 +543,9 @@ rule sc2rf_recombinants:
   shell:
     """
     python3 sc2rf/postprocess.py \
-      --csv {input.csv} \
+      --csv {input.csv_primary} \
       --csv-secondary {input.csv_secondary} \
-      --ansi {input.ansi} \
+      --ansi {input.ansi_primary} \
       --prefix {params.prefix} \
       --outdir {params.outdir} \
       --aligned {input.alignment} \

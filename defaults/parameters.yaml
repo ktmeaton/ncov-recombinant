@@ -51,15 +51,18 @@ rule_params:
       #- "21L" # Omicron BA.2
 
   # ---------------------------------------------------------------------------
+  # exclude_negatives : true if sequences that are not recombinants (according to Nextclade) should be excluded from sc2rf analysis.
+  #                   : only set to true if there is at least 1 guaranteed recombinant sequence in your input!
   # max_name_length   : The maximum character length of strain names
-  # clades            : Restrict parent search to these clades
+  # primary_clades    : Restrict parent search to these clades
   # secondary_clades  : To detect recombination in BA.4 and BA.5, these clades must be run separately
   # sc2rf_args        : Additional arguments supplied to the program sc2rf
   # primers           : Path to primers, relative to sc2rf directory.
   # primers_name      : The name of the primer set to display in output.
   - name: sc2rf
+    exclude_negatives: false
     max_name_length: 50
-    clades:
+    primary_clades:
       #- "20A" # Non-VOC 2020
       #- "20B" # Non-VOC 2020
       #- "20C" # Non-VOC 2020
