@@ -160,7 +160,9 @@ def main(
         if (lineage == "XN" or lineage == "XP") and parents_clade != NO_DATA_CHAR:
             status = "positive"
             is_recombinant = True
-
+        # if nextclade thinks it's a recombinant but sc2rf doesn't
+        elif lineage.startswith("X") and lineages_sc2rf[0] == NO_DATA_CHAR:
+            status = "false_positive"
         # if nextclade and sc2rf disagree, flag it as X*-like
         elif (
             len(lineages_sc2rf) > 1
