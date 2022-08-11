@@ -4,6 +4,3 @@
 [submodule "sc2rf"]
 	path = sc2rf
 	url = https://github.com/ktmeaton/sc2rf
-[submodule "ncov"]
-	path = ncov
-	url = https://github.com/nextstrain/ncov
