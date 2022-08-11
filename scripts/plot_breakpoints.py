@@ -195,6 +195,9 @@ def main(
 
                 # Give this coordinate to both parents
                 parent_next = parents_split[i + 1]
+                if parent_next == NO_DATA_CHAR:
+                    parent_next = "Unknown"
+
                 breakpoints_dist_data["parent"].append(parent)
                 breakpoints_dist_data["parent"].append(parent_next)
                 breakpoints_dist_data["coordinate"].append(breakpoint_mean_coord)
@@ -300,7 +303,6 @@ def main(
 
         ax = axes[i]
         color = parents_colors[parent]
-
         breakpoints_dist_parent_df = breakpoints_dist_df[
             breakpoints_dist_df["parent"] == parent
         ]

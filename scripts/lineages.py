@@ -16,6 +16,7 @@ LINEAGE_COLS = [
     "parents_clade",
     "parents_lineage",
     "breakpoints",
+    "cluster_privates",
     "issue",
     "sequences",
     "growth_score",
@@ -89,6 +90,9 @@ def main(
             match_df["parents_lineage"].values[0]
         )
         recombinants_data["breakpoints"].append(match_df["breakpoints"].values[0])
+        recombinants_data["cluster_privates"].append(
+            match_df["cluster_privates"].values[0]
+        )
         recombinants_data["issue"].append(match_df["issue"].values[0])
 
         recombinants_data["sequences"].append(sequences)

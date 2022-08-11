@@ -166,11 +166,11 @@ def main(
 
     for status in RECOMBINANT_STATUS:
         if status in status_counts:
-            count = status_counts[status]["sequences"]
+            count = status_counts[status]["lineages"]
         else:
             count = 0
-        summary += "  - {sequences} lineages are {status}.\n".format(
-            sequences=count, status=status
+        summary += "  - {lineages} lineages are {status}.\n".format(
+            lineages=count, status=status
         )
 
     summary += "\n"

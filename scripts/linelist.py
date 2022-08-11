@@ -149,12 +149,6 @@ def main(
             lineage = lineages_sc2rf[0]
             classifier = "sc2rf"
 
-        # if nextclade and sc2rf disagree, flag it as X*-like
-        if len(lineages_sc2rf) > 1:
-            if lineage.startswith("X") and lineage not in lineages_sc2rf:
-                lineage = lineage + "-like"
-                status = "proposed"
-
         # Special Cases: XN, XP
         # As of v0.4.0, XN and XP will be detected by sc2rf, but then labeled
         # as a false positive, since all parental regions are collapsed
@@ -163,6 +157,15 @@ def main(
             status = "positive"
             is_recombinant = True
 
+        # if nextclade and sc2rf disagree, flag it as X*-like
+        elif (
+            len(lineages_sc2rf) > 1
+            and lineage.startswith("X")
+            and lineage not in lineages_sc2rf
+        ):
+            lineage = lineage + "-like"
+            status = "proposed"
+
         # ---------------------------------------------------------------------
         # Issue
 
@@ -170,12 +173,7 @@ def main(
         issues = []
 
         for lin in set(lineages_sc2rf + [lineage_nextclade]):
-            # ex. proposed517 is issue 517
-            if lin.startswith("proposed"):
-                issue = lin.replace("proposed", "")
-                issues.append(issue)
-
-            elif lin in list(issues_df["lineage"]):
+            if lin in list(issues_df["lineage"]):
                 match = issues_df[issues_df["lineage"] == lin]
                 issue = match["issue"].values[0]
                 issues.append(issue)
@@ -217,9 +215,9 @@ def main(
 
         # Fine-tune the status of a positive recombinant
         if is_recombinant:
-            if lineage.startswith("X"):
+            if lineage.startswith("X") and not lineage.endswith("like"):
                 status = "designated"
-            elif lineage.startswith("proposed") or issue != NO_DATA_CHAR:
+            elif issue != NO_DATA_CHAR:
                 status = "proposed"
             else:
                 status = "unpublished"
@@ -329,12 +327,14 @@ def main(
     logger.info("Assigning cluster IDs to lineages.")
 
     linelist_df["cluster_id"] = [NO_DATA_CHAR] * len(linelist_df)
+    linelist_df["cluster_privates"] = [NO_DATA_CHAR] * len(linelist_df)
 
     for i in rec_seen:
         earliest_datetime = datetime.today()
         earliest_strain = None
 
         rec_strains = rec_seen[i]["strains"]
+        rec_privates = rec_seen[i]["privates"]
         rec_df = linelist_df[linelist_df["strain"].isin(rec_strains)]
 
         earliest_datetime = min(rec_df["date"])
@@ -349,6 +349,7 @@ def main(
         for strain in rec_strains:
             strain_i = rec_df[rec_df["strain"] == strain].index[0]
             linelist_df.loc[strain_i, "cluster_id"] = earliest_strain
+            linelist_df.loc[strain_i, "cluster_privates"] = rec_privates
             linelist_df.loc[strain_i, "cov-spectrum_query"] = subs_query
 
     # -------------------------------------------------------------------------
@@ -373,6 +374,7 @@ def main(
             lineage = lineage + "-like"
             rec_rename = linelist_df["strain"].isin(rec_strains)
             linelist_df.loc[rec_rename, "lineage"] = lineage
+            linelist_df.loc[rec_rename, "status"] = "proposed"
 
     # -------------------------------------------------------------------------
     # Assign status and curated lineage
@@ -397,8 +399,8 @@ def main(
         elif status == "designated":
             linelist_df.at[rec[0], "recombinant_lineage_curated"] = lineage
 
-        # If proposed and the lineage is actually proposed*, override
-        elif status == "proposed" and lineage.startswith("proposed"):
+        # If proposed and a variant (-like) of a designated lineages
+        elif status == "proposed" and lineage.endswith("like"):
             linelist_df.at[rec[0], "recombinant_lineage_curated"] = lineage
 
     # -------------------------------------------------------------------------
@@ -437,6 +439,9 @@ def main(
 
     # Convert privates from list to csv
     linelist_df["privates"] = [",".join(p) for p in linelist_df["privates"]]
+    linelist_df["cluster_privates"] = [
+        ",".join(p) for p in linelist_df["cluster_privates"]
+    ]
 
     # Recode NA
     linelist_df.fillna(NO_DATA_CHAR, inplace=True)
