@@ -15,6 +15,8 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 1. Identify parental clades and plot recombination breakpoints with [sc2rf](https://github.com/lenaschimmel/sc2rf).
 1. Create tables, plots, and powerpoint slides for reporting.
 
+---
+
 A recombinant lineage is defined as a group of sequences with a unique combination of:
 
 - lineage assignment (ex. `XM`)
@@ -125,13 +127,13 @@ Linelists are collated into a spreadsheet for excel/google sheets:
 1. `issues`: Metadata of issues related to recombinant lineages posted in the [pango-designation](https://github.com/cov-lineages/pango-designation/issues) repository.
 
 [![excel_output](images/excel_output.png)](
-https://docs.google.com/spreadsheets/d/1FFkKO84LV74401Vc5Uero0gMc_-7npvp6x7M0x-nLJw/edit#gid=2069867983)
+https://docs.google.com/spreadsheets/d/1kVqQScrJneeJ4t7RmSeJTeWVGHecir1CEgq6hl8qirI)
 
 ### Slides
 
 Powerpoint/google slides with plots embedded for presenting.
 
-[![powerpoint_output](images/powerpoint_output.png)](https://docs.google.com/presentation/d/1eCPvaY1X3AzllTzmIwthY2i6GATsL3FDnW_LfE7CkQQ/edit#slide=id.p2)
+[![powerpoint_output](images/powerpoint_output.png)](https://docs.google.com/presentation/d/1Jo4BYBa2K8kvRnKxo9ZpnqhS86ZLh3D1HTF3E8hfD0Q)
 
 ### Breakpoints
 
