@@ -1,10 +1,230 @@
 # CHANGELOG
 
-## Development
+## v0.4.0
 
 ### Notes
 
+#### General
+
+v0.4.0 has been trained and validated on the latest generation of SARS-CoV-2 Omicron clades (ex. 22A/BA.4 and 22B/BA.5). Recombinant sequences involving BA.4 and BA.5 can now be detected, unlike in v0.3.0 where they were not included in the `sc2rf` models.
+
+v0.4.0 is also a **major** update to how sequences are categorized into lineages/clusters. A recombinant lineage is now defined as a group of sequences with a unique combination of:
+
+- Lineage assignment (ex. `XM`)
+- Parental clades (ex. `Omicron/21K,Omicron/21L`)
+- Breakpoints (ex. `17411:21617`)
+- **NEW**: Parental lineages (ex. `BA.1.1,BA.2.12.1`)
+
+Novel recombinants (i.e. undesignated) can be identified by a lineage assignment that does not start with `X*` (ex. `BA.1.1`) _or_ with a lineage assignment that contains `-like` (ex. `XM-like`). A cluster of sequences may be flagged as `-like` if one of the following criteria apply:
+
+1. The lineage assignment by [Nextclade](https://github.com/nextstrain/nextclade) conflicts with the published breakpoints for a designated lineage (`resources/breakpoints.tsv`).
+
+    - Ex. An `XE` assigned sample has breakpoint `11538:12879`, which conflicts with the published `XE` breakpoint (`ex. 8394:12879`). This will be renamed `XE-like`.
+
+1. The cluster has 10 or more sequences, which share at least 3 private mutations in common.
+
+    - Ex. A large cluster of sequences (N=50) are assigned `XM`. However, these 50 samples share 5 private mutations `T2470C,C4586T,C9857T,C12085T,C26577G` which do not appear in true `XM` sequences. These will be renamed `XM-like`. Upon further review of the reported matching [pango-designation issues](https://github.com/cov-lineages/pango-designation/issues) (`460,757,781,472,798`), we find this cluster to be a match to `proposed798`.
+
+The ability to identify parental lineages and private mutations is largely due to improvements in the [newly released nextclade datasets](https://github.com/nextstrain/nextclade_data/releases/tag/2022-07-26--13-04-52--UTC), , which have increased recombinant lineage accuracy. As novel recombinants can now be identified without the use of the custom UShER annotations (ex. proposed771), all UShER rules and output have been removed. This significantly improves runtime, and reduces the need to drop non-recombinant samples for performance. The result is more comparable output between different dataset sizes (4 samples vs. 400,000 samples).
+
+> **Note!** Default parameters have been updated! Please regenerate your profiles/builds with:
+>
+> ```bash
+> scripts/create_profile.sh --data data/custom
+> ```
+
+#### Datasets
+
+- [Issue #49](https://github.com/ktmeaton/ncov-recombinant/issues/49):  The tutorial lineages were changed from `XM`,`proposed467`, `miscBA1BA2Post17k`, to `XD`, `XH`, `XAN`. The previous tutorial sequences had genome quality issues.
+- [Issue #51](https://github.com/ktmeaton/ncov-recombinant/issues/51):  Add `XAN` to the controls dataset. This is BA.2/BA.5 recombinant.
+- [Issue #62](https://github.com/ktmeaton/ncov-recombinant/issues/62):  Add `XAK` to the controls dataset. This is BA.2/BA.1 VUM recombinant monitored by the ECDC.
+
+#### Nextclade
+
+- [Issue #46](https://github.com/ktmeaton/ncov-recombinant/issues/46): `nextclade` is now run twice. Once with the regular `sars-cov-2` dataset and once with the `sars-cov-2-no-recomb`  dataset. The `sars-cov-2-no-recomb` dataset is used to get the nucleotide substitutions before recombination occurred. These are identified by taking the `substitutions` column, and excluding the substitutions found in `privateNucMutations.unlabeledSubstitutions`. The pre-recombination substitutions allow us to identify the parental lineages by querying [cov-spectrum](https://cov-spectrum.org/).
+- [Issue #48](https://github.com/ktmeaton/ncov-recombinant/issues/48): Make the `exclude_clades` completely optional. Otherwise an error would be raised if the user didn't specify any.
+- [Issue #50](https://github.com/ktmeaton/ncov-recombinant/issues/50): Upgrade from `v1.11.0` to `v2.3.0`. Also upgrade the default dataset tags to [2022-07-26T12:00:00Z](https://github.com/nextstrain/nextclade_data/releases/tag/2022-07-26--13-04-52--UTC) which had significant bug fixes.
+- [Issue #51](https://github.com/ktmeaton/ncov-recombinant/issues/51):  Relax the recombinant criteria, by flagging sequences with ANY labelled private mutations as a potential recombinant for further downstream analysis. This was specifically for BA.5 recombinants (ex. `XAN`) as no other columns from the `nextclade` output indicated this could be a recombinant.
+- Restrict `nextclade` output to `fasta,tsv` (alignment and QC table). This saves on file storage, as the other default output is not used.
+
+#### sc2rf
+
+- [Issue #51](https://github.com/ktmeaton/ncov-recombinant/issues/51): `sc2rf` is now run twice. First, to detect recombination between clades (ex. `Delta/21J` & `Omicron/21K`). Second, to detect recombination within Omicron (ex. `Omicron/BA.2/21L` & `Omicron/BA.5/22B`). It was not possible to define universal parameters for `sc2rf` that worked for both distantly related clades, and the closely related Omicron lineages.
+- [Issue #51](https://github.com/ktmeaton/ncov-recombinant/issues/51): Rename parameter `clades` to `primary_clades` and add new parameter `secondary_clades` for detecting BA.5.
+- [Issue #53](https://github.com/ktmeaton/ncov-recombinant/issues/53): Identify the parental lineages by splitting up the observed mutations (from `nextclade`) into regions by breakpoint. Then query the list of mutations in <https://cov-spectrum.org> and report the lineage with the highest prevalence.
+- Tested out `--enable-deletions` again, which caused issues for `XD`. This confirms that using deletions is still ineffective for defining breakpoints.
+- Add `B.1.631` and `B.1.634` to `sc2rf/mapping.tsv` and as potential clades in the default parameters. These are parents for `XB`.
+- Add `B.1.438.1` to `sc2rf/mapping.tsv` and as a otential clade in the default parameters. This is a parent for [`proposed808`](https://github.com/cov-lineages/pango-designation/issues/808).
+- Require a recombinant region to have at least one substitution unique to the parent (i.e. diagnostic). This reduces false positives.
+- Remove the debugging mode, as it produced overly verbose output. It is more efficient to rerun manually with custom parameters tailored to the kind of debugging required.
+- Change parent clade nomenclature from `Omicron/21K` to the more comprehensive `Omicron/BA.1/21K`. This makes it clear which lineage is involved, since it's not always obvious how Nextclade clades map to pango lineages.
+
+#### UShER
+
+- [Issue #63](https://github.com/ktmeaton/ncov-recombinant/issues/63): All UShER rules and output have been removed. First, because the latest releases of nextclade datasets (tag `2022-07-26T12:00:00Z`) have dramatically improved lineage assignment accuracy for recombinants. Second, was to improve runtime and simplicity of the workflow, as UShER adds significantly to runtime.
+
+#### Linelist
+
+- [Issue #30](https://github.com/ktmeaton/ncov-recombinant/issues/30):  Fixed the bug where distinct recombinant lineages would occasionally be grouped into one `cluster_id`. This is due to the new definition for recombinant lineages (see General) section, which now includes parental _lineages_ and have sufficient resolving power.
+- [Issue #46](https://github.com/ktmeaton/ncov-recombinant/issues/46): Added new column `parents_subs`, which are the substitutions found in the parental lineages _before_ recombination occurred using the `sars-cov-2-no-recomb` nextclade dataset. Also added new columns: `parents_lineage`, `parents_lineage_confidence`, based on querying `cov-spectrum` for the substitutions found in `parents_subs`.
+- [Issue #53](https://github.com/ktmeaton/ncov-recombinant/issues/53): Added new column `cov-spectrum_query` which includes the substitutions that are shared by ALL sequences of the recombinant lineage.
+- Added new column `cluster_privates` which includes the private substitutions shared by ALL sequences of the recombinant lineage.
+- Renamed `parents` column to `parents_clade`, to differentiate it from the new column `parents_lineage`.
+
+#### Plot
+
+- [Issue #4](https://github.com/ktmeaton/ncov-recombinant/issues/4), [Issue #57](https://github.com/ktmeaton/ncov-recombinant/issues/57): Plot distributions of each parent separately, rather than stacking on one axis. Also plot the substitutions as ticks on the breakpoints figure.
+
+| v0.3.0                                                                                                                                 | v0.4.0                                                                                                                                 |
+| -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| ![breakpoints_clade_v0.3.0](https://raw.githubusercontent.com/ktmeaton/ncov-recombinant/4fbde4b90/images/breakpoints_clade_v0.3.0.png) | ![breakpoints_clade_v0.4.0](https://raw.githubusercontent.com/ktmeaton/ncov-recombinant/4fbde4b90/images/breakpoints_clade_v0.4.0.png) |
+
+- [Issue #46](https://github.com/ktmeaton/ncov-recombinant/issues/46): Plot breakpoints separately by clade _and_ lineage.  In addition, distinct clusters within the same recombinant lineage are noted by including their cluster ID as a suffix. As an example, please see `XM (USA) and X (England)` below. Where the lineage is the same (`XM`), but the breakpoints differ, as do the parental lineages (`BA.2` vs `BA.2.12.1`). These clusters are distinct because `XM (England)` lacks substitutions occurring around position 20000.
+
+|                                                        Clade                                                         |                                                 Lineage                                                 |
+|:--------------------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------:|
+| ![breakpoints_clade](https://github.com/ktmeaton/ncov-recombinant/raw/432b6b79/images/breakpoints_clade_v0.4.0.png) | ![breakpoints_clade](https://github.com/ktmeaton/ncov-recombinant/raw/432b6b79/images/breakpoints_lineage_v0.4.0.png) |
+
+- [Issue #58](https://github.com/ktmeaton/ncov-recombinant/issues/58):  Fix breakpoint plotting from all lineages to just those observed in the reporting period. Except for the breakpoint plots in `plots_historical`.
+- [Issue #59](https://github.com/ktmeaton/ncov-recombinant/issues/59):  Improved error handling of breakpoint plotting when a breakpoint could not be identified by `sc2rf`. This is possible if `nextclade` was the only program to detect recombination (and thus, we have no breakpoint data from `sc2rf`).
+- [Issue #64](https://github.com/ktmeaton/ncov-recombinant/issues/64): Improved error handling for when the lag period (ex. 4 weeks) falls outside the range of collection dates (ex. 2 weeks).
+- [Issue #65](https://github.com/ktmeaton/ncov-recombinant/issues/65): Improved error handling of distribution plotting when only one sequence is present.
+- [Issue #67](https://github.com/ktmeaton/ncov-recombinant/issues/67): Plot legends are placed above the figure and are dynamically sized.
+
+| v0.3.0                                                                                                                                                            | v0.4.0                                                                                                                                                            |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![lineages_output_v0.3.0](https://raw.githubusercontent.com/ktmeaton/ncov-recombinant/af2f25d3c5e7c1d56244390ee90bec405b23949a/images/lineages_output_v0.3.0.png) | ![lineages_output_v0.4.0](https://raw.githubusercontent.com/ktmeaton/ncov-recombinant/af2f25d3c5e7c1d56244390ee90bec405b23949a/images/lineages_output_v0.4.0.png) |
+
+#### Report
+
+- [Issue #60](https://github.com/ktmeaton/ncov-recombinant/issues/60): Remove changelog from final slide, as this content did not display correctly
+- [Issue #61](https://github.com/ktmeaton/ncov-recombinant/issues/61):  Fixed bug in the `report.xlsx` where the number of proposed and unpublished recombinant lineages/sequences was incorrect.
+
+#### Validation
+
+- [Issue #58](https://github.com/ktmeaton/ncov-recombinant/issues/58): New rule (`validate`) to validate the number of positives in controlled datasets (ex. controls, tutorials) against `defaults/validation.tsv`. If validation fails based on an incorrect number of positives, the pipeline will exit with an error. This is to make it more obvious when results have changed during Continuous Integration (CI)
+
+### Pull Requests
+
+- [```pull/12```](https://github.com/ktmeaton/ncov-recombinant/pull/12) Tutorial dataset and map panel for Auspice subtrees
+- [```pull/11```](https://github.com/ktmeaton/ncov-recombinant/pull/11) Add a tutorial profile
+- [```pull/44```](https://github.com/ktmeaton/ncov-recombinant/pull/44) Breakpoint plotting
+- [```pull/8```](https://github.com/ktmeaton/ncov-recombinant/pull/8) Add XS and XQ to controls.
+
 ### Commits
+
+- [```c027027b```](https://github.com/ktmeaton/ncov-recombinant/commit/c027027b) docs: remove dev notes
+- [```77d9f01b```](https://github.com/ktmeaton/ncov-recombinant/commit/77d9f01b) ci: remove unit test workflow
+- [```574f8c15```](https://github.com/ktmeaton/ncov-recombinant/commit/574f8c15) docs: update instructions in README
+- [```79b61fe2```](https://github.com/ktmeaton/ncov-recombinant/commit/79b61fe2) ci: remove unit tests
+- [```3d53ebd2```](https://github.com/ktmeaton/ncov-recombinant/commit/3d53ebd2) docs: update notes for v0.4.0
+- [```b968dc6d```](https://github.com/ktmeaton/ncov-recombinant/commit/b968dc6d) script: add more subs columns to lineages linelist
+- [```75477ec4```](https://github.com/ktmeaton/ncov-recombinant/commit/75477ec4) script: adjust lag epiweek by 1 when overlaps
+- [```20409f5c```](https://github.com/ktmeaton/ncov-recombinant/commit/20409f5c) sc2rf: mapping change 22C to BA.2.12.1 and add 22D
+- [```432b6b79```](https://github.com/ktmeaton/ncov-recombinant/commit/432b6b79) docs: add breakpoints lineage output for v0.4.0
+- [```4fbde4b9```](https://github.com/ktmeaton/ncov-recombinant/commit/4fbde4b9) docs: add breakts output image to compare v0.3.0 and v0.4.0
+- [```af2f25d3```](https://github.com/ktmeaton/ncov-recombinant/commit/af2f25d3) docs: add lineage output image for v0.4.0 to compare
+- [```5615f113```](https://github.com/ktmeaton/ncov-recombinant/commit/5615f113) docs: add lineage output image for v0.3.0 to compare
+- [```57a08096```](https://github.com/ktmeaton/ncov-recombinant/commit/57a08096) profile: adjust plotting min and max dates for tutorial
+- [```4226c85b```](https://github.com/ktmeaton/ncov-recombinant/commit/4226c85b) script: mark nextclade recombinants unverified by sc2rf as false positives
+- [```d6700e7a```](https://github.com/ktmeaton/ncov-recombinant/commit/d6700e7a) docs: rearrange sections in README
+- [```7f773ba7```](https://github.com/ktmeaton/ncov-recombinant/commit/7f773ba7) docs: update report and slides images and links
+- [```3599a7f4```](https://github.com/ktmeaton/ncov-recombinant/commit/3599a7f4) script: don't use proposed* lineages from sc2rf as consensus lineage
+- [```76106b50```](https://github.com/ktmeaton/ncov-recombinant/commit/76106b50) docs: add new image for lineages plot
+- [```86c2fa2e```](https://github.com/ktmeaton/ncov-recombinant/commit/86c2fa2e) docs: update README and images
+- [```488ea6c7```](https://github.com/ktmeaton/ncov-recombinant/commit/488ea6c7) script: dynamic legends for #67
+- [```bec01845```](https://github.com/ktmeaton/ncov-recombinant/commit/bec01845) script: move plot legend to top for #67
+- [```42d1281b```](https://github.com/ktmeaton/ncov-recombinant/commit/42d1281b) script: make sure X*-like lineages have proposed status
+- [```230f9495```](https://github.com/ktmeaton/ncov-recombinant/commit/230f9495) resources: update issues
+- [```3c2f4c84```](https://github.com/ktmeaton/ncov-recombinant/commit/3c2f4c84) script: detect novel recombinants based on private mutations
+- [```d9e279be```](https://github.com/ktmeaton/ncov-recombinant/commit/d9e279be) resources: update breakpoints for XAF and XAG
+- [```2d070cb2```](https://github.com/ktmeaton/ncov-recombinant/commit/2d070cb2) script: improve linelist efficiency for assigning cluster ids
+- [```b65437f2```](https://github.com/ktmeaton/ncov-recombinant/commit/b65437f2) script: add create_logger function to general functions import
+- [```489154f6```](https://github.com/ktmeaton/ncov-recombinant/commit/489154f6) sc2rf: explicitly call variables primary and secondary
+- [```8f464a14```](https://github.com/ktmeaton/ncov-recombinant/commit/8f464a14) script: simplify extra columns for summary script
+- [```30f90443```](https://github.com/ktmeaton/ncov-recombinant/commit/30f90443) workflow: formally run sc2rf in primary/secondary mode in parallel
+- [```6688c828```](https://github.com/ktmeaton/ncov-recombinant/commit/6688c828) defaults: restore validation counts for XN and XP
+- [```043b691e```](https://github.com/ktmeaton/ncov-recombinant/commit/043b691e) script: add special processing for XN and XP
+- [```939cc967```](https://github.com/ktmeaton/ncov-recombinant/commit/939cc967) script: only adjust lineage status in linelist if positive
+- [```28d91363```](https://github.com/ktmeaton/ncov-recombinant/commit/28d91363) dataset: update tutorial strains for #49
+- [```09e53a94```](https://github.com/ktmeaton/ncov-recombinant/commit/09e53a94) workflow: remove usher for #63
+- [```22c63de0```](https://github.com/ktmeaton/ncov-recombinant/commit/22c63de0) workflow: add XAK to controls for Issue #62
+- [```342fa2a3```](https://github.com/ktmeaton/ncov-recombinant/commit/342fa2a3) script: create separate slides for designated, proposed, and unpublished for issue #61
+- [```84c9b57d```](https://github.com/ktmeaton/ncov-recombinant/commit/84c9b57d) script: create separate plots for designated, proposed, and unpublished for issue #61
+- [```81c58931```](https://github.com/ktmeaton/ncov-recombinant/commit/81c58931) script: if lineage is proposed* use as curated lineage rather than cluster_id
+- [```2db6100b```](https://github.com/ktmeaton/ncov-recombinant/commit/2db6100b) ci: fix typo in profile creation job names
+- [```18102431```](https://github.com/ktmeaton/ncov-recombinant/commit/18102431) script: remove changelog from report slides for issue #60
+- [```b7784b30```](https://github.com/ktmeaton/ncov-recombinant/commit/b7784b30) docs: use new breakpoints path for README
+- [```66ee7d1d```](https://github.com/ktmeaton/ncov-recombinant/commit/66ee7d1d) nextclade: upgrade datasets to tag 2022-07-26 for issue #50
+- [```7880327c```](https://github.com/ktmeaton/ncov-recombinant/commit/7880327c) ci: don't trigger pipeline on images changes
+- [```e8c71171```](https://github.com/ktmeaton/ncov-recombinant/commit/e8c71171) docs: update breakpoints images
+- [```e13138e8```](https://github.com/ktmeaton/ncov-recombinant/commit/e13138e8) script: rename NA to Unknown parent when plotting breakpoints
+- [```fc1b6129```](https://github.com/ktmeaton/ncov-recombinant/commit/fc1b6129) script: remove unneeded constants in plot
+- [```77d3614a```](https://github.com/ktmeaton/ncov-recombinant/commit/77d3614a) dataset: change controls proposed771 to XAN
+- [```f2d72330```](https://github.com/ktmeaton/ncov-recombinant/commit/f2d72330) script: catch empty plot when using tight_layout for breakpoints
+- [```b55dbe95```](https://github.com/ktmeaton/ncov-recombinant/commit/b55dbe95) workflow: include unpublished in positive status for rule validate
+- [```557295b5```](https://github.com/ktmeaton/ncov-recombinant/commit/557295b5) script: plotting catch when breakpoints are NA
+- [```2306305d```](https://github.com/ktmeaton/ncov-recombinant/commit/2306305d) profile: set exclusions for tutorial to default
+- [```c049ccba```](https://github.com/ktmeaton/ncov-recombinant/commit/c049ccba) resource: update curated breakpoints
+- [```218bab52```](https://github.com/ktmeaton/ncov-recombinant/commit/218bab52) env: upgrade nextclade to v2.3.0 for issue #50
+- [```a9ea0bd4```](https://github.com/ktmeaton/ncov-recombinant/commit/a9ea0bd4) workflow: fix typo in rule validate that hard-coded controls
+- [```cf613c34```](https://github.com/ktmeaton/ncov-recombinant/commit/cf613c34) workflow: control breakpoint plotting by clusters file
+- [```0d4b50a4```](https://github.com/ktmeaton/ncov-recombinant/commit/0d4b50a4) resource: update breakpoints figures
+- [```6520457a```](https://github.com/ktmeaton/ncov-recombinant/commit/6520457a) script: plot subs along with breakpoints for issue #57
+- [```8110faa7```](https://github.com/ktmeaton/ncov-recombinant/commit/8110faa7) script: create a plot for cluster_id mostly for breakpoint plotting
+- [```6f02f09c```](https://github.com/ktmeaton/ncov-recombinant/commit/6f02f09c) script: for plot import function categorical_palette
+- [```1f6195df```](https://github.com/ktmeaton/ncov-recombinant/commit/1f6195df) profile: by default do not retry jobs
+- [```2842a4f9```](https://github.com/ktmeaton/ncov-recombinant/commit/2842a4f9) workflow: add rule validate for issue #56
+- [```693b07df```](https://github.com/ktmeaton/ncov-recombinant/commit/693b07df) script: empty df catching in plot breakpoints
+- [```12567fde```](https://github.com/ktmeaton/ncov-recombinant/commit/12567fde) workflow: classify any sequence with unlabeled private mutations as a potential positive
+- [```534ac899```](https://github.com/ktmeaton/ncov-recombinant/commit/534ac899) docs: add more comments to summary script
+- [```82b6a696```](https://github.com/ktmeaton/ncov-recombinant/commit/82b6a696) script: fix bug in parent palette for plot breakpoints
+- [```42510719```](https://github.com/ktmeaton/ncov-recombinant/commit/42510719) config: remove explicit conda activation in slurm script and profiles
+- [```ab44e5d7```](https://github.com/ktmeaton/ncov-recombinant/commit/ab44e5d7) docs: update readme contributors
+- [```e8e2b134```](https://github.com/ktmeaton/ncov-recombinant/commit/e8e2b134) dataset: upgrade nextclade dataset
+- [```086768c7```](https://github.com/ktmeaton/ncov-recombinant/commit/086768c7) parameters: restrict breakpoints and parents to 10 for sc2rf
+- [```83af3a73```](https://github.com/ktmeaton/ncov-recombinant/commit/83af3a73) sc2rf: output NA for false positives breakpoints
+- [```4baee0de```](https://github.com/ktmeaton/ncov-recombinant/commit/4baee0de) script: catch empty dataframe in script plot
+- [```1dc84bf6```](https://github.com/ktmeaton/ncov-recombinant/commit/1dc84bf6) profile: adjust plot end date for positive controls
+- [```be431cdf```](https://github.com/ktmeaton/ncov-recombinant/commit/be431cdf) workflow: restrict nextclade clades again
+- [```76e31f68```](https://github.com/ktmeaton/ncov-recombinant/commit/76e31f68) resources: add breakpoints by clade
+- [```07d96a1e```](https://github.com/ktmeaton/ncov-recombinant/commit/07d96a1e) workflow: fix bug in plot_historical
+- [```2086b254```](https://github.com/ktmeaton/ncov-recombinant/commit/2086b254) sc2rf: update lineage mapping
+- [```0d911b20```](https://github.com/ktmeaton/ncov-recombinant/commit/0d911b20) env: reorganize dependencies
+- [```c165074b```](https://github.com/ktmeaton/ncov-recombinant/commit/c165074b) workflow: separate plot_breakpoints into separate script
+- [```0497dffd```](https://github.com/ktmeaton/ncov-recombinant/commit/0497dffd) profile: controls-negative include false positives
+- [```8bb41c45```](https://github.com/ktmeaton/ncov-recombinant/commit/8bb41c45) script: add separate report slides for clade/lineage parent breakpoints
+- [```411bc235```](https://github.com/ktmeaton/ncov-recombinant/commit/411bc235) workflow: remove subtree params and add secondary clades
+- [```f80386aa```](https://github.com/ktmeaton/ncov-recombinant/commit/f80386aa) sc2rf: catch empty secondary csv
+- [```6d1b03e0```](https://github.com/ktmeaton/ncov-recombinant/commit/6d1b03e0) sc2rf: add optional secondary csv for #51
+- [```a629eb06```](https://github.com/ktmeaton/ncov-recombinant/commit/a629eb06) workflow: detect recombination with BA.5 for #51
+- [```c44b468a```](https://github.com/ktmeaton/ncov-recombinant/commit/c44b468a) env: remove plotly and kaleido from env
+- [```a485215d```](https://github.com/ktmeaton/ncov-recombinant/commit/a485215d) dataset: add proposed771 to controls for #51
+- [```eba827a9```](https://github.com/ktmeaton/ncov-recombinant/commit/eba827a9) script: define lineages by parental lineages for #46
+- [```d6319bad```](https://github.com/ktmeaton/ncov-recombinant/commit/d6319bad) workflow: relax nextclade exclusion filter for #48
+- [```fb7a0a4f```](https://github.com/ktmeaton/ncov-recombinant/commit/fb7a0a4f) env: upgrade nextclade to v2.2.0 for #50
+- [```31ec45be```](https://github.com/ktmeaton/ncov-recombinant/commit/31ec45be) resources: update breakpoints parents nomenclature
+- [```7f00564d```](https://github.com/ktmeaton/ncov-recombinant/commit/7f00564d) (unverified) sc2rf,postprocess: add unique_subs to output
+- [```3e3e46c2```](https://github.com/ktmeaton/ncov-recombinant/commit/3e3e46c2) workflow: implement cov-spectrum query to identify parent lineages
+- [```041de538```](https://github.com/ktmeaton/ncov-recombinant/commit/041de538) workflow: customize nextclade to run with our without recombinant dataset
+- [```7acc598f```](https://github.com/ktmeaton/ncov-recombinant/commit/7acc598f) script: remove edges from stacked bar plots for issue #43
+- [```ab589bb7```](https://github.com/ktmeaton/ncov-recombinant/commit/ab589bb7) docs: add mark horsman for ideas and design
+- [```151e481d```](https://github.com/ktmeaton/ncov-recombinant/commit/151e481d) bug: fix svg font export for issues #42
+- [```b34c1452```](https://github.com/ktmeaton/ncov-recombinant/commit/b34c1452) bug: fix ouput typo in issues_download
+- [```601a0c7a```](https://github.com/ktmeaton/ncov-recombinant/commit/601a0c7a) resources: also output svg for issues breakpoints
+- [```a2a8b00d```](https://github.com/ktmeaton/ncov-recombinant/commit/a2a8b00d) workflow: add plotting issues breakpoints to rule issues_download
+- [```5a5a2f41```](https://github.com/ktmeaton/ncov-recombinant/commit/5a5a2f41) resources: update breakpoints plot
+- [```2113f6f9```](https://github.com/ktmeaton/ncov-recombinant/commit/2113f6f9) script: plot breakpoints of curate lineages in resources
+- [```5f4b901d```](https://github.com/ktmeaton/ncov-recombinant/commit/5f4b901d) docs: add new breakpoints image to readme
+- [```bfdf2191```](https://github.com/ktmeaton/ncov-recombinant/commit/bfdf2191) workflow: cleanup Thumbs
+- [```869f3b4e```](https://github.com/ktmeaton/ncov-recombinant/commit/869f3b4e) script: add breakpoints as a plot and report slide
+- [```e988f251```](https://github.com/ktmeaton/ncov-recombinant/commit/e988f251) bug: fix missing rule_name for historical
+- [```8bc6aef4```](https://github.com/ktmeaton/ncov-recombinant/commit/8bc6aef4) env: add plotly and kaleido to env
+- [```066e0c00```](https://github.com/ktmeaton/ncov-recombinant/commit/066e0c00) resources: add 781 789 798 to curated breakpoints
+- [```4ff587c5```](https://github.com/ktmeaton/ncov-recombinant/commit/4ff587c5) resources: update issues and curated breakpoints
+- [```cc146425```](https://github.com/ktmeaton/ncov-recombinant/commit/cc146425) docs: add instructions for updating conda env
+- [```8592a156```](https://github.com/ktmeaton/ncov-recombinant/commit/8592a156) bug: fix usher_collapse metadata output to allow for hCoV-19 prefix
+- [```9ea4f1b3```](https://github.com/ktmeaton/ncov-recombinant/commit/9ea4f1b3) docs: add --recurse-submodules instruction to updating
 
 ## v0.3.0
 
@@ -110,16 +330,14 @@
 
 ### Pull Requests
 
-- [```pull/12```](https://github.com/ktmeaton/ncov-recombinant/pull/12)
-- [```pull/11```](https://github.com/ktmeaton/ncov-recombinant/pull/11)
-- [```pull/15```](https://github.com/ktmeaton/ncov-recombinant/pull/15)
-- [```pull/19```](https://github.com/ktmeaton/ncov-recombinant/pull/19)
-- [```pull/40```](https://github.com/ktmeaton/ncov-recombinant/pull/40)
-- [```pull/39```](https://github.com/ktmeaton/ncov-recombinant/pull/39)
-- [```pull/8```](https://github.com/ktmeaton/ncov-recombinant/pull/8)
+- [```pull/15```](https://github.com/ktmeaton/ncov-recombinant/pull/15) New rule: parents
+- [```pull/19```](https://github.com/ktmeaton/ncov-recombinant/pull/19) docs: add lenaschimmel as a contributor for code
+- [```pull/40```](https://github.com/ktmeaton/ncov-recombinant/pull/40) v0.3.0 stability update part 2
+- [```pull/39```](https://github.com/ktmeaton/ncov-recombinant/pull/39) v0.3.0 stability update
 
 ### Commits
 
+- [```2f8b498a```](https://github.com/ktmeaton/ncov-recombinant/commit/2f8b498a) docs: update changelog for v0.3.0
 - [```0486d3be```](https://github.com/ktmeaton/ncov-recombinant/commit/0486d3be) docs: add updating section to readme for issue #33
 - [```e8eda400```](https://github.com/ktmeaton/ncov-recombinant/commit/e8eda400) resources: updates issues with curate breakpoints
 - [```12e3700f```](https://github.com/ktmeaton/ncov-recombinant/commit/12e3700f) bug: catch empty dataframe in plot
@@ -271,7 +489,7 @@
 
 ### Pull Requests
 
-- [```pull/14```](https://github.com/ktmeaton/ncov-recombinant/pull/14)
+- [```pull/14```](https://github.com/ktmeaton/ncov-recombinant/pull/14) Plots and PowerPoints
 
 ### Commits
 
@@ -378,7 +596,7 @@
 
 ### Pull Requests
 
-- [```pull/13```](https://github.com/ktmeaton/ncov-recombinant/pull/13)
+- [```pull/13```](https://github.com/ktmeaton/ncov-recombinant/pull/13) Three status categories: designated, proposed, unpublished
 
 ### Commits
 
@@ -478,7 +696,7 @@
 
 ### Pull Requests
 
-- [```pull/10```](https://github.com/ktmeaton/ncov-recombinant/pull/10)
+- [```pull/10```](https://github.com/ktmeaton/ncov-recombinant/pull/10) Automated report generation and sc2rf lineage assignments
 
 ### Commits
 
@@ -558,10 +776,6 @@
 1. Fix `subtrees_collapse` failing if only 1 tree specified
 1. Add new rule `usher_metadata` for merge metadata for subtrees.
 
-### Pull Requests
-
-- [```pull/3```](https://github.com/ktmeaton/ncov-recombinant/pull/3)
-
 ### Commits
 
 - [```b8f89d5e```](https://github.com/ktmeaton/ncov-recombinant/commit/b8f89d5e) update docs for v0.1.1
@@ -594,6 +808,30 @@
 - [```c7a6b9ce```](https://github.com/ktmeaton/ncov-recombinant/commit/c7a6b9ce) remove unused nextclade_recombinants script
 - [```38645ce9```](https://github.com/ktmeaton/ncov-recombinant/commit/38645ce9) remove codecov badge
 - [```50fa9d89```](https://github.com/ktmeaton/ncov-recombinant/commit/50fa9d89) update CHANGELOG for v0.1.0
+
+## v0.1.0
+
+### Notes
+
+1. Add Stage 1: Nextclade.
+1. Add Stage 2: sc2rf.
+1. Add Stage 3: UShER.
+1. Add Stage 4: Summary.
+1. Add Continuous Integration workflows: `lint`, `test`, `pipeline`, and `release`.
+1. New representative controls dataset:
+
+    - Exclude XA because this is an Alpha recombinant (poor lineage accuracy).
+    - Exclude XB because of [current issue](https://github.com/summercms/covid19-pango-designation/commit/26b7359e34a0b2f122215332b6495fea97ff3fe7)
+    - Exclude XC because this is an Alpha recombinant (poor lineage accuracy).
+    - Exclude XD because there are no public genomes.
+    - Exclude XK because there are no public genomes.
+
+### Pull Requests
+
+- [```pull/3```](https://github.com/ktmeaton/ncov-recombinant/pull/3) Add Continuous Integration workflows: lint, test, pipeline, and release.
+
+### Commits
+
 - [```34c721b7```](https://github.com/ktmeaton/ncov-recombinant/commit/34c721b7) rearrange summary cols
 - [```18b389de```](https://github.com/ktmeaton/ncov-recombinant/commit/18b389de) disable usher plotting
 - [```0a101dd9```](https://github.com/ktmeaton/ncov-recombinant/commit/0a101dd9) covert sc2rf_recombinants to a script
