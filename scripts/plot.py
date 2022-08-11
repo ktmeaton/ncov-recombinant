@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 import sys
 import copy
 from functions import categorical_palette
+import math
 
 NO_DATA_CHAR = "NA"
 ALPHA_LAG = 0.25
@@ -23,6 +24,10 @@ FIGSIZE = [6.75, 5.33]
 
 UNKNOWN_COLOR = "dimgrey"
 UNKNOWN_RGB = colors.to_rgb(UNKNOWN_COLOR)
+
+# This is the number of characters than can fit width-wise across the legend
+LEGEND_FONTSIZE = 6
+LEGEND_CHAR_WIDTH = 125
 
 # Show the first N char of the cluster id in the plot
 CLUSTER_ID_LEN = 10
@@ -358,17 +363,21 @@ def main(
             sorted(df_count_dict.items(), key=lambda item: item[1], reverse=True)
         )
         # Reorder the columns in the data frame
-        ordered_cols = list(df_count_dict.keys()) + ["epiweek"]
+        cols = list(df_count_dict.keys())
+
+        # Place Unknown at the end, for better color palettes
+        if "Unknown" in cols:
+            cols.remove("Unknown")
+            ordered_cols = cols + ["Unknown"] + ["epiweek"]
+        else:
+            ordered_cols = cols + ["epiweek"]
+
         plot_df = plot_df[ordered_cols]
 
         # ---------------------------------------------------------------------
         # Dynamically create the color palette
 
         num_cat = len(plot_df.columns) - 1
-
-        legend_ncol = 1
-        if num_cat > 10:
-            legend_ncol = 2
 
         plot_palette = categorical_palette(num_cat=num_cat)
 
@@ -409,6 +418,12 @@ def main(
             alpha=ALPHA_BAR,
         )
 
+        # Get the y-axis limits
+        if max_epiweek_sequences == 0:
+            ylim = [0, 1]
+        else:
+            ylim = [0, round(max_epiweek_sequences * EPIWEEK_MAX_BUFF_FACTOR, 1)]
+
         # Plot the reporting lag
 
         # If the scope of the data is smaller than the lag
@@ -435,47 +450,42 @@ def main(
             alpha=ALPHA_LAG,
             zorder=0,
         )
-
         ax.add_patch(lag_rect)
-        footnote = (
-            "The grey area indicates an approximate reporting"
-            + " lag of {} weeks.".format(lag)
-        )
+
+        # Label the lag rectangle
         ax.text(
-            x=0,
-            y=-0.45,
-            s=footnote,
-            transform=ax.transAxes,
-            fontsize=8,
+            x=lag_i + 0.25,
+            y=ylim[1] / 2,
+            s="Reporting Lag",
+            fontsize=6,
+            fontweight="bold",
+            rotation=90,
         )
 
-        xlim = ax.get_xlim()
-        # If plotting 16 weeks, the x-axis will be (-0.625, 16.625)
-        # If we added dummy data, need to correct start date
-        x_start = xlim[1] - weeks - 1.25
-        ax.set_xlim(x_start, xlim[1])
-        ax.set_ylabel("Number of Sequences", fontweight="bold")
-        ax.set_xlabel("Start of Week", fontweight="bold")
-        ax.xaxis.set_label_coords(0.5, -0.30)
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=90, ha="center", fontsize=8)
+        # ---------------------------------------------------------------------
+        # Legend
 
-        # Catch 0 records
-        if max_epiweek_sequences == 0:
-            ax.set_ylim(0, 1)
-        else:
-            ax.set_ylim(0, round(max_epiweek_sequences * EPIWEEK_MAX_BUFF_FACTOR, 1))
+        # Dynamically set the number of columns in the legend based on how
+        # how much space the labels will take up (in characters)
+        max_char_len = 0
+        for col in ordered_cols:
+            if len(col) >= max_char_len:
+                max_char_len = len(col)
 
-        # small df: upper right
-        # large df: upper left
-        legend_loc = "upper right"
-        if len(plot_df) > 16:
-            legend_loc = "upper left"
+        legend_ncol = math.floor(LEGEND_CHAR_WIDTH / max_char_len)
+        # we don't want more columns than category
+        if legend_ncol > num_cat:
+            legend_ncol = num_cat
+
         legend = ax.legend(
             title=legend_title.title(),
             edgecolor="black",
-            fontsize=8,
+            fontsize=LEGEND_FONTSIZE,
             ncol=legend_ncol,
-            loc=legend_loc,
+            loc="lower center",
+            mode="expand",
+            bbox_to_anchor=(0, 1.02, 1, 0.2),
+            borderaxespad=0,
         )
 
         legend.get_frame().set_linewidth(1)
@@ -484,6 +494,20 @@ def main(
         # If dummy is a column, there were no records and added fake data for plot
         if "dummy" in plot_df.columns:
             legend.remove()
+
+        # ---------------------------------------------------------------------
+        # Axes
+
+        xlim = ax.get_xlim()
+        # If plotting 16 weeks, the x-axis will be (-0.625, 16.625)
+        # If we added dummy data, need to correct start date
+        x_start = xlim[1] - weeks - 1.25
+        ax.set_xlim(x_start, xlim[1])
+        ax.set_ylim(ylim[0], ylim[1])
+        ax.set_ylabel("Number of Sequences", fontweight="bold")
+        ax.set_xlabel("Start of Week", fontweight="bold")
+        # ax.xaxis.set_label_coords(0.5, -0.30)
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=90, ha="center", fontsize=6)
 
         plt.tight_layout()
         plt.savefig(out_path + ".png")
