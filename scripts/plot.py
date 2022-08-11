@@ -447,8 +447,7 @@ def main(
         if lag_epiweek in epiweek_map:
             lag_i = epiweek_map[lag_epiweek]
         else:
-            # The - 1 is because we shift the lag line to be in between bars
-            lag_i = epiweek_map[min_epiweek] - 1
+            lag_i = epiweek_map[max_epiweek]
 
         lag_rect_height = ylim[1]
 
