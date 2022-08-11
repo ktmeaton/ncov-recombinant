@@ -15,7 +15,19 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 1. Identify parental clades and plot recombination breakpoints with [sc2rf](https://github.com/lenaschimmel/sc2rf).
 1. Create tables, plots, and powerpoint slides for reporting.
 
----
+## Table of Contents
+
+1. [What is a Recombinant?](https://github.com/ktmeaton/ncov-recombinant#what-is-a-recombinant)
+1. [Install](https://github.com/ktmeaton/ncov-recombinant#install)
+1. [Update](https://github.com/ktmeaton/ncov-recombinant#update)
+1. [Tutorial](https://github.com/ktmeaton/ncov-recombinant#tutorial)
+1. [Output](https://github.com/ktmeaton/ncov-recombinant#output)
+1. [Configuration](https://github.com/ktmeaton/ncov-recombinant#configuration)
+1. [High Performance Computing](https://github.com/ktmeaton/ncov-recombinant#high-performance-computing)
+1. [FAQ](https://github.com/ktmeaton/ncov-recombinant#faq)
+1. [Credits](https://github.com/ktmeaton/ncov-recombinant#credits)
+
+## What is a Recombinant?
 
 A recombinant lineage is defined as a group of sequences with a unique combination of:
 
@@ -33,17 +45,6 @@ Novel recombinants (i.e. undesignated) can be identified by a lineage assignment
 1. The cluster has 10 or more sequences, which share at least 3 private mutations in common.
 
     - Ex. A large cluster of sequences (N=50) are assigned `XM`. However, these 50 samples share 5 private mutations `T2470C,C4586T,C9857T,C12085T,C26577G` which do not appear in true `XM` sequences. This will be renamed `XM-like`. Upon further review of the reported matching [pango-designation issues](https://github.com/cov-lineages/pango-designation/issues) (`460,757,781,472,798`), we find this cluster to be a match to `proposed798`.
-
-## Table of Contents
-
-1. [Install](https://github.com/ktmeaton/ncov-recombinant#install)
-1. [Update](https://github.com/ktmeaton/ncov-recombinant#update)
-1. [Tutorial](https://github.com/ktmeaton/ncov-recombinant#tutorial)
-1. [Output](https://github.com/ktmeaton/ncov-recombinant#output)
-1. [Configuration](https://github.com/ktmeaton/ncov-recombinant#configuration)
-1. [High Performance Computing](https://github.com/ktmeaton/ncov-recombinant#high-performance-computing)
-1. [FAQ](https://github.com/ktmeaton/ncov-recombinant#faq)
-1. [Credits](https://github.com/ktmeaton/ncov-recombinant#credits)
 
 ## Install
 
