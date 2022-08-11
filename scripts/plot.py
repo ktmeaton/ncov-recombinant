@@ -27,7 +27,11 @@ UNKNOWN_RGB = colors.to_rgb(UNKNOWN_COLOR)
 
 # This is the number of characters than can fit width-wise across the legend
 LEGEND_FONTSIZE = 6
-LEGEND_CHAR_WIDTH = 125
+LEGEND_CHAR_WIDTH = 100
+# The maximum columns in the legend is dictated by the char width, but more
+# importantly, in the categorical_palette function, we restrict it to the
+# first 5 colors of the tap10 palette, and make different shades within it
+LEGEND_MAX_COL = 5
 
 # Show the first N char of the cluster id in the plot
 CLUSTER_ID_LEN = 10
@@ -389,6 +393,9 @@ def main(
         # Setup up Figure
         fig, ax = plt.subplots(1, figsize=FIGSIZE, dpi=DPI)
 
+        # ---------------------------------------------------------------------
+        # Stacked bar charts
+
         # Check if we dropped all records
         if len(plot_df.columns) <= 1:
             error_msg = (
@@ -418,30 +425,41 @@ def main(
             alpha=ALPHA_BAR,
         )
 
-        # Get the y-axis limits
+        # ---------------------------------------------------------------------
+        # Axis limits
+
+        xlim = ax.get_xlim()
+        # If plotting 16 weeks, the x-axis will be (-0.625, 16.625)
+        # If we added dummy data, need to correct start date
+        x_start = xlim[1] - weeks - 1.25
+        ax.set_xlim(x_start, xlim[1])
+
         if max_epiweek_sequences == 0:
             ylim = [0, 1]
         else:
             ylim = [0, round(max_epiweek_sequences * EPIWEEK_MAX_BUFF_FACTOR, 1)]
+        ax.set_ylim(ylim[0], ylim[1])
 
-        # Plot the reporting lag
+        # ---------------------------------------------------------------------
+        # Reporting Lag
 
         # If the scope of the data is smaller than the lag
         if lag_epiweek in epiweek_map:
             lag_i = epiweek_map[lag_epiweek]
         else:
-            lag_i = epiweek_map[min_epiweek]
+            # The - 1 is because we shift the lag line to be in between bars
+            lag_i = epiweek_map[min_epiweek] - 1
 
-        lag_rect_height = len(df)
+        lag_rect_height = ylim[1]
 
         # If we had to use dummy data for an empty dataframe, shift lag by 1
         if "dummy" in plot_df.columns:
             lag_i += 1
-            lag_rect_height = 1
 
         ax.axvline(x=lag_i + (1 - (WIDTH_BAR) / 2), color="black", linestyle="--", lw=1)
+        lag_rect_xy = [lag_i + (1 - (WIDTH_BAR) / 2), 0]
         lag_rect = patches.Rectangle(
-            xy=[lag_i + (1 - (WIDTH_BAR) / 2), 0],
+            xy=lag_rect_xy,
             width=lag + (1 - (WIDTH_BAR) / 2),
             height=lag_rect_height,
             linewidth=1,
@@ -453,13 +471,17 @@ def main(
         ax.add_patch(lag_rect)
 
         # Label the lag rectangle
+        text_props = dict(facecolor="white")
         ax.text(
-            x=lag_i + 0.25,
+            x=lag_rect_xy[0],
             y=ylim[1] / 2,
             s="Reporting Lag",
             fontsize=6,
             fontweight="bold",
             rotation=90,
+            bbox=text_props,
+            va="center",
+            ha="center",
         )
 
         # ---------------------------------------------------------------------
@@ -473,8 +495,10 @@ def main(
                 max_char_len = len(col)
 
         legend_ncol = math.floor(LEGEND_CHAR_WIDTH / max_char_len)
-        # we don't want more columns than category
-        if legend_ncol > num_cat:
+        # we don't want too many columns
+        if legend_ncol > LEGEND_MAX_COL:
+            legend_ncol = LEGEND_MAX_COL
+        elif legend_ncol > num_cat:
             legend_ncol = num_cat
 
         legend = ax.legend(
