@@ -15,13 +15,15 @@ LINEAGE_COLS = [
     "lineage",
     "parents_clade",
     "parents_lineage",
+    "parents_lineage_confidence",
     "breakpoints",
-    "cluster_privates",
     "issue",
     "sequences",
     "growth_score",
     "earliest_date",
     "latest_date",
+    "cluster_privates",
+    "cov-spectrum_query",
 ]
 
 
@@ -89,15 +91,20 @@ def main(
         recombinants_data["parents_lineage"].append(
             match_df["parents_lineage"].values[0]
         )
-        recombinants_data["breakpoints"].append(match_df["breakpoints"].values[0])
-        recombinants_data["cluster_privates"].append(
-            match_df["cluster_privates"].values[0]
+        recombinants_data["parents_lineage_confidence"].append(
+            match_df["parents_lineage_confidence"].values[0]
         )
+        recombinants_data["breakpoints"].append(match_df["breakpoints"].values[0])
         recombinants_data["issue"].append(match_df["issue"].values[0])
-
         recombinants_data["sequences"].append(sequences)
         recombinants_data["earliest_date"].append(earliest_date)
         recombinants_data["latest_date"].append(latest_date)
+        recombinants_data["cluster_privates"].append(
+            match_df["cluster_privates"].values[0]
+        )
+        recombinants_data["cov-spectrum_query"].append(
+            match_df["cov-spectrum_query"].values[0]
+        )
 
         geo_list = list(set(match_df[geo]))
         geo_list.sort()
