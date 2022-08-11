@@ -144,8 +144,12 @@ def main(
         lineage = lineage_nextclade
         classifier = "nextclade"
 
-        # unless sc2rf found a definitive match
-        if lineages_sc2rf[0] != NO_DATA_CHAR and len(lineages_sc2rf) == 1:
+        # unless sc2rf found a definitive match, that is not a "proposed"
+        if (
+            lineages_sc2rf[0] != NO_DATA_CHAR
+            and len(lineages_sc2rf) == 1
+            and not lineages_sc2rf[0].startswith("proposed")
+        ):
             lineage = lineages_sc2rf[0]
             classifier = "sc2rf"
 
@@ -178,7 +182,7 @@ def main(
                 issue = match["issue"].values[0]
                 issues.append(issue)
 
-        if len(issues) > 1:
+        if len(issues) >= 1:
             issue = ",".join([str(iss) for iss in issues])
         else:
             issue = NO_DATA_CHAR
