@@ -20,5 +20,6 @@ builds:
 
     plot:
       weeks: 16
+      min_date: "2022-02-09"
       max_date: "2022-07-04"
       singletons: true
