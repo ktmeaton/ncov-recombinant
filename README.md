@@ -36,7 +36,13 @@ A recombinant lineage is defined as a group of sequences with a unique combinati
 - parental lineages (ex. `BA.1.1,BA.2.12.1`)
 - breakpoints (ex. `17411:21617`)
 
-Novel recombinants (i.e. undesignated) can be identified by a lineage assignment that does not start with `X*` (ex. BA.1.1) _or_ with a lineage assignment that contains `-like` (ex. `XM-like`). A cluster of sequences may be flagged as `-like` if one of following criteria apply:
+### Designated Recombinants
+
+Designated recombinants from [pango-designation](https://github.com/cov-lineages/pango-designation) can be identified by a lineage assignment that starts with `X`.
+
+### Novel Recombinants
+
+Novel recombinants (i.e. undesignated) can be identified by a lineage assignment that _does not_ start with `X*` (ex. BA.1.1) _or_ with a lineage assignment that contains `-like` (ex. `XM-like`). A cluster of sequences may be flagged as `-like` if one of following criteria apply:
 
 1. The lineage assignment by [Nextclade](https://github.com/nextstrain/nextclade) conflicts with the published breakpoints for a designated lineage (`resources/breakpoints.tsv`).
 
@@ -122,8 +128,8 @@ Linelists are collated into a spreadsheet for excel/google sheets:
 1. `parents`: The parental combinations observed.
 1. `linelist`: Results from <u>all</u> input sequences (minimal statistics).
 1. `summary`: Results from <u>all</u> input sequences (all possible statistics, for troubleshooting).
-1. `positives`: Results from sequences classified as a <u>recombinant</u> by at least 2 of 3 classifiers.
-1. `false_positives`: Results from sequences flagged as recombinants by Nextclade, that were not verified by [sc2rf](https://github.com/lenaschimmel/sc2rf) or [UShER](https://github.com/yatisht/usher).
+1. `positives`: Results from sequences classified as a <u>recombinant</u>, as verified by breakpoint detection with [sc2rf](https://github.com/lenaschimmel/sc2rf).
+1. `false_positives`: Results from sequences flagged as recombinants by Nextclade, that were not verified by [sc2rf](https://github.com/lenaschimmel/sc2rf).
 1. `negatives`: Results from sequences classifed as a <u>non-recombinant</u> by nextclade.
 1. `issues`: Metadata of issues related to recombinant lineages posted in the [pango-designation](https://github.com/cov-lineages/pango-designation/issues) repository.
 
@@ -142,7 +148,7 @@ Visualization of breakpoints by parental clade and parental lineage.
 
 |                                         Clade                                          |                                         Lineage                                          |
 |:--------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|
-| ![breakpoints_clade](https://github.com/ktmeaton/ncov-recombinant/raw/dev/images/breakpoints_clade.png) | ![breakpoints_lineage](https://github.com/ktmeaton/ncov-recombinant/raw/dev/images/breakpoints_lineage.png) |
+| ![breakpoints_clade_v0.4.0](https://raw.githubusercontent.com/ktmeaton/ncov-recombinant/4fbde4b90/images/breakpoints_clade_v0.4.0.png) | ![breakpoints_lineage_v0.4.0](https://raw.githubusercontent.com/ktmeaton/ncov-recombinant/432b6b7/images/breakpoints_lineage_v0.4.0.png) |
 
 Visualization of parental alleles from [sc2rf](https://github.com/lenaschimmel/sc2rf).
 
@@ -206,8 +212,7 @@ Visualization of parental alleles from [sc2rf](https://github.com/lenaschimmel/s
                             snakemake --profile my_profiles/custom
     ```
 
-    > - **Note**: you can add the param `--controls` to add a `controls` build that will run in parallel.
-    > - **Note**: The `controls` build analyzes a dataset of positive and negative recombinant sequences.
+    > - **Note**: you can add the param `--controls` to add the `controls` build that will run in parallel.
 
 1. Edit `my_profiles/custom/config.yaml`, so that the `jobs` and `default-resources` match your system.
 
@@ -335,6 +340,28 @@ Visualization of parental alleles from [sc2rf](https://github.com/lenaschimmel/s
     - If the workflow was dispatched with `scripts/slurm.sh`, the master log will be stored at: `logs/ncov-recombinant/ncov-recombinant_<date>_<jobid>.log`
 
     > - **Tip**: Display log of most recent workflow: `cat $(ls -t logs/ncov-recombinant/*.log | head -n 1)`
+
+1. How do I change the parameters for a rule?
+
+    - Find the rule you are interested in customizing in `defaults/parameters.yaml`. For example, maybe you want recombinants visualized by `division` rather than `country`.
+
+        ```yaml
+        # ---------------------------------------------------------------------------
+        # geo : Column to use for a geographic summary (typically region, country, or division)
+        - name: linelist
+          geo: country
+        ```
+
+    - Then copy over the defaults into your custom profile (`my_profiles/custom/builds.yaml`), and adjust the yaml formatting. Note that `- name: linelist` has become `linelist:` which is idented to be flush with the `sequences:` parameter.
+
+        ```yaml
+        - name: custom
+          metadata: data/custom/metadata.tsv
+          sequences: data/custom/sequences.fasta
+
+          linelist:
+            geo: division
+        ```
 
 1. How do I include more of my custom metadata columns into the linelists?
 
