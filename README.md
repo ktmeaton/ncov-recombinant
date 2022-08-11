@@ -13,8 +13,24 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 
 1. Align sequences and perform clade/lineage assignments with [Nextclade](https://github.com/nextstrain/nextclade).
 1. Identify parental clades and plot recombination breakpoints with [sc2rf](https://github.com/lenaschimmel/sc2rf).
-1. Phylogenetically place recombinant sequences with [UShER](https://github.com/yatisht/usher).
-1. Create spreadssheets and powerpoint slides for reporting.
+1. Create tables, plots, and powerpoint slides for reporting.
+
+A recombinant lineage is defined as a group of sequences with a unique combination of:
+
+- lineage assignment (ex. `XM`)
+- parental clades (ex. `Omicron/21K,Omicron/21L`)
+- parental lineages (ex. `BA.1.1,BA.2.12.1`)
+- breakpoints (ex. `17411:21617`)
+
+Novel recombinants (i.e. undesignated) can be identified by a lineage assignment that does not start with `X*` (ex. BA.1.1) _or_ with a lineage assignment that contains `-like` (ex. `XM-like`). A cluster of sequences may be flagged as `-like` if one of following criteria apply:
+
+1. The lineage assignment by [Nextclade](https://github.com/nextstrain/nextclade) conflicts with the published breakpoints for a designated lineage (`resources/breakpoints.tsv`).
+
+    - Ex. An `XE` assigned sample has breakpoint `11538:12879` which conflicts with the published `XE` breakpoint (`ex. 8394:12879`). This will be renamed `XE-like`.
+
+1. The cluster has 10 or more sequences, which share at least 3 private mutations in common.
+
+    - Ex. A large cluster of sequences (N=50) are assigned `XM`. However, these 50 samples share 5 private mutations `T2470C,C4586T,C9857T,C12085T,C26577G` which do not appear in true `XM` sequences. This will be renamed `XM-like`. Upon further review of the reported matching [pango-designation issues](https://github.com/cov-lineages/pango-designation/issues) (`460,757,781,472,798`), we find this cluster to be a match to `proposed798`.
 
 ## Table of Contents
 
@@ -86,12 +102,12 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
     - Slides | `results/tutorial/report/report.pptx`
     - Tables<sup>*</sup> | `results/tutorial/report/report.xlsx`
     - Plots | `results/tutorial/plots`
-    - Breakpoints<sup>†</sup> | `results/tutorial/sc2rf/recombinants.ansi.txt`
-    - Trees<sup>‡</sup> | `results/tutorial/subtrees`
+    - Breakpoints<sup>†</sup>
+        - Between clades (primary) | `results/tutorial/sc2rf/recombinants.ansi.primary.txt`
+        - Within Omicron (secondary) | `results/tutorial/sc2rf/recombinants.ansi.secondary.txt`
 
 <sup>*</sup> Individual tables are available as TSV linelists in `results/tutorial/linelists`.  
 <sup>†</sup> Visualize breakpoints with `less -S` or [Visual Studio ANSI Colors](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi).  
-<sup>‡</sup>  Upload Auspice JSON trees to <https://auspice.us/>.
 
 ## Output
 
@@ -119,11 +135,13 @@ Powerpoint/google slides with plots embedded for presenting.
 
 ### Breakpoints
 
-Visualization of breakpoints by lineage.
+Visualization of breakpoints by parental clade and parental lineage.
 
-![breakpoints_output](images/breakpoints_clade.png)
+|                                         Clade                                          |                                         Lineage                                          |
+|:--------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|
+| ![breakpoints_clade](https://github.com/ktmeaton/ncov-recombinant/raw/dev/images/breakpoints_clade.png) | ![breakpoints_lineage](https://github.com/ktmeaton/ncov-recombinant/raw/dev/images/breakpoints_lineage.png) |
 
-Visualization of breakpoints by parent from [sc2rf](https://github.com/lenaschimmel/sc2rf).
+Visualization of parental alleles from [sc2rf](https://github.com/lenaschimmel/sc2rf).
 
 ![sc2rf_output](images/sc2rf_output.png)
 
@@ -131,7 +149,6 @@ Visualization of breakpoints by parent from [sc2rf](https://github.com/lenaschim
 
 - After completing the tutorial, a good next step is to run the `controls` build.
 - This build analyzes publicly available sequences in [`data/controls`](https://github.com/ktmeaton/ncov-recombinant/tree/master/data/controls), which include recombinant ("positive") and non-recombinant ("negative") sequences.
-- With 1 CPU and 4 GB of memory, this takes ~30 minutes to complete.
 - Instructions for how to include the `controls` in your custom build are in the [configuration](https://github.com/ktmeaton/ncov-recombinant#configuration) section.
 
 1. Preview the steps that are going to be run.
@@ -187,7 +204,7 @@ Visualization of breakpoints by parent from [sc2rf](https://github.com/lenaschim
     ```
 
     > - **Note**: you can add the param `--controls` to add a `controls` build that will run in parallel.
-    > - **Note**: The `controls` build analyzes a dataset of positive and negative recombinant sequences, and adds \~30 min to the runtime.
+    > - **Note**: The `controls` build analyzes a dataset of positive and negative recombinant sequences.
 
 1. Edit `my_profiles/custom/config.yaml`, so that the `jobs` and `default-resources` match your system.
 
@@ -316,58 +333,21 @@ Visualization of breakpoints by parent from [sc2rf](https://github.com/lenaschim
 
     > - **Tip**: Display log of most recent workflow: `cat $(ls -t logs/ncov-recombinant/*.log | head -n 1)`
 
-1. Why is the `usher` rule taking a long time (+10 min)?
-
-    - Placing samples on the global phylogeny is computationally intensive.
-    - Option \#1 is to increase the resources in your profile's `config.yaml` file:
-
-        ```yaml
-        default-resources:
-          - cpus=4
-          - mem_mb=16000
-          - time_min=720
-        ```
-
-    - Option \#2 is to reduce the sample size by excluding negatives n your profile's `builds.yaml` file:
-
-        ```yaml
-        builds:
-          - name: custom
-            base_input: public-latest
-
-            sc2rf:
-              exclude_negatives: true
-        ```
-
-    - Option \#3 for even aggressive sample filtering, is to exclude false positives as well:
-
-        ```yaml
-        builds:
-          - name: custom
-            base_input: public-latest
-
-            sc2rf:
-              exclude_negatives: true
-
-            faToVcf:
-              exclude_false_positives: true
-        ```
-
 1. How do I include more of my custom metadata columns into the linelists?
 
     - By default, the mandatory columns `strain`, `date`, and `country` will appear from your metadata.
-    - Extra columns can be supplied as a parameter to `usher_metadata` in your `builds.yaml` file.
-    - In the following example, the columns `division`, `gisaid_epi_isl`, and `ct` will be extracted from your input `metadata.tsv` file and included in the final linelists.
+    - Extra columns can be supplied as a parameter to `summary` in your `builds.yaml` file.
+    - In the following example, the columns `division`, and `genbank_accession` will be extracted from your input `metadata.tsv` file and included in the final linelists.
 
     ```yaml
-      - name: custom
-        base_input: public-latest
+    - name: controls
+      metadata: data/controls/metadata.tsv
+      sequences: data/controls/sequences.fasta
 
-        usher_metadata:
-          extra_cols:
-            - division
-            - gisaid_epi_isl
-            - ct  
+      summary:
+        extra_cols:
+          - genbank_accession
+          - division
     ```
 
 1. How do I cleanup all the output from a previous run?
@@ -378,17 +358,19 @@ Visualization of breakpoints by parent from [sc2rf](https://github.com/lenaschim
 
 1. Why are "positive" sequences missing from the plots and slides?
 
+    - First check and see if they are in `plots_historical` and `report_historical` which summarize all sequences regardless of collection date.
     - The most likely reason is that these sequences fall outside of the reporting period.
     - The default reporting period is set to 16 weeks before the present.
     - To change it for a build, add custom `plot` parameters to your `builds.yaml` file.
 
     ```yaml
-      - name: custom
-        base_input: public-latest
+    - name: custom
+      metadata: data/custom/metadata.tsv
+      sequences: data/custom/sequences.fasta
 
-        plot:
-            min_date: "2022-01-10"
-            max_date: "2022-04-25" # Optional, can be left blank to use current date
+      plot:
+        min_date: "2022-01-10"
+        max_date: "2022-04-25" # Optional, can be left blank to use current date
     ```
 
 1. Where can I find the plotting data?
@@ -424,7 +406,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   </tr>
   <tr>
     <td align="center"><a href="https://ca.linkedin.com/in/dr-vani-priyadarsini-ikkurti-4a2ab676"><img src="https://media-exp1.licdn.com/dms/image/C5603AQHaG8Xx4QLXSQ/profile-displayphoto-shrink_200_200/0/1569339145568?e=2147483647&v=beta&t=3WrvCciW-x8J3Aw4JHGrWOpuqiikrrGV2KsDaISnHIw" width="100px;" alt=""/><br /><sub><b>Vani Priyadarsini Ikkurthi</b></sub></a><br /><a href="https://github.com/ktmeaton/ncov-recombinant/issues?q=author%3Avanipriyadarsiniikkurthi" title="Bug reports">🐛</a> <a href="https://github.com/ktmeaton/ncov-recombinant/commits?author=vanipriyadarsiniikkurthi" title="Tests">⚠️</a></td>
-    <td align="center"><a href="https://ca.linkedin.com/in/mark-horsman-52a14740"><img src="https://media-exp1.licdn.com/dms/image/C5603AQFMpFRB71ZFhw/profile-displayphoto-shrink_200_200/0/1516893279997?e=1658966400&v=beta&t=R9ruztUYe31ZVLNcZrozaJIJsfvTISCpkAby8wLq-D0" width="100px;" alt=""/><br /><sub><b>Mark Horsman</b></sub></a><br /><a href="#ideas-markhorsman" title="Ideas, Planning, & Feedback">🤔</a> <a href="#design-markhorsman" title="Design">🎨</a></td>
+    <td align="center"><a href="https://ca.linkedin.com/in/mark-horsman-52a14740"><img src="https://ui-avatars.com/api/?name=Mark+Horsman" width="100px;" alt=""/><br /><sub><b>Mark Horsman</b></sub></a><br /><a href="#ideas-markhorsman" title="Ideas, Planning, & Feedback">🤔</a> <a href="#design-markhorsman" title="Design">🎨</a></td>
   </tr>
 </table>
 
