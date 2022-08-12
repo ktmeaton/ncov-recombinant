@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## v0.4.1
+
+### Notes
+
+This is a minor bug fix release with the following changes:
+
+- [Issue #63](https://github.com/ktmeaton/ncov-recombinant/issues/63): Remove `usher` and `protobuf` from the conda environment.
+- [Issue #68](https://github.com/ktmeaton/ncov-recombinant/issues/68): Remove [ncov](https://github.com/nextstrain/ncov) as a submodule.
+- [Issue #69](https://github.com/ktmeaton/ncov-recombinant/issues/69): Remove 22C and 22D from `sc2rf/mapping.csv` and `sc2rf/virus_properties.json`, as these interfere with breakpoint detection for XAN.
+
+### Commits
+
+- [```00a2eec3```](https://github.com/ktmeaton/ncov-recombinant/commit/00a2eec3) docs: add notes for v0.4.1
+- [```d74a81d3```](https://github.com/ktmeaton/ncov-recombinant/commit/d74a81d3) sc2rf: revert 22C and 22D clade addition
+- [```7b662940```](https://github.com/ktmeaton/ncov-recombinant/commit/7b662940) env: remove usher for issue #63
+- [```adf92399```](https://github.com/ktmeaton/ncov-recombinant/commit/adf92399) submodule: remove ncov for issue #68
+- [```0790aa04```](https://github.com/ktmeaton/ncov-recombinant/commit/0790aa04) docs: update CHANGELOG for v0.4.0
+
 ## v0.4.0
 
 ### Notes
@@ -103,13 +121,6 @@ The ability to identify parental lineages and private mutations is largely due t
 #### Validation
 
 - [Issue #58](https://github.com/ktmeaton/ncov-recombinant/issues/58): New rule (`validate`) to validate the number of positives in controlled datasets (ex. controls, tutorials) against `defaults/validation.tsv`. If validation fails based on an incorrect number of positives, the pipeline will exit with an error. This is to make it more obvious when results have changed during Continuous Integration (CI)
-
-### Pull Requests
-
-- [```pull/12```](https://github.com/ktmeaton/ncov-recombinant/pull/12) Tutorial dataset and map panel for Auspice subtrees
-- [```pull/11```](https://github.com/ktmeaton/ncov-recombinant/pull/11) Add a tutorial profile
-- [```pull/44```](https://github.com/ktmeaton/ncov-recombinant/pull/44) Breakpoint plotting
-- [```pull/8```](https://github.com/ktmeaton/ncov-recombinant/pull/8) Add XS and XQ to controls.
 
 ### Commits
 
@@ -332,8 +343,6 @@ The ability to identify parental lineages and private mutations is largely due t
 
 - [```pull/15```](https://github.com/ktmeaton/ncov-recombinant/pull/15) New rule: parents
 - [```pull/19```](https://github.com/ktmeaton/ncov-recombinant/pull/19) docs: add lenaschimmel as a contributor for code
-- [```pull/40```](https://github.com/ktmeaton/ncov-recombinant/pull/40) v0.3.0 stability update part 2
-- [```pull/39```](https://github.com/ktmeaton/ncov-recombinant/pull/39) v0.3.0 stability update
 
 ### Commits
 
@@ -597,6 +606,8 @@ The ability to identify parental lineages and private mutations is largely due t
 ### Pull Requests
 
 - [```pull/13```](https://github.com/ktmeaton/ncov-recombinant/pull/13) Three status categories: designated, proposed, unpublished
+- [```pull/12```](https://github.com/ktmeaton/ncov-recombinant/pull/12) Tutorial dataset and map panel for Auspice subtrees
+- [```pull/11```](https://github.com/ktmeaton/ncov-recombinant/pull/11) Add a tutorial profile
 
 ### Commits
 
@@ -775,6 +786,10 @@ The ability to identify parental lineages and private mutations is largely due t
 1. Filter non-recombinants from `sc2rf` ansi output.
 1. Fix `subtrees_collapse` failing if only 1 tree specified
 1. Add new rule `usher_metadata` for merge metadata for subtrees.
+
+### Pull Requests
+
+- [```pull/8```](https://github.com/ktmeaton/ncov-recombinant/pull/8) Add XS and XQ to controls.
 
 ### Commits
 
