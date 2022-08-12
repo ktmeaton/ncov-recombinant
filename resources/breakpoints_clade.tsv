@@ -10,11 +10,11 @@ proposed446	Delta/21J	0	5584
 XS	Delta/21J	0	9053
 proposed519	Delta/21J	0	11279
 proposed476	Delta/21J	0	19220
+proposed895	Delta/21J	0	20055
 proposed441	Delta/21J	0	21618
 proposed484	Delta/21J	0	21618
 proposed439	Delta/21J	0	21987
 XD	Delta/21J	0	21987
-proposed895	Delta/21J	0	22036
 XC	Delta/21J	0	22081
 proposed844	Delta/21J	0	29903
 XD	Delta/21J	25584	29903
@@ -123,7 +123,7 @@ proposed477	Omicron/BA.2/21L	21618	29903
 proposed514	Omicron/BA.2/21L	21619	29903
 proposed484	Omicron/BA.2/21L	21762	29903
 XAK	Omicron/BA.2/21L	21763	29903
-proposed895	Omicron/BA.2/21L	22578	28271
+proposed895	Omicron/BA.2/21L	22578	27874
 proposed498	Omicron/BA.2/21L	24504	29903
 XP	Omicron/BA.2/21L	29510	29903
 XAJ	Omicron/BA.4/22A	9866	29903
@@ -172,6 +172,7 @@ proposed808	breakpoint	18449	18877
 proposed476	breakpoint	19221	21845
 proposed514	breakpoint	20055	21618
 proposed477	breakpoint	20056	21617
+proposed895	breakpoint	20056	22577
 XA	breakpoint	21255	21764
 XAK	breakpoint	21618	21762
 proposed441	breakpoint	21619	21761
@@ -179,7 +180,6 @@ proposed484	breakpoint	21619	21761
 XAN	breakpoint	21790	22791
 proposed439	breakpoint	21988	22577
 XD	breakpoint	21988	22672
-proposed895	breakpoint	22037	22577
 XC	breakpoint	22082	26766
 proposed498	breakpoint	24130	24503
 XAC	breakpoint	24504	26059
@@ -194,4 +194,4 @@ XAD	breakpoint	26063	26528
 XAP	breakpoint	26063	26528
 XAH	breakpoint	26859	27381
 XP	breakpoint	27385	29509
-proposed895	breakpoint	28272	28310
+proposed895	breakpoint	27875	28310
