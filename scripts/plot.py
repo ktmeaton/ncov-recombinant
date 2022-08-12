@@ -33,8 +33,8 @@ LEGEND_CHAR_WIDTH = 100
 # first 5 colors of the tap10 palette, and make different shades within it
 LEGEND_MAX_COL = 5
 
-# Show the first N char of the cluster id in the plot
-CLUSTER_ID_LEN = 10
+# Show the first N char of the label in the plot
+LEGEND_LABEL_MAX_LEN = 15
 
 # Select and rename columns from linelist
 LINEAGES_COLS = [
@@ -283,9 +283,7 @@ def main(
 
                 # Uh oh, lineage name is not unqiue, need cluster id
                 if lineage in lineages_non_unique:
-                    lineage = "{} ({})".format(lineage, cluster_id[0:CLUSTER_ID_LEN])
-                    if len(cluster_id) > CLUSTER_ID_LEN:
-                        lineage = lineage.replace(")", "...)")
+                    lineage = "{} ({})".format(lineage, cluster_id)
 
                 lineage_seen.append(lineage)
             plot_df.columns = lineage_seen
@@ -510,6 +508,20 @@ def main(
             bbox_to_anchor=(0, 1.02, 1, 0.2),
             borderaxespad=0,
         )
+
+        # Truncate long labels in the legend
+        for i in range(0, len(legend.get_texts())):
+
+            l_label = legend.get_texts()[i].get_text()
+
+            if len(l_label) > LEGEND_LABEL_MAX_LEN:
+                l_label = l_label[0:LEGEND_LABEL_MAX_LEN]
+                if "(" in l_label and ")" not in l_label:
+                    l_label = l_label + "...)"
+                else:
+                    l_label = l_label + "..."
+
+            legend.get_texts()[i].set_text(l_label)
 
         legend.get_frame().set_linewidth(1)
         legend.get_title().set_fontweight("bold")

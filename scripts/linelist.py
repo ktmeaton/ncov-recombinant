@@ -165,7 +165,7 @@ def main(
             status = "false_positive"
         # if nextclade and sc2rf disagree, flag it as X*-like
         elif (
-            len(lineages_sc2rf) > 1
+            len(lineages_sc2rf) >= 1
             and lineage.startswith("X")
             and lineage not in lineages_sc2rf
         ):

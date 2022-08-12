@@ -22,8 +22,8 @@ BREAKPOINT_COLOR = "lightgrey"
 UNKNOWN_COLOR = "dimgrey"
 COORD_ITER = 5000
 
-# Show the first N char of the cluster id in the plot
-CLUSTER_ID_LEN = 10
+# Show the first N char of the label in the plot
+LEGEND_LABEL_MAX_LEN = 15
 
 # Select and rename columns from linelist
 LINEAGES_COLS = [
@@ -375,9 +375,7 @@ def main(
 
         # Non-unique, use cluster ID in y axis
         if lineage_label in lineages_dup:
-            ylabel = "{} ({})".format(lineage_label, cluster_id_label[0:CLUSTER_ID_LEN])
-            if len(cluster_id_label) > CLUSTER_ID_LEN:
-                ylabel = ylabel.replace(")", "...)")
+            ylabel = "{} ({})".format(lineage_label, cluster_id_label)
         else:
             ylabel = lineage_label
 
@@ -451,6 +449,21 @@ def main(
 
     # Axis ticks
     ax.set_yticks(y_tick_locs)
+
+    # Truncate long labels
+    for i in range(0, len(y_tick_labs_lineage)):
+
+        y_label = y_tick_labs_lineage[i]
+
+        if len(y_label) > LEGEND_LABEL_MAX_LEN:
+            y_label = y_label[0:LEGEND_LABEL_MAX_LEN]
+            if "(" in y_label and ")" not in y_label:
+                y_label = y_label + "...)"
+            else:
+                y_label = y_label + "..."
+
+        y_tick_labs_lineage[i] = y_label
+
     ax.set_yticklabels(y_tick_labs_lineage, fontsize=y_tick_fontsize)
 
     # Axis Labels
@@ -489,6 +502,7 @@ def main(
         title=parent_type.title(),
         bbox_to_anchor=[1.01, 1.01],
     )
+
     frame = legend.get_frame()
     frame.set_linewidth(1)
     frame.set_edgecolor("black")
