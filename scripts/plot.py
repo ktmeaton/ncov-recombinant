@@ -196,7 +196,7 @@ def main(
     plot_dict = {
         "lineage": {
             "legend_title": "lineage",
-            "cols": ["recombinant_lineage_curated", "cluster_id"],
+            "cols": ["recombinant_lineage_curated"],
             "y": "recombinant_lineage_curated",
         },
         "status": {"legend_title": "status", "cols": ["status"]},
@@ -209,19 +209,19 @@ def main(
         },
         "designated": {
             "legend_title": "lineage",
-            "cols": ["recombinant_lineage_curated", "cluster_id"],
+            "cols": ["recombinant_lineage_curated"],
             "filter": "status",
             "value": "Designated",
         },
         "proposed": {
             "legend_title": "lineage",
-            "cols": ["recombinant_lineage_curated", "cluster_id"],
+            "cols": ["recombinant_lineage_curated"],
             "filter": "status",
             "value": "Proposed",
         },
         "unpublished": {
             "legend_title": "lineage",
-            "cols": ["recombinant_lineage_curated", "cluster_id"],
+            "cols": ["recombinant_lineage_curated"],
             "filter": "status",
             "value": "Unpublished",
         },
@@ -258,35 +258,6 @@ def main(
                 aggfunc="count",
                 columns=columns,
             )
-
-        # Lineage df needs special changes
-        if (
-            plot == "lineage"
-            or plot == "designated"
-            or plot == "proposed"
-            or plot == "unpublished"
-        ):
-            lineage_seen = []
-            # What are the duplicate lineages?
-            lineages = [col[0] for col in plot_df.columns]
-            lineages_unique = []
-            lineages_non_unique = []
-            for lineage in lineages:
-                if lineage not in lineages_unique:
-                    lineages_unique.append(lineage)
-                else:
-                    lineages_non_unique.append(lineage)
-
-            for col in plot_df.columns:
-                lineage = col[0]
-                cluster_id = col[1]
-
-                # Uh oh, lineage name is not unqiue, need cluster id
-                if lineage in lineages_non_unique:
-                    lineage = "{} ({})".format(lineage, cluster_id)
-
-                lineage_seen.append(lineage)
-            plot_df.columns = lineage_seen
 
         plot_df.index.name = None
         plot_df.fillna(0, inplace=True)
@@ -510,18 +481,21 @@ def main(
         )
 
         # Truncate long labels in the legend
-        for i in range(0, len(legend.get_texts())):
+        # But only if this plots does not involve plotting parents!
+        # Because we need to see the 2+ parent listed at the end
+        if "parents" in label:
+            for i in range(0, len(legend.get_texts())):
 
-            l_label = legend.get_texts()[i].get_text()
+                l_label = legend.get_texts()[i].get_text()
 
-            if len(l_label) > LEGEND_LABEL_MAX_LEN:
-                l_label = l_label[0:LEGEND_LABEL_MAX_LEN]
-                if "(" in l_label and ")" not in l_label:
-                    l_label = l_label + "...)"
-                else:
-                    l_label = l_label + "..."
+                if len(l_label) > LEGEND_LABEL_MAX_LEN:
+                    l_label = l_label[0:LEGEND_LABEL_MAX_LEN]
+                    if "(" in l_label and ")" not in l_label:
+                        l_label = l_label + "...)"
+                    else:
+                        l_label = l_label + "..."
 
-            legend.get_texts()[i].set_text(l_label)
+                legend.get_texts()[i].set_text(l_label)
 
         legend.get_frame().set_linewidth(1)
         legend.get_title().set_fontweight("bold")
