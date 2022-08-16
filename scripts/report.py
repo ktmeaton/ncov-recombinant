@@ -82,15 +82,13 @@ def main(
         if "epiweek" in plot_dict[label]["df"].columns:
             plot_dict[label]["df"].index = plot_dict[label]["df"]["epiweek"]
 
-        # Largest is special, as it takes the form largest_<lineage>_<cluster_id>.*
+        # Largest is special, as it takes the form largest_<lineage>.*
         if label.startswith("largest_"):
 
             largest_lineage = label.split("_")[1]
-            largest_cluster_id = "_".join(label.split("_")[2:]).replace("-DELIM-", "/")
 
             plot_dict["largest"] = plot_dict[label]
             plot_dict["largest"]["lineage"] = largest_lineage
-            plot_dict["largest"]["cluster_id"] = largest_cluster_id
 
             del plot_dict[label]
 
@@ -177,6 +175,7 @@ def main(
     summary += "There are {total_sequences} recombinant sequences".format(
         total_sequences=total_sequences
     )
+
     # Whether we need a footnote for singletons
     if singletons:
         summary += ".\n"
@@ -318,7 +317,6 @@ def main(
 
     largest_lineage = plot_dict["largest"]["lineage"]
     largest_lineage_size = 0
-    largest_cluster_id = plot_dict["largest"]["cluster_id"]
 
     for lineage in lineages:
         seq_count = int(sum(lineages_df[lineage].dropna()))
@@ -342,9 +340,6 @@ def main(
         size=largest_lineage_size,
     )
 
-    summary += "The cluster ID for this lineage is {id}.\n".format(
-        id=largest_cluster_id
-    )
     summary += "{lineage} is observed in {num_geo} {geo}.\n".format(
         lineage=largest_lineage, num_geo=num_geos, geo=geo
     )

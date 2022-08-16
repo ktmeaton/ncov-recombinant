@@ -142,24 +142,22 @@ def main(
     # Change status to title case
     df["status"] = [s.title() for s in df["status"]]
 
-    # Get largest cluster
-    largest_cluster_id = NO_DATA_CHAR
-    largest_cluster_size = 0
+    # Get largest lineage
     largest_lineage = NO_DATA_CHAR
+    largest_lineage_size = 0
 
     # All record cluster sizes to decided if singletons should be dropped
     drop_singleton_ids = []
 
-    for cluster_id in set(df["cluster_id"]):
-        cluster_df = df[df["cluster_id"] == cluster_id]
-        cluster_size = len(cluster_df)
-        if cluster_size >= largest_cluster_size:
-            largest_cluster_id = cluster_id
-            largest_lineage = cluster_df["lineage"].values[0]
-            largest_cluster_size = cluster_size
+    for lineage in set(df["recombinant_lineage_curated"]):
+        match_df = df[df["recombinant_lineage_curated"] == lineage]
+        lineage_size = len(match_df)
+        if lineage_size >= largest_lineage_size:
+            largest_lineage = match_df["recombinant_lineage_curated"].values[0]
+            largest_lineage_size = lineage_size
 
-        if cluster_size == 1:
-            for i in cluster_df.index:
+        if lineage_size == 1:
+            for i in match_df.index:
                 drop_singleton_ids.append(i)
 
     # now decided if we should drop singletons
@@ -204,8 +202,8 @@ def main(
         "largest": {
             "legend_title": geo,
             "cols": [geo],
-            "filter": "cluster_id",
-            "value": largest_cluster_id,
+            "filter": "recombinant_lineage_curated",
+            "value": largest_lineage,
         },
         "designated": {
             "legend_title": "lineage",
@@ -311,12 +309,9 @@ def main(
         out_path = os.path.join(outdir, label)
 
         # Save plotting dataframe to file
-        # for the largest, we also include the lineage and cluster_id in the file name
+        # for the largest, we need to replace the slashes in the filename
         if label == "largest":
-            out_path += "_{lineage}_{cluster_id}".format(
-                lineage=largest_lineage,
-                cluster_id=largest_cluster_id.replace("/", "-DELIM-"),
-            )
+            out_path += "_{lineage}".format(lineage=lineage)
 
         plot_df.to_csv(out_path + ".tsv", sep="\t", index=False)
 
@@ -483,7 +478,7 @@ def main(
         # Truncate long labels in the legend
         # But only if this plots does not involve plotting parents!
         # Because we need to see the 2+ parent listed at the end
-        if "parents" in label:
+        if "parents" not in label:
             for i in range(0, len(legend.get_texts())):
 
                 l_label = legend.get_texts()[i].get_text()
