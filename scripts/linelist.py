@@ -184,7 +184,7 @@ def main(
         # Identify the possible pango-designation issue this is related to
         issues = []
 
-        for lin in set(lineages_sc2rf):
+        for lin in set(lineages_sc2rf + [lineage_nextclade]):
             if lin in list(issues_df["lineage"]):
                 match = issues_df[issues_df["lineage"] == lin]
                 issue = match["issue"].values[0]
