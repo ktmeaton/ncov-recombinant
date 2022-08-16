@@ -164,7 +164,6 @@ def main(
 
             # If we actually found breakpoints but not sc2rf lineage, this is a "-like"
             if breakpoints != NO_DATA_CHAR and lineages_sc2rf[0] == NO_DATA_CHAR:
-                status = "proposed"
                 lineage = lineage + "-like"
 
         # if nextclade thinks it's a recombinant but sc2rf doesn't
@@ -178,7 +177,6 @@ def main(
             and lineage not in lineages_sc2rf
         ):
             lineage = lineage + "-like"
-            status = "proposed"
 
         # ---------------------------------------------------------------------
         # Issue
@@ -186,7 +184,7 @@ def main(
         # Identify the possible pango-designation issue this is related to
         issues = []
 
-        for lin in set(lineages_sc2rf + [lineage_nextclade]):
+        for lin in set(lineages_sc2rf):
             if lin in list(issues_df["lineage"]):
                 match = issues_df[issues_df["lineage"] == lin]
                 issue = match["issue"].values[0]
