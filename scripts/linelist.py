@@ -121,6 +121,7 @@ def main(
     for rec in linelist_df.iterrows():
         strain = rec[1]["strain"]
         status = rec[1]["status_sc2rf"]
+        breakpoints = rec[1]["breakpoints"]
 
         issue = NO_DATA_CHAR
         is_recombinant = False
@@ -154,15 +155,22 @@ def main(
             classifier = "sc2rf"
 
         # Special Cases: XN, XP
-        # As of v0.4.0, XN and XP will be detected by sc2rf, but then labeled
+        # As of v0.4.0, sometimes XN and XP will be detected by sc2rf, but then labeled
         # as a false positive, since all parental regions are collapsed
         parents_clade = rec[1]["parents_clade"]
         if (lineage == "XN" or lineage == "XP") and parents_clade != NO_DATA_CHAR:
             status = "positive"
             is_recombinant = True
+
+            # If we actually found breakpoints but not sc2rf lineage, this is a "-like"
+            if breakpoints != NO_DATA_CHAR and lineages_sc2rf[0] == NO_DATA_CHAR:
+                status = "proposed"
+                lineage = lineage + "-like"
+
         # if nextclade thinks it's a recombinant but sc2rf doesn't
-        elif lineage.startswith("X") and lineages_sc2rf[0] == NO_DATA_CHAR:
+        elif lineage.startswith("X") and breakpoints == NO_DATA_CHAR:
             status = "false_positive"
+
         # if nextclade and sc2rf disagree, flag it as X*-like
         elif (
             len(lineages_sc2rf) >= 1

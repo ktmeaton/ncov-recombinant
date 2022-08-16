@@ -13,6 +13,7 @@ LINEAGE_COLS = [
     "cluster_id",
     "status",
     "lineage",
+    "recombinant_lineage_curated",
     "parents_clade",
     "parents_lineage",
     "parents_lineage_confidence",
@@ -87,6 +88,9 @@ def main(
         recombinants_data["cluster_id"].append(cluster_id)
         recombinants_data["status"].append(match_df["status"].values[0])
         recombinants_data["lineage"].append(match_df["lineage"].values[0])
+        recombinants_data["recombinant_lineage_curated"].append(
+            match_df["recombinant_lineage_curated"].values[0]
+        )
         recombinants_data["parents_clade"].append(match_df["parents_clade"].values[0])
         recombinants_data["parents_lineage"].append(
             match_df["parents_lineage"].values[0]

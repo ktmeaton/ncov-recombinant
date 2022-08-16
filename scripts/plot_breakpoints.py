@@ -47,6 +47,9 @@ plt.rcParams["svg.fonttype"] = "none"
 @click.option("--lineages", help="Recombinant lineages (tsv)", required=True)
 @click.option("--outdir", help="Output directory", required=False, default=".")
 @click.option(
+    "--lineage-col", help="Column name of lineage", required=False, default="lineage"
+)
+@click.option(
     "--breakpoint-col",
     help="Column name of breakpoints",
     required=False,
@@ -85,6 +88,7 @@ plt.rcParams["svg.fonttype"] = "none"
 def main(
     lineages,
     outdir,
+    lineage_col,
     parent_col,
     breakpoint_col,
     cluster_col,
@@ -115,7 +119,7 @@ def main(
         # Which lineages have the same name but different cluster ID?
         lineages_seen = []
         lineages_dup = []
-        for lineage in list(lineages_df["lineage"]):
+        for lineage in list(lineages_df[lineage_col]):
             if lineage not in lineages_seen:
                 lineages_seen.append(lineage)
             else:
@@ -157,7 +161,7 @@ def main(
 
     # Iterate through lineages
     for rec in lineages_df.iterrows():
-        lineage = rec[1]["lineage"]
+        lineage = rec[1][lineage_col]
 
         if cluster_col:
             cluster_id = rec[1][cluster_col]
@@ -403,7 +407,7 @@ def main(
 
         # Iterate through substitutions to plot
         if positives:
-            positive_rec = positives_df[(positives_df["lineage"] == lineage_label)]
+            positive_rec = positives_df[(positives_df[lineage_col] == lineage_label)]
             # If we're using a cluster id col, further filter on that
             if cluster_col:
                 positive_rec = positive_rec[

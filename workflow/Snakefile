@@ -765,6 +765,7 @@ rule plot:
     # Plot breakpoints by clade
     python3 scripts/plot_breakpoints.py \
       --lineages {input.lineages} \
+      --lineage-col recombinant_lineage_curated \
       --positives {input.positives} \
       --outdir {params.outdir} \
       --parent-col parents_clade \
@@ -776,6 +777,7 @@ rule plot:
     # Plot breakpoints by lineage
     python3 scripts/plot_breakpoints.py \
       --lineages {input.lineages} \
+      --lineage-col recombinant_lineage_curated \
       --positives {input.positives} \
       --outdir {params.outdir} \
       --parent-col parents_lineage \
@@ -826,6 +828,7 @@ rule plot_historical:
     # Plot breakpoints by clade
     python3 scripts/plot_breakpoints.py \
       --lineages {input.lineages} \
+      --lineage-col recombinant_lineage_curated \
       --positives {input.positives} \
       --outdir {params.outdir} \
       --parent-col parents_clade \
@@ -837,6 +840,7 @@ rule plot_historical:
     # Plot breakpoints by lineage
     python3 scripts/plot_breakpoints.py \
       --lineages {input.lineages} \
+      --lineage-col recombinant_lineage_curated \
       --positives {input.positives} \
       --outdir {params.outdir} \
       --parent-col parents_lineage \

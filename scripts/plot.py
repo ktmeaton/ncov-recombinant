@@ -311,7 +311,7 @@ def main(
         # Save plotting dataframe to file
         # for the largest, we need to replace the slashes in the filename
         if label == "largest":
-            out_path += "_{lineage}".format(lineage=lineage)
+            out_path += "_{lineage}".format(lineage=largest_lineage)
 
         plot_df.to_csv(out_path + ".tsv", sep="\t", index=False)
 
