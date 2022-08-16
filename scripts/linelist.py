@@ -427,7 +427,7 @@ def main(
     sc2rf_ver = linelist_df["sc2rf_version"].values[0]
     linelist_df.loc[
         linelist_df.index, "recombinant_classifier"
-    ] = "{nextclade}-{sc2rf}".format(
+    ] = "{nextclade};{sc2rf}".format(
         nextclade="nextclade:{}".format(nextclade_ver),
         sc2rf="sc2rf:{}".format(sc2rf_ver),
     )
