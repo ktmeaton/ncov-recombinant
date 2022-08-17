@@ -94,30 +94,30 @@ rule all:
   """
   Default workflow targets.
   """
-    input:
-        # Config files
-        expand("results/{build_name}/config.json",
-          build_name=BUILDS,
-          ),
-        # Stage 1: Nextclade
-        expand("results/{build_name}/nextclade/alignment.fasta",
-          build_name=BUILDS,
-          ),
-        # Stage 2: sc2rf
-        expand("results/{build_name}/sc2rf/stats.tsv",
-          build_name=BUILDS,
-          ),
-        # Stage 3: Reports
-        expand("results/{build_name}/report/report.xlsx",
-          build_name=BUILDS,
-          ),
-        expand("results/{build_name}/report_historical/report.pptx",
-                  build_name=BUILDS,
-                  ),
-       # Stage 4: Validation (optional)
-        expand("results/{build_name}/validate/validation.tsv",
-          build_name=BUILDS_VALIDATE,
-          ),
+  input:
+    # Config files
+    expand("results/{build_name}/config.json",
+      build_name=BUILDS,
+      ),
+    # Stage 1: Nextclade
+    expand("results/{build_name}/nextclade/alignment.fasta",
+      build_name=BUILDS,
+      ),
+    # Stage 2: sc2rf
+    expand("results/{build_name}/sc2rf/stats.tsv",
+      build_name=BUILDS,
+      ),
+    # Stage 3: Reports
+    expand("results/{build_name}/report/report.xlsx",
+      build_name=BUILDS,
+      ),
+    expand("results/{build_name}/report_historical/report.pptx",
+              build_name=BUILDS,
+              ),
+    # Stage 4: Validation (optional)
+    expand("results/{build_name}/validate/validation.tsv",
+      build_name=BUILDS_VALIDATE,
+      ),
 
 # -----------------------------------------------------------------------------#
 #  Accessory Rules
@@ -128,6 +128,9 @@ rule print_config:
   Print full config.
   """
   message: "Printing full config."
+  threads: 1
+  resources:
+    cpus = 1,
   run:
     # Print the config
     config_json = json.dumps(config, indent = 2)
@@ -142,6 +145,9 @@ rule save_config:
   message: "Saving full config."
   output:
     json = "results/{build}/config.json",
+  threads: 1
+  resources:
+    cpus = 1,
   params:
     output_dir = "results/{build}/",
   run:
@@ -167,6 +173,9 @@ rule help:
   """
   Print list of all rules and targets with help.
   """
+  threads: 1
+  resources:
+    cpus = 1,
   run:
     for rule in workflow.rules:
       print("-" * 160)
