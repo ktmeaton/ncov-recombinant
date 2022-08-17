@@ -96,16 +96,17 @@ rule_params:
     sc2rf_args: "--ansi --parents 2-10 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
 
   # ---------------------------------------------------------------------------
-  # lapis           : If true, query cov-spectrum using LAPIS to identify parental lineages
-  #                 : recommended false if number of sequences > 100.
-  # min_len         : (optional) Ignore recombinants regions shorter than this
-  # max_breakpoints : (optional) Exlude samples with greater than this number of parents
-  # max_parents     : (optional) Exlude samples with greater than this number of breakpoints
-  # motifs          : (optional, experimental) Path to a breakpoints motif file
-  # lapis
+  # lapis              : If true, query cov-spectrum using LAPIS to identify parental lineages
+  #                    : recommended false if number of sequences > 100.
+  # min_len            : (optional) Ignore recombinants regions shorter than this
+  # max_breakpoint_len : (optional) Ignore recombinant breakpoints shorter than this
+  # max_breakpoints    : (optional) Exlude samples with greater than this number of parents
+  # max_parents        : (optional) Exlude samples with greater than this number of breakpoints
+  # motifs             : (optional, experimental) Path to a breakpoints motif file
   - name: sc2rf_recombinants
     lapis: true
     min_len: 1000
+    max_breakpoint_len: 5000
     max_parents: 2
     max_breakpoints: 2
     motifs:

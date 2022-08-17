@@ -492,6 +492,10 @@ def _params_sc2rf_recombinants(build):
   if min_len: params["min_len"] = "--min-len {}".format(min_len)
   else: params["min_len"] = ""
 
+  max_breakpoint_len = config["builds"][build]["sc2rf_recombinants"]["max_breakpoint_len"]
+  if max_breakpoint_len: params["max_breakpoint_len"] = "--max-breakpoint-len {}".format(max_breakpoint_len)
+  else: params["max_breakpoint_len"] = ""
+
   max_breakpoints = config["builds"][build]["sc2rf_recombinants"]["max_breakpoints"]
   if max_breakpoints: params["max_breakpoints"] = "--max-breakpoints {}".format(max_breakpoints)
   else: params["max_breakpoints"] = ""
@@ -538,6 +542,7 @@ rule sc2rf_recombinants:
     outdir          = "results/{build}/sc2rf",
     prefix          = "recombinants",
     min_len         = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["min_len"],
+    max_breakpoint_len = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_breakpoint_len"],
     max_parents     = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_parents"],
     max_breakpoints = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_breakpoints"],
     motifs          = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["motifs"],
@@ -563,6 +568,7 @@ rule sc2rf_recombinants:
       --log {log} \
       {params.motifs} \
       {params.min_len} \
+      {params.max_breakpoint_len} \
       {params.max_parents} \
       {params.max_breakpoints} \
       {params.lapis} \
