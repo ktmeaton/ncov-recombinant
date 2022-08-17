@@ -76,18 +76,15 @@ DEFAULT_CONFIG="profiles/controls/config.yaml"
 DEFAULT_CONFIG_HPC="profiles/controls-hpc/config.yaml"
 
 profile_dir=${profile_dir:-my_profiles}
-
 profile=$(basename $data)
 
-
-if [[ ! -z $controls ]]; then
+if [[ $controls ]]; then
   profile="${profile}-controls"
 fi
 
-if [[ ! -z $hpc ]]; then
+if [[ $hpc ]]; then
   profile="${profile}-hpc"
 fi
-
 
 mkdir -p $profile_dir
 
@@ -191,12 +188,12 @@ echo -e "\n
 
 # Create config.yaml
 echo -e "$(date "+%Y-%m-%d %T")\tCreating system configuration ($profile_dir/$profile/config.yaml)"
-if [[ -z $hpc ]]; then
-    echo -e "$(date "+%Y-%m-%d %T")\tAdding default system resources"
-    cp -f $DEFAULT_CONFIG $profile_dir/$profile/config.yaml
-else
+if [[ $hpc ]]; then
     echo -e "$(date "+%Y-%m-%d %T")\tAdding default HPC system resources"
     cp -f $DEFAULT_CONFIG_HPC $profile_dir/$profile/config.yaml
+else
+    echo -e "$(date "+%Y-%m-%d %T")\tAdding default system resources"
+    cp -f $DEFAULT_CONFIG $profile_dir/$profile/config.yaml
 fi
 sed -i "s|profiles/controls/builds.yaml|$profile_dir/$profile/builds.yaml|g" $profile_dir/$profile/config.yaml
 
@@ -214,6 +211,12 @@ echo -e "
 "
 
 echo -e "$(date "+%Y-%m-%d %T")\tThe $profile profile is ready to be run with:"
-echo -e "
-\t\t\tsnakemake --profile $profile_dir/$profile
-"
+if [[ $hpc ]]; then
+  echo -e "
+  \t\t\tscripts/slurm.sh --profile $profile_dir/$profile
+  "
+else
+  echo -e "
+  \t\t\tsnakemake --profile $profile_dir/$profile
+  "
+fi
