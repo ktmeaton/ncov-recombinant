@@ -9,6 +9,7 @@ benchmarks/
 results/
 slurm-*
 reporting/
+**/.ipynb_checkpoints
 
 # Ignore custom profiles
 profiles/custom
