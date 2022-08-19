@@ -3,13 +3,21 @@
 import click
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.io as pio
 from matplotlib import colors
+import os
 
 NO_DATA_CHAR = "NA"
 SOURCE_CHAR = "*"
 TARGET_CHAR = "†"
 UNKNOWN_COLOR = "dimgrey"
 UNKNOWN_RGB = colors.to_rgb(UNKNOWN_COLOR)
+
+# D3 Colors
+BLUE = "#1f77b4"
+ORANGE = "#ff7f0e"
+GREEN = "#2ca02c"
+RED = "#d62728"
 
 
 def create_sankey_data(df):
@@ -53,7 +61,7 @@ def create_sankey_data(df):
         if label.startswith(NO_DATA_CHAR):
             node_palette.append(UNKNOWN_COLOR)
         else:
-            node_palette.append("blue")
+            node_palette.append("#1f77b4")
 
     # -------------------------------------------------------------------------
     # Nodes
@@ -115,21 +123,29 @@ def create_sankey_data(df):
     # Create a color palette for links
     link_palette = []
     for s, t in zip(link_data["source"], link_data["target"]):
-        color = "rgba(212,212,212,0.8)"
-        if s.rstrip(SOURCE_CHAR) != t.rstrip(TARGET_CHAR):
-            color = "rgba(255,0,0,0.2)"
+
+        # No change
+        color = "rgba(212,212,212,0.8)"  # light grey
+
+        # New (green)
+        if s == NO_DATA_CHAR + SOURCE_CHAR:
+            color = "rgba(44,160,44,0.5)"
+
+        # Dropped (red)
+        elif t == NO_DATA_CHAR + TARGET_CHAR:
+            color = "rgba(214,39,40,0.5)"
+
+        # Changed (orange)
+        elif s.rstrip(SOURCE_CHAR) != t.rstrip(TARGET_CHAR):
+            color = "rgba(255,127,14,0.5)"
 
         link_palette.append(color)
     link_data["color"] = link_palette
 
     # Source: Order Y position by link size
-    source_labels = [l for l in labels if l.endswith(SOURCE_CHAR)]
-    print(source_labels)
-    print(source_node_links)
-    print(sorted(source_node_links.items()))
-    quit()
-    source_node_links = {k: v for k, v in reversed(sorted(source_node_links.items()))}
-    source_node_rank = [label for label in source_node_links.values()]
+    # This doesn't work yet, and I don't know why
+    source_node_rank = sorted(source_node_links.items(), key=lambda x: x[1])
+    source_node_rank = [kv[0] for kv in source_node_rank[::-1]]
     source_node_y = {}
 
     y_buff = 1 / len(source_node_links)
@@ -138,22 +154,14 @@ def create_sankey_data(df):
         source_node_y[label] = y
 
     # Target: Order Y position by link size
-    target_node_links = {size: node for node, size in target_node_links.items()}
-    target_node_links = {k: v for k, v in reversed(sorted(target_node_links.items()))}
-    target_node_rank = [label for label in target_node_links.values()]
+    target_node_rank = sorted(target_node_links.items(), key=lambda x: x[1])
+    target_node_rank = [kv[0] for kv in target_node_rank[::-1]]
     target_node_y = {}
 
     y_buff = 1 / len(target_node_links)
     for i, label in enumerate(target_node_rank):
         y = 1 - (i * y_buff)
         target_node_y[label] = y
-
-    print(len([l for l in labels if l.endswith(SOURCE_CHAR)]))
-    quit()
-    print(source_node_y)
-    print(source_node_y.keys())
-    print(labels)
-    # print(target_node_y)
 
     node_x = []
     node_y = []
@@ -166,17 +174,13 @@ def create_sankey_data(df):
         elif label in target_node_y:
             x = 1
             y = target_node_y[label]
-        else:
-            print(label)
-            quit()
 
         node_x.append(x)
         node_y.append(y)
 
-    for l, x, y in zip(labels, node_x, node_y):
-        print(l, x, y)
-
-    quit()
+    # This doesn't work yet
+    # node_data["x"] = node_x
+    # node_data["y"] = node_y
 
     # Convert source/target to numeric ID
     for i in range(0, len(link_data["source"])):
@@ -204,15 +208,17 @@ def create_sankey_plot(sankey_data):
 
 
 @click.command()
-@click.option("--positives-1", help="Positives table (TSV)", required=True)
-@click.option("--positives-2", help="Positives table (TSV)", required=True)
-@click.option("--output", help="Output figure", required=True)
-@click.option("--title", help="Figure title", required=True)
+@click.option("--positives-1", help="First positives table (TSV)", required=True)
+@click.option("--positives-2", help="Second positives table (TSV)", required=True)
+@click.option("--ver-1", help="First version for title", required=True)
+@click.option("--ver-2", help="Second version for title", required=True)
+@click.option("--outdir", help="Output directory", required=True)
 def main(
     positives_1,
     positives_2,
-    output,
-    title,
+    ver_1,
+    ver_2,
+    outdir,
 ):
     """Compare positive recombinants between two tables."""
 
@@ -240,30 +246,58 @@ def main(
             lineages_df.loc[rec[0], "target"] = NO_DATA_CHAR
 
     lineages_df.fillna(NO_DATA_CHAR, inplace=True)
+    new_df = lineages_df[lineages_df["source"] == NO_DATA_CHAR]
+    drop_df = lineages_df[lineages_df["target"] == NO_DATA_CHAR]
     no_change_df = lineages_df[lineages_df["source"] == lineages_df["target"]]
     change_df = lineages_df[lineages_df["source"] != lineages_df["target"]]
 
     num_sequences = len(lineages_df)
-    num_change = len(change_df)
+    num_new = len(new_df)
+    num_drop = len(drop_df)
+    num_change = len(change_df) - num_new - num_drop
     num_no_change = len(no_change_df)
 
     # Put suffix char on end to separate source and target
     lineages_df["source"] = [s + SOURCE_CHAR for s in lineages_df["source"]]
     lineages_df["target"] = [t + TARGET_CHAR for t in lineages_df["target"]]
 
+    title = "ncov-recombinant {ver_1}<sup>{ver_1_char}</sup> to".format(
+        ver_1=ver_1,
+        ver_1_char=SOURCE_CHAR,
+    ) + "{ver_2}<sup>{ver_2_char}</sup>".format(
+        ver_2=ver_2,
+        ver_2_char=TARGET_CHAR,
+    )
     title += (
         "<br><sup>"
         + "Sequences: {}".format(num_sequences)
-        + ", Unchanged Sequences: {}".format(num_no_change)
-        + ", Changed Sequences: {}".format(num_change)
+        + ", Unchanged (grey): {}".format(num_no_change)
+        + ", Changed (orange): {}".format(num_change)
+        + ", New (green): {}".format(num_new)
+        + ", Dropped (red): {}".format(num_drop)
         + "</sup>"
     )
 
     # Create sankey data and plot
     sankey_data = create_sankey_data(lineages_df)
     sankey_fig = create_sankey_plot(sankey_data)
-    sankey_fig.update_layout(title_text=title, font_size=10)
-    sankey_fig.write_html(output)
+    sankey_fig.update_layout(title_text=title, font_size=12, width=1000, height=800)
+
+    # -------------------------------------------------------------------------
+    # Output
+
+    prefix = os.path.join(outdir, "ncov-recombinant_{}_{}".format(ver_1, ver_2))
+
+    # Tables
+    new_df.to_csv(prefix + "_new.tsv", sep="\t", index=False)
+    drop_df.to_csv(prefix + "_drop.tsv", sep="\t", index=False)
+    no_change_df.to_csv(prefix + "_no-change.tsv", sep="\t", index=False)
+    change_df.to_csv(prefix + "_change.tsv", sep="\t", index=False)
+
+    # Figures
+    sankey_fig.write_html(prefix + ".html")
+    pio.write_image(sankey_fig, prefix + ".png", format="png", scale=2)
+    pio.write_image(sankey_fig, prefix + ".svg", format="svg", scale=2)
 
 
 if __name__ == "__main__":
