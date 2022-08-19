@@ -6,18 +6,14 @@ import plotly.graph_objects as go
 import plotly.io as pio
 from matplotlib import colors
 import os
+from functions import create_logger
+import copy
 
 NO_DATA_CHAR = "NA"
 SOURCE_CHAR = "*"
 TARGET_CHAR = "†"
 UNKNOWN_COLOR = "dimgrey"
 UNKNOWN_RGB = colors.to_rgb(UNKNOWN_COLOR)
-
-# D3 Colors
-BLUE = "#1f77b4"
-ORANGE = "#ff7f0e"
-GREEN = "#2ca02c"
-RED = "#d62728"
 
 
 def create_sankey_data(df):
@@ -213,16 +209,23 @@ def create_sankey_plot(sankey_data):
 @click.option("--ver-1", help="First version for title", required=True)
 @click.option("--ver-2", help="Second version for title", required=True)
 @click.option("--outdir", help="Output directory", required=True)
+@click.option("--log", help="Logfile", required=False)
 def main(
     positives_1,
     positives_2,
     ver_1,
     ver_2,
     outdir,
+    log,
 ):
     """Compare positive recombinants between two tables."""
 
+    # create logger
+    logger = create_logger(logfile=log)
+
+    logger.info("Parsing table: {}".format(positives_1))
     positives_1_df = pd.read_csv(positives_1, sep="\t")
+    logger.info("Parsing table: {}".format(positives_2))
     positives_2_df = pd.read_csv(positives_2, sep="\t")
 
     lineages_1 = positives_1_df[["strain", "recombinant_lineage_curated"]]
@@ -231,6 +234,7 @@ def main(
     lineages_1 = lineages_1.rename(columns={"recombinant_lineage_curated": "source"})
     lineages_2 = lineages_2.rename(columns={"recombinant_lineage_curated": "target"})
 
+    logger.info("Merging tables.")
     lineages_df = pd.merge(lineages_1, lineages_2, how="outer", on="strain")
     lineages_df.rename(columns={"strain": "id"}, inplace=True)
 
@@ -246,22 +250,56 @@ def main(
             lineages_df.loc[rec[0], "target"] = NO_DATA_CHAR
 
     lineages_df.fillna(NO_DATA_CHAR, inplace=True)
-    new_df = lineages_df[lineages_df["source"] == NO_DATA_CHAR]
-    drop_df = lineages_df[lineages_df["target"] == NO_DATA_CHAR]
-    no_change_df = lineages_df[lineages_df["source"] == lineages_df["target"]]
-    change_df = lineages_df[lineages_df["source"] != lineages_df["target"]]
+
+    logger.info("Calculating statistics.")
+    # Why all the copy statements? pandas throws errors unless we make
+    # a proper different copy.
+    new_df = copy.copy(lineages_df[lineages_df["source"] == NO_DATA_CHAR])
+    drop_df = copy.copy(lineages_df[lineages_df["target"] == NO_DATA_CHAR])
+    no_change_df = copy.copy(
+        lineages_df[lineages_df["source"] == lineages_df["target"]]
+    )
+    change_df = copy.copy(
+        lineages_df[
+            (lineages_df["source"] != lineages_df["target"])
+            & (lineages_df["source"] != NO_DATA_CHAR)
+            & (lineages_df["target"] != NO_DATA_CHAR)
+        ]
+    )
 
     num_sequences = len(lineages_df)
     num_new = len(new_df)
     num_drop = len(drop_df)
-    num_change = len(change_df) - num_new - num_drop
+    num_change = len(change_df)
     num_no_change = len(no_change_df)
+    num_net = num_new - num_drop
+
+    summary_df = pd.DataFrame(
+        {
+            "statistic": [
+                "all",
+                "no-change",
+                "change",
+                "new",
+                "drop",
+                "net",
+            ],
+            "count": [
+                num_sequences,
+                num_no_change,
+                num_change,
+                num_new,
+                num_drop,
+                num_net,
+            ],
+        }
+    )
 
     # Put suffix char on end to separate source and target
     lineages_df["source"] = [s + SOURCE_CHAR for s in lineages_df["source"]]
     lineages_df["target"] = [t + TARGET_CHAR for t in lineages_df["target"]]
 
-    title = "ncov-recombinant {ver_1}<sup>{ver_1_char}</sup> to".format(
+    title = "ncov-recombinant {ver_1}<sup>{ver_1_char}</sup> to ".format(
         ver_1=ver_1,
         ver_1_char=SOURCE_CHAR,
     ) + "{ver_2}<sup>{ver_2_char}</sup>".format(
@@ -279,9 +317,17 @@ def main(
     )
 
     # Create sankey data and plot
+    logger.info("Creating sankey data.")
     sankey_data = create_sankey_data(lineages_df)
+    logger.info("Creating sankey plot.")
     sankey_fig = create_sankey_plot(sankey_data)
     sankey_fig.update_layout(title_text=title, font_size=12, width=1000, height=800)
+
+    # Rename columns in output tables from source/target to version numbers
+    for df in [new_df, change_df, no_change_df, drop_df]:
+
+        df.rename(columns={"source": ver_1}, inplace=True)
+        df.rename(columns={"target": ver_2}, inplace=True)
 
     # -------------------------------------------------------------------------
     # Output
@@ -289,12 +335,15 @@ def main(
     prefix = os.path.join(outdir, "ncov-recombinant_{}_{}".format(ver_1, ver_2))
 
     # Tables
+    logger.info("Writing output tables to: {}".format(outdir))
+    summary_df.to_csv(prefix + "_summary.tsv", sep="\t", index=False)
     new_df.to_csv(prefix + "_new.tsv", sep="\t", index=False)
     drop_df.to_csv(prefix + "_drop.tsv", sep="\t", index=False)
     no_change_df.to_csv(prefix + "_no-change.tsv", sep="\t", index=False)
     change_df.to_csv(prefix + "_change.tsv", sep="\t", index=False)
 
     # Figures
+    logger.info("Writing output figures to: {}".format(outdir))
     sankey_fig.write_html(prefix + ".html")
     pio.write_image(sankey_fig, prefix + ".png", format="png", scale=2)
     pio.write_image(sankey_fig, prefix + ".svg", format="svg", scale=2)
