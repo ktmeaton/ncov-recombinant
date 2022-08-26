@@ -106,19 +106,19 @@ def main(
     df["datetime"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
     df["year"] = [d.year for d in df["datetime"]]
     df["epiweek"] = [
-        epiweeks.Week.fromdate(d, system="iso").startdate() for d in df["datetime"]
+        epiweeks.Week.fromdate(d, system="cdc").startdate() for d in df["datetime"]
     ]
 
     # Filter on weeks reporting
     if max_date:
         max_datetime = datetime.strptime(max_date, "%Y-%m-%d")
-        max_epiweek = epiweeks.Week.fromdate(max_datetime, system="iso").startdate()
+        max_epiweek = epiweeks.Week.fromdate(max_datetime, system="cdc").startdate()
     else:
-        max_epiweek = epiweeks.Week.fromdate(datetime.today(), system="iso").startdate()
+        max_epiweek = epiweeks.Week.fromdate(datetime.today(), system="cdc").startdate()
 
     if min_date:
         min_datetime = datetime.strptime(min_date, "%Y-%m-%d")
-        min_epiweek = epiweeks.Week.fromdate(min_datetime, system="iso").startdate()
+        min_epiweek = epiweeks.Week.fromdate(min_datetime, system="cdc").startdate()
     elif weeks:
         weeks = int(weeks)
         min_epiweek = max_epiweek - timedelta(weeks=(weeks - 1))
@@ -127,7 +127,7 @@ def main(
         min_epiweek = max_epiweek - timedelta(weeks=16)
     else:
         min_epiweek = epiweeks.Week.fromdate(
-            min(df["epiweek"]), system="iso"
+            min(df["epiweek"]), system="cdc"
         ).startdate()
 
     weeks = int((max_epiweek - min_epiweek).days / 7)
