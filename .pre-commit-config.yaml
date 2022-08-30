@@ -18,6 +18,7 @@ repos:
         'flake8-bugbear'
       ]
       args: [--config=setup.cfg]
+      exclude: ^sc2rf/sc2rf.py
 
   # General Text + YAML Lint
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -49,3 +50,4 @@ repos:
       - id: markdownlint
         args: [--config=.github/markdown_lint.yaml]
         #args: [--disable=MD013]
+        exclude: ^sc2rf/
