@@ -1,6 +1,3 @@
 [submodule "autologs"]
 	path = autologs
 	url = https://github.com/ktmeaton/autologs
-[submodule "sc2rf"]
-	path = sc2rf
-	url = https://github.com/ktmeaton/sc2rf
