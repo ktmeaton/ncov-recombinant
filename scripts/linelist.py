@@ -166,6 +166,12 @@ def main(
             if breakpoints != NO_DATA_CHAR and lineages_sc2rf[0] == NO_DATA_CHAR:
                 lineage = lineage + "-like"
 
+        # Special Cases: XAS
+        # As of v0.4.2, XAS cannot be detected by sc2rf
+        elif parents_clade == NO_DATA_CHAR and (lineage == "XAS"):
+            status = "positive"
+            is_recombinant = True
+
         # if nextclade thinks it's a recombinant but sc2rf doesn't
         elif lineage.startswith("X") and breakpoints == NO_DATA_CHAR:
             status = "false_positive"
