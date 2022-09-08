@@ -18,8 +18,8 @@ rule_params:
   - name: nextclade_dataset
     dataset: sars-cov-2
     dataset_no-recomb: sars-cov-2-no-recomb
-    tag: "2022-07-26T12:00:00Z"
-    tag_no-recomb: "2022-07-26T12:00:00Z"
+    tag: "2022-08-23T12:00:00Z"
+    tag_no-recomb: "2022-08-23T12:00:00Z"
 
   # ---------------------------------------------------------------------------
   # exclude_clades    : (optional) Exclude strains that are recombinants of these clades
