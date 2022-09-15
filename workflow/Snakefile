@@ -504,10 +504,9 @@ def _params_sc2rf_recombinants(build):
   if max_parents: params["max_parents"] = "--max-parents {}".format(max_parents)
   else: params["max_parents"] = ""
 
-  lapis = config["builds"][build]["sc2rf_recombinants"]["lapis"]
-  nextclade_qc = "results/{build}/nextclade_no-recomb/qc.tsv".format(build=build)
-  if lapis: params["lapis"] = "--nextclade {}".format(nextclade_qc)
-  else: params["lapis"] = ""
+  auto_pass = config["builds"][build]["sc2rf_recombinants"]["auto_pass"]
+  if auto_pass: params["auto_pass"] = "--nextclade-auto-pass {}".format(",".join(auto_pass))
+  else: params["auto_pass"] = ""
 
   return params
 
@@ -531,7 +530,8 @@ rule sc2rf_recombinants:
     csv_secondary   = "results/{build}/sc2rf/stats.secondary.csv",
     issues          = rules.issues_download.output.issues,
     alignment       = lambda wildcards: _inputs_sc2rf(wildcards.build)["alignment"],
-    nextclade       = "results/{build}/nextclade_no-recomb/qc.tsv",
+    nextclade       = "results/{build}/nextclade/qc.tsv",
+    nextclade_no_recomb = "results/{build}/nextclade_no-recomb/qc.tsv",
   output:
     stats           = "results/{build}/sc2rf/stats.tsv",
     strains         = "results/{build}/sc2rf/recombinants.txt",
@@ -546,7 +546,7 @@ rule sc2rf_recombinants:
     max_parents     = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_parents"],
     max_breakpoints = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_breakpoints"],
     motifs          = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["motifs"],
-    lapis           = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["lapis"],
+    auto_pass       = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["auto_pass"],
   threads: 1
   resources:
     cpus = 1,
@@ -565,13 +565,15 @@ rule sc2rf_recombinants:
       --outdir {params.outdir} \
       --aligned {input.alignment} \
       --issues {input.issues} \
+      --nextclade {input.nextclade} \
+      --nextclade-no-recomb {input.nextclade_no_recomb} \
       --log {log} \
+      {params.auto_pass} \
       {params.motifs} \
       {params.min_len} \
       {params.max_breakpoint_len} \
       {params.max_parents} \
       {params.max_breakpoints} \
-      {params.lapis} \
       >> {log} 2>&1;
 
     # Cleanup
@@ -898,6 +900,7 @@ rule report:
 
   input:
     plots           = rules.plot.output.plots,
+    linelist        = rules.linelist.output.linelist,
     tables          = [
                       rules.linelist.output.lineages,
                       rules.linelist.output.parents,
@@ -929,7 +932,7 @@ rule report:
     csvtk csv2xlsx -t -o {output.xlsx} {input.tables} > {log} 2>&1;
 
     # Create the powerpoint slides
-    python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.template} {params.singletons} >> {log} 2>&1;
+    python3 scripts/report.py --linelist {input.linelist} --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.template} {params.singletons} >> {log} 2>&1;
     """
 
 rule report_historical:
@@ -943,6 +946,7 @@ rule report_historical:
 
   input:
     plots           = rules.plot_historical.output.plots,
+    linelist        = rules.linelist.output.linelist,
   output:
     pptx            = "results/{build}/report_historical/report.pptx",
   params:
@@ -960,7 +964,7 @@ rule report_historical:
   shell:
     """
     # Create the powerpoint slides
-    python3 scripts/report.py --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.template} {params.singletons} > {log} 2>&1;
+    python3 scripts/report.py --linelist {input.linelist} --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.template} {params.singletons} > {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------#
