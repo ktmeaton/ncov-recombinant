@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import click
 import pptx
+from pptx.enum.shapes import MSO_SHAPE
 from datetime import date
 import os
 import pandas as pd
@@ -29,6 +30,7 @@ RECOMBINANT_STATUS = [
 
 
 @click.command()
+@click.option("--linelist", help="Linelist TSV", required=True)
 @click.option("--plot-dir", help="Plotting directory", required=True)
 @click.option("--output", help="Output PPTX path", required=True)
 @click.option(
@@ -46,6 +48,7 @@ RECOMBINANT_STATUS = [
     default="resources/template.pptx",
 )
 def main(
+    linelist,
     plot_dir,
     template,
     geo,
@@ -55,7 +58,6 @@ def main(
     """Create a report of powerpoint slides"""
 
     # Parse build name from plot_dir path
-
     build = os.path.basename(os.path.dirname(plot_dir))
     outdir = os.path.dirname(output)
     if not os.path.exists(outdir):
@@ -63,6 +65,8 @@ def main(
     subtitle = "{}\n{}".format(build.title(), date.today())
 
     # Import dataframes
+    linelist_df = pd.read_csv(linelist, sep="\t")
+
     plot_suffix = ".png"
     df_suffix = ".tsv"
     labels = [
@@ -474,6 +478,39 @@ def main(
     chart_placeholder = slide.placeholders[1]
     chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
+
+    # ---------------------------------------------------------------------
+    # Footer
+
+    # Versions
+    pipeline_version = linelist_df["pipeline_version"].values[0]
+    recombinant_classifier_dataset = linelist_df[
+        "recombinant_classifier_dataset"
+    ].values[0]
+
+    for slide in presentation.slides:
+
+        # Don't add footer to title slide
+        if slide.slide_layout == presentation.slide_layouts[0]:
+            continue
+
+        footer = slide.shapes.add_shape(
+            autoshape_type_id=MSO_SHAPE.RECTANGLE,
+            left=pptx.util.Cm(3),
+            top=pptx.util.Cm(17),
+            width=pptx.util.Pt(800),
+            height=pptx.util.Pt(30),
+        )
+
+        footer.fill.solid()
+        footer.fill.fore_color.rgb = pptx.dml.color.RGBColor(255, 255, 255)
+        footer.line.color.rgb = pptx.dml.color.RGBColor(0, 0, 0)
+        p = footer.text_frame.paragraphs[0]
+        p.text = "{} {} {}".format(
+            pipeline_version, " " * 20, recombinant_classifier_dataset
+        )
+        p.font.size = pptx.util.Pt(14)
+        p.font.color.rgb = pptx.dml.color.RGBColor(0, 0, 0)
 
     # ---------------------------------------------------------------------
     # Saving file
