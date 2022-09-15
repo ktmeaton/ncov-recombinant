@@ -18,8 +18,8 @@ rule_params:
   - name: nextclade_dataset
     dataset: sars-cov-2
     dataset_no-recomb: sars-cov-2-no-recomb
-    tag: "2022-08-23T12:00:00Z"
-    tag_no-recomb: "2022-08-23T12:00:00Z"
+    tag: "2022-09-09T12:00:00Z"
+    tag_no-recomb: "2022-09-09T12:00:00Z"
 
   # ---------------------------------------------------------------------------
   # exclude_clades    : (optional) Exclude strains that are recombinants of these clades
@@ -96,20 +96,24 @@ rule_params:
     sc2rf_args: "--ansi --parents 2-10 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
 
   # ---------------------------------------------------------------------------
-  # lapis              : If true, query cov-spectrum using LAPIS to identify parental lineages
-  #                    : recommended false if number of sequences > 100.
   # min_len            : (optional) Ignore recombinants regions shorter than this
   # max_breakpoint_len : (optional) Ignore recombinant breakpoints shorter than this
   # max_breakpoints    : (optional) Exlude samples with greater than this number of parents
   # max_parents        : (optional) Exlude samples with greater than this number of breakpoints
   # motifs             : (optional, experimental) Path to a breakpoints motif file
+  # auto_pass          : (optional) Samples with these lineage assignments by nextclade will
+  #                      automatically be classified as 'positive', regardless of sc2rf results.
   - name: sc2rf_recombinants
-    lapis: true
-    min_len: 1000
+    min_len: 800
     max_breakpoint_len: 5000
     max_parents: 2
     max_breakpoints: 2
     motifs:
+    auto_pass:
+      - XN
+      - XP
+      - XAS
+      - XAZ
 
   # ---------------------------------------------------------------------------
   # extra_cols : (Optional) list of metadata columns to output going forwards (aside from defaults of strain,date,country)
