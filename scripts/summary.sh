@@ -47,17 +47,6 @@ ncov_recombinant_ver="${git_tag}:${git_commit}"
 # Nextclade version
 nextclade_ver=$(nextclade --version | cut -d " " -f 2)
 
-# sc2rf version
-cd sc2rf
-git_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p' | sed 's/)//g' | rev | cut -d " " -f 1 | rev)
-git_commit_hash=$(git rev-parse HEAD)
-git_commit=${git_commit_hash:0:8}
-sc2rf_ver="${git_branch}:${git_commit}"
-sc2rf_muts_date=$(stat virus_properties.json | grep "Modify" | cut -d " " -f 2)
-sc2rf_muts_ver="virus_properties:${sc2rf_muts_date}"
-cd ..
-
-
 sort_col="Nextclade_pango"
 default_cols="strain,date,country"
 nextclade_cols="privateNucMutations.reversionSubstitutions,privateNucMutations.unlabeledSubstitutions,privateNucMutations.labeledSubstitutions"
@@ -74,7 +63,5 @@ csvtk cut -t -f "${cols},clade,Nextclade_pango" ${nextclade} \
   | csvtk sort -t -k "$sort_col" \
   | csvtk mutate2 -t -n "ncov-recombinant_version" -e "\"$ncov_recombinant_ver\"" \
   | csvtk mutate2 -t -n "nextclade_version" -e "\"$nextclade_ver\"" \
-  | csvtk mutate2 -t -n "sc2rf_version" -e "\"$sc2rf_ver\"" \
-  | csvtk mutate2 -t -n "sc2rf_mutations_version" -e "\"${sc2rf_muts_ver}\"" \
   | csvtk mutate2 -t -n "nextclade_dataset" -e "\"$nextclade_dataset\"" \
   > $output
