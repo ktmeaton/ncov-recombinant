@@ -836,7 +836,14 @@ def main(
     # Drop old columns, if there were only negative samples, these columns don't exist
     if set(df["sc2rf_status"]) != set(["negative"]):
         df.drop(
-            ["examples", "intermissions", "breakpoints", "regions", "unique_subs"],
+            [
+                "examples",
+                "intermissions",
+                "breakpoints",
+                "regions",
+                "unique_subs",
+                "alleles",
+            ],
             axis="columns",
             inplace=True,
         )

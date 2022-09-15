@@ -591,6 +591,9 @@ rule sc2rf_recombinants:
     max_breakpoints = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_breakpoints"],
     motifs          = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["motifs"],
     auto_pass       = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["auto_pass"],
+    # Join inputs together with commas
+    ansi            = lambda wildcards: ",".join(_inputs_sc2rf_recombinants(wildcards.build)["ansi"]),
+    csv             = lambda wildcards: ",".join(_inputs_sc2rf_recombinants(wildcards.build)["csv"]),
   threads: 1
   resources:
     cpus = 1,
@@ -601,8 +604,8 @@ rule sc2rf_recombinants:
   shell:
     """
     python3 sc2rf/postprocess.py \
-      --csv {input.csv} \
-      --ansi {input.ansi} \
+      --csv {params.csv} \
+      --ansi {params.ansi} \
       --prefix {params.prefix} \
       --outdir {params.outdir} \
       --aligned {input.alignment} \
