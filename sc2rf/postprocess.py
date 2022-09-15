@@ -120,7 +120,17 @@ def reverse_iter_collapse(
 )
 @click.option(
     "--nextclade",
-    help="The TSV output of Nextclade.",
+    help="Nextclade TSV output from the sars-cov-2.",
+    required=False,
+)
+@click.option(
+    "--nextclade-no-recomb",
+    help="Nextclade TSV output from the sars-cov-2-no-recomb dataset.",
+    required=False,
+)
+@click.option(
+    "--nextclade-auto-pass",
+    help="CSV list of lineage assignments that will be called positive",
     required=False,
 )
 @click.option(
@@ -146,6 +156,8 @@ def main(
     outdir,
     aligned,
     nextclade,
+    nextclade_auto_pass,
+    nextclade_no_recomb,
     max_parents,
     issues,
     max_breakpoints,
@@ -219,6 +231,17 @@ def main(
         logger.info("Parsing nextclade: {}".format(nextclade))
         nextclade_df = pd.read_csv(nextclade, sep="\t", index_col=0)
         nextclade_df.fillna(NO_DATA_CHAR, inplace=True)
+
+        if nextclade_auto_pass:
+            nextclade_auto_pass_lineages = nextclade_auto_pass.split(",")
+
+    # (Optional) nextclade tsv dataframe no-recomb dataset
+    if nextclade_no_recomb:
+        logger.info(
+            "Parsing nextclade no-recomb output: {}".format(nextclade_no_recomb)
+        )
+        nextclade_no_recomb_df = pd.read_csv(nextclade_no_recomb, sep="\t", index_col=0)
+        nextclade_no_recomb_df.fillna(NO_DATA_CHAR, inplace=True)
 
     # (Optional) Merge in secondary dataframe
     if csv_secondary:
@@ -550,12 +573,15 @@ def main(
     # ---------------------------------------------------------------------
     # Identify parent lineages by querying cov-spectrum mutations
 
-    # We can only do this is:
-    # 1. A nextclade tsv file was specified with mutations
+    # We can only do this if:
+    # 1. A nextclade no-recomb tsv file was specified with mutations
     # 2. Multiple regions were detected (not collapsed down to one parent region)
-    if nextclade:
 
-        logger.info("Identifying parent lineages based on nextclade substitutions")
+    if nextclade_no_recomb:
+
+        logger.info(
+            "Identifying parent lineages based on nextclade no-recomb substitutions"
+        )
 
         positive_df = df[df["sc2rf_status"] == "positive"]
         total_positives = len(positive_df)
@@ -576,8 +602,8 @@ def main(
             parent_lineages_confidence = []
             parent_lineages_subs = []
 
-            substitutions = nextclade_df["substitutions"][strain].split(",")
-            unlabeled_privates = nextclade_df[
+            substitutions = nextclade_no_recomb_df["substitutions"][strain].split(",")
+            unlabeled_privates = nextclade_no_recomb_df[
                 "privateNucMutations.unlabeledSubstitutions"
             ][strain].split(",")
 
@@ -680,7 +706,54 @@ def main(
             )
             df.at[strain, "cov-spectrum_parents_subs"] = ";".join(parent_lineages_subs)
 
-    # write exclude strains
+    # ---------------------------------------------------------------------
+    # Auto-pass lineages from nextclade assignment
+
+    if nextclade and nextclade_auto_pass:
+
+        # Identify negative samples to auto-pass
+        auto_pass_df = nextclade_df[
+            (nextclade_df["Nextclade_pango"] != NO_DATA_CHAR)
+            & (nextclade_df["Nextclade_pango"].isin(nextclade_auto_pass_lineages))
+        ]
+
+        # If already in the df, set the status to positive, update details
+        for rec in df[df.index.isin(auto_pass_df.index)].iterrows():
+            strain = rec[0]
+            lineage = auto_pass_df.loc[strain]["Nextclade_pango"]
+            sc2rf_details = rec[1]["sc2rf_details"].split(";")
+            sc2rf_details.append("nextclade-auto-pass {}".format(lineage))
+
+            df.at[strain, "sc2rf_status"] = "positive"
+            df.at[strain, "sc2rf_details"] = ";".join(sc2rf_details)
+
+            # Remove this strain from the list of false positives
+            if strain in false_positives:
+                del false_positives[strain]
+
+        # Filter the auto pass df to remove the samples already in the df
+        auto_pass_df = auto_pass_df[~auto_pass_df.index.isin(df.index)]
+
+        # Construct a sc2rf df with blank cols except status and details blank
+        auto_pass_dict = {col: [NO_DATA_CHAR] * len(auto_pass_df) for col in df.columns}
+        auto_pass_dict["sample"] = []
+
+        for i, rec in enumerate(auto_pass_df.iterrows()):
+            strain = rec[0]
+            lineage = rec[1]["Nextclade_pango"]
+            auto_pass_dict["sample"].append(strain)
+            auto_pass_dict["sc2rf_status"][i] = "positive"
+            auto_pass_dict["sc2rf_details"][i] = "nextclade-auto-pass {}".format(
+                lineage
+            )
+
+        auto_pass_df = pd.DataFrame(auto_pass_dict).set_index("sample")
+
+        # Append the auto pass df to the main results df
+        df = pd.concat([df, auto_pass_df])
+
+    # ---------------------------------------------------------------------
+    # Write exclude strains (false positives)
     outpath_exclude = os.path.join(outdir, prefix + ".exclude.tsv")
     if len(false_positives) > 0:
         with open(outpath_exclude, "w") as outfile:
@@ -689,10 +762,6 @@ def main(
     else:
         cmd = "touch {outpath}".format(outpath=outpath_exclude)
         os.system(cmd)
-
-    # drop strains
-    # false_positives = set(false_positives.keys())
-    # df.drop(false_positives, inplace=True)
 
     # -------------------------------------------------------------------------
     # Add in the Negatives (if alignment was specified)
