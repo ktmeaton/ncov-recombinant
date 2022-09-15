@@ -371,6 +371,7 @@ def main():
                 "breakpoints",
                 "regions",
                 "unique_subs",
+                "alleles",
             ]
             if args.show_private_mutations:
                 fieldnames.append("privates")
@@ -926,6 +927,7 @@ def show_matches(examples, samples, writer):
         definitives_since_breakpoint = 0
         definitives_count = []
         unique_subs = []
+        alleles = []
         regions = []  # for CSV output
         privates = []
         last_coord = None
@@ -951,6 +953,8 @@ def show_matches(examples, samples, writer):
 
             if is_missing(coord, sa["missings"]):
                 # TBD: Is this always going to be an N?
+
+                alleles.append("{}|{}|{}".format(coord, "Missing", "N"))
                 output += colored("N", "white", attrs=["reverse"])
 
                 # Did we find a matching example in the previous region?
@@ -1017,6 +1021,7 @@ def show_matches(examples, samples, writer):
 
                     # Check if this is an N
                     if text == "N":
+                        alleles.append("{}|{}|{}".format(coord, "Missing", "N"))
                         fg = "white"
                         attrs = ["reverse"]
 
@@ -1026,12 +1031,14 @@ def show_matches(examples, samples, writer):
                         privates.append(sa["subs_dict"].get(coord))
                         # Output the base, then skip to the next record
                         # ie. don't save the current coords as a last coord for breakpoints
+                        alleles.append("{}|{}|{}".format(coord, "Private", text))
                         output += colored(text, fg, bg, attrs=attrs)
                         continue
 
                     # exactly one of the examples match - definite match
                     elif len(matching_exs) == 1:
                         unique_subs.append("{}|{}".format(coord, matching_exs[0]))
+                        alleles.append("{}|{}|{}".format(coord, matching_exs[0], text))
 
                         fg = color_by_name[matching_exs[0]]
 
@@ -1068,12 +1075,19 @@ def show_matches(examples, samples, writer):
                     # more than one, but not all examples match - can't provide proper color
                     elif len(matching_exs) < len(examples):
                         # bg = 'on_blue'
+                        alleles.append(
+                            "{}|{}|{}".format(coord, ";".join(matching_exs), text)
+                        )
                         attrs = ["bold", "underline"]
 
                     # all examples match
                     else:
                         if args.ignore_shared_subs:
                             continue
+                        else:
+                            alleles.append(
+                                "{}|{}|{}".format(coord, ";".join(matching_exs), text)
+                            )
 
                     output += colored(text, fg, bg, attrs=attrs)
 
@@ -1091,13 +1105,18 @@ def show_matches(examples, samples, writer):
                     fg = "white"
                     bg = None
                     attrs = []
+                    ref_allele = reference[coord - 1]
 
                     # Option 1: none of the examples match - private reverse mutation
                     if len(matching_exs) == 0:
+                        alleles.append("{}|{}|{}".format(coord, "Private", ref_allele))
                         bg = "on_magenta"
 
                     elif len(matching_exs) == 1:
                         # exactly one of the examples match - definite match
+                        alleles.append(
+                            "{}|{}|{}".format(coord, matching_exs[0], ref_allele)
+                        )
                         fg = color_by_name[matching_exs[0]]
                         # If we haven't found a definitive match yet, this is the start coord
                         if not prev_definitive_match:
@@ -1130,6 +1149,9 @@ def show_matches(examples, samples, writer):
                         attrs = ["underline"]
                         # Output the base, then skip to the next record
                         # ie. don't save the current coords as a last coord for breakpoints
+                        alleles.append(
+                            "{}|{}|{}".format(coord, ";".join(matching_exs), ref_allele)
+                        )
                         output += colored(text, fg, bg, attrs=attrs)
                         continue
 
@@ -1137,6 +1159,9 @@ def show_matches(examples, samples, writer):
                         # all examples match (which means this is a private mutation in another sample)
                         # Output the base, then skip to the next record
                         # ie. don't save the current coords as a last coord for breakpoints
+                        alleles.append(
+                            "{}|{}|{}".format(coord, ";".join(matching_exs), ref_allele)
+                        )
                         output += colored(text, fg, bg, attrs=attrs)
                         continue
 
@@ -1218,6 +1243,7 @@ def show_matches(examples, samples, writer):
                         ]
                     ),
                     "unique_subs": ",".join(unique_subs).replace(" ", ""),
+                    "alleles": ",".join(alleles).replace(" ", ""),
                 }
                 if args.show_private_mutations:
                     row.update(
