@@ -19,46 +19,34 @@ USA/GU-CDC-2-3906074/2021	2021-01-31	USA	P.3	21E (Theta)	Guam	North America	MZ77
 USA/NY-CDC-LC0031214/2021	2021-03-15	USA	B.1.526	21F (Iota)	New York	North America	MW987419.1	Howard et al Z	controls-negative
 Switzerland/ZH-UZH-IMV-3ba4d945/2021	2021-08-02	Switzerland	C.37.1	21G (Lambda)	Zürich	Europe	OU576905.1	? F	controls-negative
 USA/FL-CDC-FG-022848/2021	2021-04-12	USA	B.1.621	21H (Mu)	Florida	North America	OK213902.1	Howard et al AQ	controls-negative
-England/MILK-1622A3E/2021	2021-06-03	United Kingdom	AY.11	21I (Delta)	England	Europe	OU314327.1	The Lighthouse Lab in Milton et al A	controls-negative
 USA/FL-CDC-QDX26157271/2021	2021-06-22	USA	AY.75	21I (Delta)	Florida	North America	MZ535087.1	Howard et al S	controls-negative
-USA/TX-CDC-ASC210111920/2021	2021-07-07	USA	AY.44	21J (Delta)	Texas	North America	MZ705780.1	Howard et al Q	controls-negative
 England/QEUH-173F5F0/2021	2021-06-18	United Kingdom	AY.4	21J (Delta)	England	Europe	OU358465.1	VanSteenhouse et al A	controls-negative
 Switzerland/AG-ETHZ-35947998/2022	2022-01-23	Switzerland	BA.1.1	21K (Omicron)	Aargau	Europe	OV882645.1	? G	controls-negative
-USA/GA-GPHL-2867/2021	2021-12-27	USA	BA.1.1.18	21K (Omicron)	Georgia	North America	OM201100.1	Parrott et al	controls-negative
 Denmark/DCGC-323445/2022	2022-01-15	Denmark	BA.2	21L (Omicron)	Hovedstaden	Europe	OW783991.1	Danish Covid-19 Genome et al	controls-negative
-USA/NY-Broad-CRSP_JYXB4KKAEDIB5CUN/2022	2022-03-07	USA	BA.2.7	21L (Omicron)	New York	North America	ON066513.1	Lemieux et al G	controls-negative
 USA/PA-CDC-QDX34289597/2022	2022-02-25	USA	BA.3.1	21M (Omicron)	Pennsylvania	North America	OM998782.1	Howard et al BM	controls-negative
 USA/NC-CDC-LC0597531/2022	2022-04-22	USA	BA.4	22A (Omicron)	North Carolina	North America	ON465569.1	Howard et al CK	controls-negative
-USA/CA-CDC-LC0603479/2022	2022-04-29	USA	BA.4	22A (Omicron)	California	North America	ON468185.1	Howard et al CO	controls-negative
-USA/FL-BPHL-8585/2022	2022-05-12	USA	BA.5	22B (Omicron)	Florida	North America	ON729631.1	Schmedes et al D	controls-negative
 BHR/22920323375_S6_L001/2022	2022-05-11	Bahrain	BA.5	22B (Omicron)	Bahrain	Asia	ON627314.1	Marhoon et al A	controls-negative
-USA/VT-Broad-CRSP_HCJQO5WTVP7AY6KK/2022	2022-03-28	USA	BA.2.12.1	22C (Omicron)	Vermont	North America	ON199482.1	Lemieux et al H	controls-negative
 USA/RI-CDC-LC0586837/2022	2022-04-13	USA	BA.2.12.1	22C (Omicron)	Rhode Island	North America	ON395248.1	Howard et al BZ	controls-negative
-FRA/IHUMI-6070VR/2022	2022-02-09	France	XD			Europe	OM990739.1	NA	controls-positive
+USA/CA-CDC-LC0797902/2022	2022-07-20	USA	BA.2.75	22D (Omicron)	California	North America	OP144984.1	Howard et al BQ	controls-negative
 FRA/IHUCOVID-64762/2022	2022-02-09	France	XD			Europe	OM990851.1	NA	controls-positive
 England/MILK-3729AD6/2022	2022-02-16	England	XE			Europe	OW016842.1	NA	controls-positive
-England/BRBR-3899D04/2022	2022-02-27	England	XE			Europe	OW137497.1	NA	controls-positive
-England/MILK-36E1AF9/2022	2022-02-14	England	XF			Europe	OW002725.1	NA	controls-positive
 England/MILK-327F0C5/2022	2022-01-14	England	XF			Europe	OV738853.1	NA	controls-positive
-England/MILK-3795589/2022	2022-02-19	England	XG			Europe	OW091023.1	NA	controls-positive
 Scotland/QEUH-37E04A0/2022	2022-02-21	Scotland	XG			Europe	OW084783.1	NA	controls-positive
 England/MILK-37D141B/2022	2022-02-20	England	XH			Europe	OW042525.1	NA	controls-positive
-England/MILK-385C31A/2022	2022-02-24	England	XH			Europe	OW126705.1	NA	controls-positive
 England/MILK-393A26F/2022	2022-03-04	England	XJ			Europe	OW197337.1	NA	controls-positive
 England/MILK-3BFC759/2022	2022-03-23	England	XL			Europe	OW360896.1	NA	controls-positive
-England/LSPA-3CC763B/2022	2022-03-28	England	XL			Europe	OW490144.1	NA	controls-positive
 USA/NY-Broad-CRSP_WH5TJZ42BYV4BC3T/2022	2022-03-28	USA	XM			North America	ON199453.1	NA	controls-positive
-England/MILK-3796834/2022	2022-02-19	England	XM			Europe	OW090848.1	NA	controls-positive
-England/LSPA-3B89478/2022	2022-03-20	England	XN			Europe	OW322926.1	NA	controls-positive
 England/MILK-3B62C6E/2022	2022-03-19	England	XN			Europe	OW320124.1	NA	controls-positive
 Wales/LSPA-3A9969E/2022	2022-03-13	Wales	XR			Europe	OW286587.1	NA	controls-positive
-England/LSPA-3B0E8AC/2022	2022-03-15	England	XR			Europe	OW288317.1	NA	controls-positive
 Scotland/QEUH-38D11C8/2022	2022-03-02	Scotland	XP			Europe	OW159779.1	NA	controls-positive
-Scotland/QEUH-38CEA2D/2022	2022-03-02	Scotland	XP			Europe	OW156660.1	NA	controls-positive
-USA/OH-CDC-MMB14658183/2022	2022-03-07	USA	XS			North America	OM981060.1	NA	controls-positive
 USA/CO-CDC-FG-248528/2022	2022-01-19	USA	XS			North America	OM477123.1	NA	controls-positive
 England/MILK-38AA91B/2022	2022-02-28	England	XQ			Europe	OW192527.1	NA	controls-positive
-England/LSPA-3943EF6/2022	2022-03-05	England	XQ			Europe	OW142543.1	NA	controls-positive
-Switzerland/BE-ETHZ-37580626/2022	2022-05-25	Switzerland	XAN			Europe	OX101390.1	NA	controls-positive
+Germany/OW765577.1/2022	2022-03-18	Germany	XAB			Europe	OW765577.1	NA	controls-positive
+USA/TX-CDC-STM-9J566SSEM/2022	2022-06-10	USA	XAF			North America	ON836693.1	NA	controls-positive
 USA/CA-CDC-QDX37910441/2022	2022-06-09	USA	XAN			North America	ON847076.1	NA	controls-positive
 Denmark/OX236618.1/2022	2022-07-06	Denmark	XAK			Europe	OX236618.1	NA	controls-positive
+Denmark/OX214489.1/2022	2022-06-06	Denmark	XAL			Europe	OX214489.1	NA	controls-positive
+USA/CA-CDC-LC0660066/2022	2022-05-22	USA	XAP			North America	ON660081.1	NA	controls-positive
+USA/IL-CDC-STM-9T8P4JYCF/2022	2022-07-26	USA	XAS			North America	OP165352.1	NA	controls-positive
+England/LSPA-3E384C0/2022	2022-05-29	England	XAU			Europe	OX037941.1	NA	controls-positive
+England/PLYM-3EDDB04/2022	2022-07-11	England	XAZ			Europe	OX241975.1	NA	controls-positive

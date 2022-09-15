@@ -19,18 +19,12 @@ USA/GU-CDC-2-3906074/2021	2021-01-31	USA	P.3	21E (Theta)	Guam	North America	MZ77
 USA/NY-CDC-LC0031214/2021	2021-03-15	USA	B.1.526	21F (Iota)	New York	North America	MW987419.1	Howard et al Z	controls-negative
 Switzerland/ZH-UZH-IMV-3ba4d945/2021	2021-08-02	Switzerland	C.37.1	21G (Lambda)	Zürich	Europe	OU576905.1	? F	controls-negative
 USA/FL-CDC-FG-022848/2021	2021-04-12	USA	B.1.621	21H (Mu)	Florida	North America	OK213902.1	Howard et al AQ	controls-negative
-England/MILK-1622A3E/2021	2021-06-03	United Kingdom	AY.11	21I (Delta)	England	Europe	OU314327.1	The Lighthouse Lab in Milton et al A	controls-negative
 USA/FL-CDC-QDX26157271/2021	2021-06-22	USA	AY.75	21I (Delta)	Florida	North America	MZ535087.1	Howard et al S	controls-negative
-USA/TX-CDC-ASC210111920/2021	2021-07-07	USA	AY.44	21J (Delta)	Texas	North America	MZ705780.1	Howard et al Q	controls-negative
 England/QEUH-173F5F0/2021	2021-06-18	United Kingdom	AY.4	21J (Delta)	England	Europe	OU358465.1	VanSteenhouse et al A	controls-negative
 Switzerland/AG-ETHZ-35947998/2022	2022-01-23	Switzerland	BA.1.1	21K (Omicron)	Aargau	Europe	OV882645.1	? G	controls-negative
-USA/GA-GPHL-2867/2021	2021-12-27	USA	BA.1.1.18	21K (Omicron)	Georgia	North America	OM201100.1	Parrott et al	controls-negative
 Denmark/DCGC-323445/2022	2022-01-15	Denmark	BA.2	21L (Omicron)	Hovedstaden	Europe	OW783991.1	Danish Covid-19 Genome et al	controls-negative
-USA/NY-Broad-CRSP_JYXB4KKAEDIB5CUN/2022	2022-03-07	USA	BA.2.7	21L (Omicron)	New York	North America	ON066513.1	Lemieux et al G	controls-negative
 USA/PA-CDC-QDX34289597/2022	2022-02-25	USA	BA.3.1	21M (Omicron)	Pennsylvania	North America	OM998782.1	Howard et al BM	controls-negative
 USA/NC-CDC-LC0597531/2022	2022-04-22	USA	BA.4	22A (Omicron)	North Carolina	North America	ON465569.1	Howard et al CK	controls-negative
-USA/CA-CDC-LC0603479/2022	2022-04-29	USA	BA.4	22A (Omicron)	California	North America	ON468185.1	Howard et al CO	controls-negative
-USA/FL-BPHL-8585/2022	2022-05-12	USA	BA.5	22B (Omicron)	Florida	North America	ON729631.1	Schmedes et al D	controls-negative
 BHR/22920323375_S6_L001/2022	2022-05-11	Bahrain	BA.5	22B (Omicron)	Bahrain	Asia	ON627314.1	Marhoon et al A	controls-negative
-USA/VT-Broad-CRSP_HCJQO5WTVP7AY6KK/2022	2022-03-28	USA	BA.2.12.1	22C (Omicron)	Vermont	North America	ON199482.1	Lemieux et al H	controls-negative
 USA/RI-CDC-LC0586837/2022	2022-04-13	USA	BA.2.12.1	22C (Omicron)	Rhode Island	North America	ON395248.1	Howard et al BZ	controls-negative
+USA/CA-CDC-LC0797902/2022	2022-07-20	USA	BA.2.75	22D (Omicron)	California	North America	OP144984.1	Howard et al BQ	controls-negative

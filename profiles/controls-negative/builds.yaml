@@ -19,6 +19,6 @@ builds:
     sequences: data/controls-negative/sequences.fasta
 
     plot:
-      weeks: 16
-      max_date: "2022-05-20"
+      min_date: "2020-03-25"
+      max_date: "2022-08-14"
       singletons: true

@@ -20,5 +20,5 @@ builds:
     # rule parameterization
     plot:
       min_date: "2022-01-10"
-      max_date: "2022-07-04"
+      max_date: "2022-08-21"
       singletons: true
