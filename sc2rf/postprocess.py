@@ -35,7 +35,13 @@ def create_logger(logfile=None):
 
 
 def reverse_iter_collapse(
-    regions, min_len, max_breakpoint_len, start_coord, end_coord, clade
+    regions,
+    min_len,
+    max_breakpoint_len,
+    start_coord,
+    end_coord,
+    clade,
+    min_consec_alleles=-1,
 ):
     """Collapse adjacent regions from the same parent into one region."""
 
@@ -79,13 +85,15 @@ def reverse_iter_collapse(
 
 
 @click.command()
-@click.option("--csv-primary", help="CSV output from sc2rf.", required=True)
-@click.option("--ansi-primary", help="ANSI output from sc2rf.", required=False)
 @click.option(
-    "--csv-secondary", help="Secondary CSV output from sc2rf.", required=False
+    "--csv",
+    help="CSV output from sc2rf, multiple files separate by commas.",
+    required=True,
 )
 @click.option(
-    "--ansi-secondary", help="Secondary ANSI output from sc2rf.", required=False
+    "--ansi",
+    help="ANSI output from sc2rf, multiple files separate by commas.",
+    required=False,
 )
 @click.option("--motifs", help="TSV of breakpoint motifs", required=False)
 @click.option(
@@ -96,19 +104,25 @@ def reverse_iter_collapse(
 )
 @click.option(
     "--min-len",
-    help="Minimum region length (-1 to disable length filtering).",
+    help="Minimum region length (-1 to disable filter).",
+    required=False,
+    default=-1,
+)
+@click.option(
+    "--min-consec-allele",
+    help="Minimum number of consecutive alleles in a region (-1 to disable filter).",
     required=False,
     default=-1,
 )
 @click.option(
     "--max-breakpoint-len",
-    help="Maximum breakpoint length (-1 to disable length filtering).",
+    help="Maximum breakpoint length (-1 to disable filter).",
     required=False,
     default=-1,
 )
 @click.option(
     "--max-parents",
-    help="Maximum number of parents (-1 to disable parent filtering).",
+    help="Maximum number of parents (-1 to disable filter).",
     required=False,
     default=-1,
 )
@@ -146,12 +160,11 @@ def reverse_iter_collapse(
 )
 @click.option("--log", help="Path to a log file", required=False)
 def main(
-    csv_primary,
-    csv_secondary,
-    ansi_primary,
-    ansi_secondary,
+    csv,
+    ansi,
     prefix,
     min_len,
+    min_consec_allele,
     max_breakpoint_len,
     outdir,
     aligned,
@@ -174,16 +187,34 @@ def main(
     logger = create_logger(logfile=log)
 
     # -----------------------------------------------------------------------------
-    # Import Dataframe
+    # Import Dataframes
 
-    # sc2rf output (required)
-    logger.info("Parsing csv: {}".format(csv_primary))
+    # sc2rf csv output (required)
+    df = pd.DataFrame()
+    csv_split = csv.split(",")
+    for csv_file in csv_split:
+        logger.info("Parsing csv: {}".format(csv_file))
 
-    try:
-        df = pd.read_csv(csv_primary, sep=",", index_col=0)
-    except pd.errors.EmptyDataError:
-        logger.warning("No records in primary csv")
-        df = pd.DataFrame()
+        try:
+            temp_df = pd.read_csv(csv_file, sep=",", index_col=0)
+        except pd.errors.EmptyDataError:
+            logger.warning("No records in csv: {}".format(csv_file))
+            temp_df = pd.DataFrame()
+
+        # If the df has no records, this is the first csv
+        if len(df) == 0:
+            df = temp_df
+        else:
+            # Identify new strains in to override previous csv
+            override_strains = []
+            for strain in temp_df.index:
+                if strain in df.index:
+                    override_strains.append(strain)
+
+            # Remove the override strains from the previous dataframe
+            df = df[~df.index.isin(override_strains)]
+            # Combine primary and secondary data frames
+            df = pd.concat([df, temp_df])
 
     df.fillna("", inplace=True)
 
@@ -198,6 +229,7 @@ def main(
     df["sc2rf_num_breakpoints_filter"] = [NO_DATA_CHAR] * len(df)
     df["sc2rf_breakpoints_motif"] = [NO_DATA_CHAR] * len(df)
     df["sc2rf_unique_subs_filter"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_alleles_filter"] = [NO_DATA_CHAR] * len(df)
     df["cov-spectrum_parents"] = [NO_DATA_CHAR] * len(df)
     df["cov-spectrum_parents_confidence"] = [NO_DATA_CHAR] * len(df)
     df["cov-spectrum_parents_subs"] = [NO_DATA_CHAR] * len(df)
@@ -243,36 +275,6 @@ def main(
         nextclade_no_recomb_df = pd.read_csv(nextclade_no_recomb, sep="\t", index_col=0)
         nextclade_no_recomb_df.fillna(NO_DATA_CHAR, inplace=True)
 
-    # (Optional) Merge in secondary dataframe
-    if csv_secondary:
-        logger.info("Parsing secondary csv: {}".format(csv_secondary))
-        try:
-            df_secondary = pd.read_csv(csv_secondary, sep=",", index_col=0)
-
-            # Option 1. Identify secondary strains missing in primary
-            # missing_strains = []
-            # for strain in df_secondary.index:
-            #    if strain not in df.index:
-            #        missing_strains.append(strain)
-            # df_missing = df_secondary[df_secondary.index.isin(missing_strains)]
-            # df = pd.concat([df,df_missing])
-            # df.fillna(NO_DATA_CHAR, inplace=True)
-
-            # Option 2. Identify strains in primary to override with secondary
-            override_strains = []
-            for strain in df_secondary.index:
-                if strain in df.index:
-                    override_strains.append(strain)
-
-            # Remove the override strains from the primary dataframe
-            df = df[~df.index.isin(override_strains)]
-            # Combine primary and secondary data frames
-            df = pd.concat([df, df_secondary])
-            df.fillna(NO_DATA_CHAR, inplace=True)
-
-        except pd.errors.EmptyDataError:
-            logger.warning("No records in secondary csv")
-
     # Initialize a dictionary of false_positive strains
     # key: strain, value: reason
     false_positives = {}
@@ -286,12 +288,16 @@ def main(
         regions_str = rec[1]["regions"]
         regions_split = regions_str.split(",")
 
+        alleles_str = rec[1]["alleles"]
+        alleles_split = alleles_str.split(",")
+
         unique_subs_str = rec[1]["unique_subs"]
         unique_subs_split = unique_subs_str.split(",")
 
         # Keys are going to be the start coord of the region
         regions_filter = {}
         unique_subs_filter = []
+        alleles_filter = []
         breakpoints_filter = []
 
         prev_clade = None
@@ -355,6 +361,7 @@ def main(
             region_contains_unique_sub = False
 
             for sub in unique_subs_split:
+
                 sub_coord = int(sub.split("|")[0])
                 sub_parent = sub.split("|")[1]
 
@@ -380,12 +387,51 @@ def main(
 
         regions_filter = regions_filter_collapse
 
+        # -----------------------------------------------------------------
+        # THIRD PASS: CONSECUTIVE ALLELES
+
+        regions_filter_collapse = {}
+
+        for start_coord in list(regions_filter):
+            clade = regions_filter[start_coord]["clade"]
+            end_coord = regions_filter[start_coord]["end"]
+
+            num_consec_allele = 0
+
+            for allele in alleles_split:
+
+                allele_coord = int(allele.split("|")[0])
+                allele_parent = allele.split("|")[1]
+
+                if (
+                    allele_coord >= start_coord
+                    and allele_coord <= end_coord
+                    and allele_parent == clade
+                ):
+                    num_consec_allele += 1
+                    alleles_filter.append(allele)
+
+            # If there are sufficient consecutive alleles, check if we should
+            # collapse into previous parental region
+            if num_consec_allele >= min_consec_allele:
+                reverse_iter_collapse(
+                    regions=regions_filter_collapse,
+                    min_len=min_len,
+                    max_breakpoint_len=max_breakpoint_len,
+                    start_coord=start_coord,
+                    end_coord=end_coord,
+                    clade=clade,
+                )
+
+        regions_filter = regions_filter_collapse
+
+        # -----------------------------------------------------------------
         # Check if all the regions were collapsed
         if len(regions_filter) < 2:
             false_positives[rec[0]] = "single parent"
 
         # -----------------------------------------------------------------
-        # THIRD PASS: BREAKPOINT DETECTION
+        # FOURTH PASS: BREAKPOINT DETECTION
 
         prev_start_coord = None
         for start_coord in regions_filter:
@@ -562,6 +608,7 @@ def main(
         df.at[strain, "sc2rf_breakpoints_filter"] = ",".join(breakpoints_filter)
         df.at[strain, "sc2rf_num_breakpoints_filter"] = num_breakpoints_filter
         df.at[strain, "sc2rf_unique_subs_filter"] = ",".join(unique_subs_filter)
+        df.at[strain, "sc2rf_alleles_filter"] = ",".join(alleles_filter)
         if strain in false_positives:
             df.at[strain, "sc2rf_status"] = "false_positive"
             df.at[strain, "sc2rf_details"] = false_positives[strain]
@@ -802,6 +849,7 @@ def main(
             "sc2rf_breakpoints_filter": "sc2rf_breakpoints",
             "sc2rf_num_breakpoints_filter": "sc2rf_num_breakpoints",
             "sc2rf_unique_subs_filter": "sc2rf_unique_subs",
+            "sc2rf_alleles_filter": "sc2rf_alleles",
         },
         axis="columns",
         inplace=True,
@@ -826,39 +874,30 @@ def main(
 
     # -------------------------------------------------------------------------
     # filter the ansi output
-    if ansi_primary:
+    if ansi:
 
-        outpath_ansi = os.path.join(outdir, prefix + ".ansi.primary.txt")
-        logger.info("Writing filtered ansi: {}".format(outpath_ansi))
-        if len(false_positives) > 0:
-            cmd = "cut -f 1 {exclude} | grep -v -f - {inpath} > {outpath}".format(
-                exclude=outpath_exclude,
-                inpath=ansi_primary,
-                outpath=outpath_ansi,
-            )
-        else:
-            cmd = "cp -f {inpath} {outpath}".format(
-                inpath=ansi_primary,
-                outpath=outpath_ansi,
-            )
-        os.system(cmd)
+        ansi_split = ansi.split(",")
+        outpath_ansi = os.path.join(outdir, prefix + ".ansi.txt")
 
-    if ansi_secondary:
-
-        outpath_ansi = os.path.join(outdir, prefix + ".ansi.secondary.txt")
-        logger.info("Writing filtered ansi: {}".format(outpath_ansi))
-        if len(false_positives) > 0:
-            cmd = "cut -f 1 {exclude} | grep -v -f - {inpath} > {outpath}".format(
-                exclude=outpath_exclude,
-                inpath=ansi_secondary,
-                outpath=outpath_ansi,
-            )
-        else:
-            cmd = "cp -f {inpath} {outpath}".format(
-                inpath=ansi_secondary,
-                outpath=outpath_ansi,
-            )
-        os.system(cmd)
+        for i, ansi_file in enumerate(ansi_split):
+            logger.info("Parsing ansi: {}".format(ansi_file))
+            if len(false_positives) > 0:
+                cmd = (
+                    "cut -f 1 "
+                    + "{exclude} | grep -v -f - {inpath} {operator} {outpath}".format(
+                        exclude=outpath_exclude,
+                        inpath=ansi_file,
+                        operator=">" if i == 0 else ">>",
+                        outpath=outpath_ansi,
+                    )
+                )
+            else:
+                cmd = "cp -f {inpath} {outpath}".format(
+                    inpath=ansi_file,
+                    outpath=outpath_ansi,
+                )
+            logger.info("Writing filtered ansi: {}".format(outpath_ansi))
+            os.system(cmd)
 
     # -------------------------------------------------------------------------
     # write alignment

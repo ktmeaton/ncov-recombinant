@@ -431,6 +431,22 @@ def _inputs_sc2rf(build):
 
   return inputs
 
+def _params_sc2rf(build):
+  """Parse conditional params for rule sc2rf."""
+
+  params = {}
+
+  # Add the arguments for each mode
+  params["sc2rf_args"] = {}
+  for mode_args in config["builds"][build]["sc2rf"]["mode"]:
+
+      mode = list(mode_args.keys())[0]
+      args = list(mode_args.values())[0]
+
+      params["sc2rf_args"][mode] = args
+
+  return params
+
 # Snakemake rule
 rule sc2rf:
   """
@@ -452,9 +468,8 @@ rule sc2rf:
     csv                  = "results/{build}/sc2rf/stats.{mode}.csv",
   params:
     outdir               = "results/{build}",
-    clades               = lambda wildcards: " ".join(config["builds"][wildcards.build]["sc2rf"][wildcards.mode + "_clades"]),
     mutation_threshold   = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["mutation_threshold"],
-    sc2rf_args           = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["sc2rf_args"],
+    sc2rf_args           = lambda wildcards: _params_sc2rf(wildcards.build)["sc2rf_args"][wildcards.mode],
     max_name_length      = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["max_name_length"]
   threads: 1
   resources:
@@ -471,13 +486,40 @@ rule sc2rf:
       --output-csv {output.csv} \
       --log {log} \
       --max-name-length {params.max_name_length} \
-      --clades "{params.clades}" \
       --mutation-threshold {params.mutation_threshold} \
       {params.sc2rf_args};
     """
 
 # -----------------------------------------------------------------------------
 rule_name = "sc2rf_recombinants"
+
+# Inputs function
+def _inputs_sc2rf_recombinants(build):
+  """Parse conditional inputs for rule sc2rf_recombinants."""
+
+  inputs = {}
+
+  inputs["ansi"] = []
+  inputs["csv"] = []
+
+  for mode_args in config["builds"][build]["sc2rf"]["mode"]:
+
+      mode = list(mode_args.keys())[0]
+
+      # Ansi input
+      ansi_path = "results/{build}/sc2rf/ansi.{mode}.txt".format(
+        build = build,
+        mode = mode,
+      )
+      csv_path = "results/{build}/sc2rf/stats.{mode}.csv".format(
+        build = build,
+        mode = mode,
+      )
+
+      inputs["ansi"].append(ansi_path)
+      inputs["csv"].append(csv_path)
+
+  return inputs
 
 # Parameters function
 def _params_sc2rf_recombinants(build):
@@ -491,6 +533,10 @@ def _params_sc2rf_recombinants(build):
   min_len = config["builds"][build]["sc2rf_recombinants"]["min_len"]
   if min_len: params["min_len"] = "--min-len {}".format(min_len)
   else: params["min_len"] = ""
+
+  min_consec_allele = config["builds"][build]["sc2rf_recombinants"]["min_consec_allele"]
+  if min_consec_allele: params["min_consec_allele"] = "--min-consec-allele {}".format(min_consec_allele)
+  else: params["min_consec_allele"] = ""
 
   max_breakpoint_len = config["builds"][build]["sc2rf_recombinants"]["max_breakpoint_len"]
   if max_breakpoint_len: params["max_breakpoint_len"] = "--max-breakpoint-len {}".format(max_breakpoint_len)
@@ -520,28 +566,26 @@ rule sc2rf_recombinants:
   log:         {log}
   stats:       {output.stats}
   alignment:   {output.alignment}
-  ansi:        {output.ansi_primary},{output.ansi_secondary}
+  ansi:        {output.ansi}
   """
 
   input:
-    ansi_primary    = "results/{build}/sc2rf/ansi.primary.txt",
-    csv_primary     = "results/{build}/sc2rf/stats.primary.csv",
-    ansi_secondary  = "results/{build}/sc2rf/ansi.secondary.txt",
-    csv_secondary   = "results/{build}/sc2rf/stats.secondary.csv",
-    issues          = rules.issues_download.output.issues,
+    ansi            = lambda wildcards: _inputs_sc2rf_recombinants(wildcards.build)["ansi"],
+    csv             = lambda wildcards: _inputs_sc2rf_recombinants(wildcards.build)["csv"],
     alignment       = lambda wildcards: _inputs_sc2rf(wildcards.build)["alignment"],
+    issues          = rules.issues_download.output.issues,
     nextclade       = "results/{build}/nextclade/qc.tsv",
     nextclade_no_recomb = "results/{build}/nextclade_no-recomb/qc.tsv",
   output:
     stats           = "results/{build}/sc2rf/stats.tsv",
     strains         = "results/{build}/sc2rf/recombinants.txt",
     alignment       = "results/{build}/sc2rf/recombinants.fasta",
-    ansi_primary    = "results/{build}/sc2rf/recombinants.ansi.primary.txt",
-    ansi_secondary  = "results/{build}/sc2rf/recombinants.ansi.secondary.txt",
+    ansi            = "results/{build}/sc2rf/recombinants.ansi.txt",
   params:
     outdir          = "results/{build}/sc2rf",
     prefix          = "recombinants",
     min_len         = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["min_len"],
+    min_consec_allele = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["min_consec_allele"],
     max_breakpoint_len = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_breakpoint_len"],
     max_parents     = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_parents"],
     max_breakpoints = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_breakpoints"],
@@ -557,10 +601,8 @@ rule sc2rf_recombinants:
   shell:
     """
     python3 sc2rf/postprocess.py \
-      --csv-primary {input.csv_primary} \
-      --csv-secondary {input.csv_secondary} \
-      --ansi-primary {input.ansi_primary} \
-      --ansi-secondary {input.ansi_secondary} \
+      --csv {input.csv} \
+      --ansi {input.ansi} \
       --prefix {params.prefix} \
       --outdir {params.outdir} \
       --aligned {input.alignment} \
@@ -571,6 +613,7 @@ rule sc2rf_recombinants:
       {params.auto_pass} \
       {params.motifs} \
       {params.min_len} \
+      {params.min_consec_allele} \
       {params.max_breakpoint_len} \
       {params.max_parents} \
       {params.max_breakpoints} \
