@@ -12,11 +12,6 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    --clades)
-      clades=$2
-      shift # past argument
-      shift # past value
-      ;;
     --primers)
       primers=$2
       shift # past argument
@@ -56,6 +51,12 @@ while [[ $# -gt 0 ]]; do
         sc2rf_args+=("$value")
         shift # past value
       fi
+      ;;
+    *)
+      # This is a risky way to parse the clades for sc2rf
+      value=$1
+      sc2rf_args+=("$value")
+      shift # past value
       ;;
   esac
 done
