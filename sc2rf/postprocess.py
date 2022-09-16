@@ -788,7 +788,6 @@ def main(
                 parent_lineages_confidence.append(max_prop)
                 parent_lineages_subs.append(parent_lineages_sub_str)
 
-            print(strain, parent_lineages, parent_lineages_confidence)
             # Update the dataframe columns
             df.at[strain, "cov-spectrum_parents"] = ",".join(parent_lineages)
             df.at[strain, "cov-spectrum_parents_confidence"] = ",".join(
@@ -832,11 +831,15 @@ def main(
         for i, rec in enumerate(auto_pass_df.iterrows()):
             strain = rec[0]
             lineage = rec[1]["Nextclade_pango"]
+            # Additionally note that this was negative first
+            sc2rf_details = [
+                "no recombination detected",
+                "nextclade-auto-pass {}".format(lineage),
+            ]
+
             auto_pass_dict["sample"].append(strain)
             auto_pass_dict["sc2rf_status"][i] = "positive"
-            auto_pass_dict["sc2rf_details"][i] = "nextclade-auto-pass {}".format(
-                lineage
-            )
+            auto_pass_dict["sc2rf_details"][i] = ";".join(sc2rf_details)
 
         auto_pass_df = pd.DataFrame(auto_pass_dict).set_index("sample")
 
