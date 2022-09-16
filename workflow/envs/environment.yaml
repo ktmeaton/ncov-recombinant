@@ -18,6 +18,10 @@ dependencies:
   - bioconda::seqkit=2.2.0
   # Alignmnent and Clade QC
   - bioconda::nextclade=2.5.0
+  # Phylogeny
+  - conda-forge::biopython
+  # Visualization
+  - bioconda::snipit
   # Report Generation
   - conda-forge:python-pptx
   - bioconda::epiweeks

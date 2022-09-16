@@ -3,9 +3,9 @@
 SARS-CoV-2 Recombinant Detection Pipeline.
 """
 
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 #                             Modules and Packages                             #
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 import os
 import copy
 import textwrap
@@ -18,9 +18,9 @@ import json
 from snakemake.utils import min_version
 min_version("7.3.6")
 
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 # Setup
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 
 today = datetime.date.today()
 
@@ -86,9 +86,9 @@ for build in BUILDS:
   if build in list(validation_df["build"]):
     BUILDS_VALIDATE.append(build)
 
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 #  Default Target
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 
 rule all:
   """
@@ -119,9 +119,9 @@ rule all:
       build_name=BUILDS_VALIDATE,
       ),
 
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 #  Accessory Rules
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 
 rule print_config:
   """
@@ -137,7 +137,7 @@ rule print_config:
     print(config_json)
 
 
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 rule save_config:
   """
   Save full config.
@@ -168,7 +168,7 @@ rule save_config:
     with open(outfile_path, "w") as outfile:
       outfile.write(config_json)
 
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 rule help:
   """
   Print list of all rules and targets with help.
@@ -207,9 +207,9 @@ rule help:
       if rule._log:
           print("\t\tlog: ", rule._log)
 
-# -----------------------------------------------------------------------------#
+# -----------------------------------------------------------------------------
 #  STAGE 0: Setup
-# -----------------------------------------------------------------------------#
+# -----------------------------------------------------------------------------
 
 rule_name = "issues_download"
 rule issues_download:
@@ -245,9 +245,37 @@ rule issues_download:
     python3 scripts/plot_breakpoints.py --lineages {input.breakpoints} --outdir {params.outdir} --autoscale >> {log} 2>&1;
     """
 
-# -----------------------------------------------------------------------------#
+# -----------------------------------------------------------------------------
+rule_name = "pango_lineage_tree"
+rule pango_lineage_tree:
+  """Construct a tree of pangolin lineages."""
+
+  message: """Constructing a tree of pangolin lineages.\n
+  log:     {log}
+  tree:    {output.tree}
+  """
+
+  output:
+    tree   = "resources/lineages.nwk",
+    parent = "resources/lineages.yml",
+    alias  = "resources/alias_key.json",
+  params:
+    outdir = "resources",
+  threads: 1
+  resources:
+    cpus = 1,
+  benchmark:
+    "benchmarks/{rule}/{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    python3 scripts/pango_lineage_tree.py --log {log} --outdir {params.outdir};
+    """
+
+# ------------------------------------------------------------------------------
 #  STAGE 1: Nextclade QC
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 
 rule_name = "nextclade_dataset"
 rule nextclade_dataset:
@@ -345,7 +373,7 @@ rule nextclade:
       1> {output.metadata} 2>> {log};
     """
 
-# ----------------------------------------------------------------------------#
+# -----------------------------------------------------------------------------
 rule_name = "nextclade_recombinants"
 
 # Parameters function
@@ -405,9 +433,9 @@ rule nextclade_recombinants:
     csvtk grep -t -P {output.strains} -v {input.qc} 1> {output.non} 2>> {log};
     """
 
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 #  STAGE 3: sc2rf
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 
 rule_name = "sc2rf"
 
@@ -576,6 +604,7 @@ rule sc2rf_recombinants:
     issues          = rules.issues_download.output.issues,
     nextclade       = "results/{build}/nextclade/qc.tsv",
     nextclade_no_recomb = "results/{build}/nextclade_no-recomb/qc.tsv",
+    lineage_tree    = rules.pango_lineage_tree.output.tree,
   output:
     stats           = "results/{build}/sc2rf/stats.tsv",
     strains         = "results/{build}/sc2rf/recombinants.txt",
@@ -612,6 +641,7 @@ rule sc2rf_recombinants:
       --issues {input.issues} \
       --nextclade {input.nextclade} \
       --nextclade-no-recomb {input.nextclade_no_recomb} \
+      --lineage-tree {input.lineage_tree} \
       --log {log} \
       {params.auto_pass} \
       {params.motifs} \
@@ -627,9 +657,9 @@ rule sc2rf_recombinants:
     rm -f {params.outdir}/recombinants.exclude.tsv >> {log} 2>&1;
     """
 
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 #  STAGE 4: Summarize and Report
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 
 rule_name = "summary"
 
@@ -683,7 +713,7 @@ rule summary:
       > {log} 2>&1;
     """
 
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 # Linelist
 
 # Parameters Function
@@ -746,7 +776,7 @@ rule linelist:
     python3 scripts/parents.py --input {output.positives} --output {output.parents} >> {log} 2>&1;
     """
 
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 # Plot
 
 rule_name = "plot"
@@ -850,7 +880,7 @@ rule plot:
       >> {log} 2>&1;
     """
 
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 rule_name = "plot_historical"
 rule plot_historical:
   """Plot results as a historical timeline."""
@@ -913,9 +943,9 @@ rule plot_historical:
       >> {log} 2>&1;
     """
 
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 # Report
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 
 rule_name = "report"
 
@@ -1013,9 +1043,9 @@ rule report_historical:
     python3 scripts/report.py --linelist {input.linelist} --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.template} {params.singletons} > {log} 2>&1;
     """
 
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 # Validation
-# -----------------------------------------------------------------------------#
+# ------------------------------------------------------------------------------
 
 rule_name = "validate"
 

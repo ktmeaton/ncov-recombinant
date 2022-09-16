@@ -7,6 +7,7 @@ import logging
 import requests
 import sys
 import time
+from Bio import Phylo
 
 NO_DATA_CHAR = "NA"
 LAPIS_URL_BASE = (
@@ -158,6 +159,11 @@ def reverse_iter_collapse(
     help="Issues TSV metadata from pango-designation",
     required=False,
 )
+@click.option(
+    "--lineage-tree",
+    help="Newick tree of pangolin lineage hierarchies",
+    required=False,
+)
 @click.option("--log", help="Path to a log file", required=False)
 def main(
     csv,
@@ -176,6 +182,7 @@ def main(
     max_breakpoints,
     motifs,
     log,
+    lineage_tree,
 ):
     """Detect recombinant seqences from sc2rf. Dependencies: pandas, click"""
 
@@ -274,6 +281,11 @@ def main(
         )
         nextclade_no_recomb_df = pd.read_csv(nextclade_no_recomb, sep="\t", index_col=0)
         nextclade_no_recomb_df.fillna(NO_DATA_CHAR, inplace=True)
+
+    # (Optional) phylogenetic tree of pangolineage lineages
+    if lineage_tree:
+        logger.info("Parsing lineage tree: {}".format(lineage_tree))
+        tree = Phylo.read(lineage_tree, "newick")
 
     # Initialize a dictionary of false_positive strains
     # key: strain, value: reason
@@ -716,9 +728,9 @@ def main(
                     max_prop = NO_DATA_CHAR
                 else:
                     # Temporarily set to fake data
-                    total_lineages = sum(lineage_dict.keys())
+                    total_count = sum(lineage_dict.keys())
                     max_count = max(lineage_dict.keys())
-                    max_prop = max_count / total_lineages
+                    max_prop = max_count / total_count
                     max_lineage = lineage_dict[max_count]
 
                     # Don't want to report recombinants as parents yet
@@ -734,10 +746,41 @@ def main(
                             break
                         # Otherwise try again!
                         else:
-                            # For now, deliberately don't update total_lineages
+                            # For now, deliberately don't update total_count
                             max_count = max(lineage_dict.keys())
-                            max_prop = max_count / total_lineages
+                            max_prop = max_count / total_count
                             max_lineage = lineage_dict[max_count]
+
+                    # If we ended with an empty dictionary,
+                    # there were not usable lineages
+                    if len(lineage_dict) == 0:
+                        max_lineage = NO_DATA_CHAR
+                        max_prop = NO_DATA_CHAR
+
+                    # Combine counts of sublineages into the max lineage total
+                    # This requires the pangolin lineage tree!
+                    if lineage_tree:
+                        max_lineage_tree = [c for c in tree.find_clades(max_lineage)]
+                        # Make sure we found this lineage in the tree
+                        if len(max_lineage_tree) == 1:
+                            max_lineage_tree = max_lineage_tree[0]
+                            max_lineage_children = [
+                                c.name for c in max_lineage_tree.find_clades()
+                            ]
+
+                            # Search for counts in the lapis data that
+                            # descend from the max lineage
+                            for count, lineage in lineage_dict.items():
+                                if (
+                                    lineage in max_lineage_children
+                                    and lineage != max_lineage
+                                ):
+                                    max_count += count
+                                    max_prop = max_count / total_count
+
+                            # Add a "*" suffix to the max lineage, to indicate
+                            # this includes descendant counts
+                            max_lineage = max_lineage + "*"
 
                 parent_lineages_sub_str = "{}|{}".format(region_subs_csv, max_lineage)
 
@@ -745,6 +788,7 @@ def main(
                 parent_lineages_confidence.append(max_prop)
                 parent_lineages_subs.append(parent_lineages_sub_str)
 
+            print(strain, parent_lineages, parent_lineages_confidence)
             # Update the dataframe columns
             df.at[strain, "cov-spectrum_parents"] = ",".join(parent_lineages)
             df.at[strain, "cov-spectrum_parents_confidence"] = ",".join(
