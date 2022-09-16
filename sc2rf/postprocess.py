@@ -65,8 +65,8 @@ def reverse_iter_collapse(
         # Don't add the current region
         elif (
             start_coord != prev_start_coord
-            and breakpoint_len > max_breakpoint_len
             and clade != prev_clade
+            and (max_breakpoint_len != -1 and breakpoint_len > max_breakpoint_len)
         ):
             break
 
