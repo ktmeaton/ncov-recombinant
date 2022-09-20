@@ -267,6 +267,9 @@ def main(
 
     num_dist_plots = 0
     for parent in parents_colors:
+        # Skip plotting breakpoints of unknown parents
+        if parent == "Unknown":
+            continue
         match_df = breakpoints_dist_df[breakpoints_dist_df["parent"] == parent]
 
         # If there are breakpoints for that parent, add it to the dist plots
@@ -345,6 +348,12 @@ def main(
         ax.spines["top"].set_visible(False)
 
         i += 1
+
+    # Label the last axes
+    if num_dist_plots > 0:
+        # Put the label on the halfway axes
+        ax = axes[num_dist_plots // 2]
+        ax.set_ylabel("Breakpoint\nDistribution")
 
     # -------------------------------------------------------------------------
     # Plot Breakpoint Regions
