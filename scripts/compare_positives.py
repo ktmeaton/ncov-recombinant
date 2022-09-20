@@ -220,6 +220,9 @@ def main(
 ):
     """Compare positive recombinants between two tables."""
 
+    # create output directory
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
     # create logger
     logger = create_logger(logfile=log)
 
