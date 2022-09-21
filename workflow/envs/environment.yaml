@@ -8,9 +8,8 @@ dependencies:
   # Python
   - anaconda::python=3.9.10
   - anaconda::pip=22.0.3
-  - anaconda::click>=8.0.2
+  - anaconda::click=8.1.3
   - conda-forge::pandas=1.4.1
-  - conda-forge::seaborn
   # Workflow
   - bioconda::snakemake=7.3.6
   # Metadata and Sequence Manipulation
@@ -19,13 +18,15 @@ dependencies:
   # Alignmnent and Clade QC
   - bioconda::nextclade=2.5.0
   # Phylogeny
-  - conda-forge::biopython
+  - conda-forge::biopython=1.79
   # Visualization
-  - bioconda::snipit
+  - conda-forge::seaborn=0.12.0
+  - bioconda::snipit=1.0.7
+  - plotly::plotly=5.10.0
   # Report Generation
-  - conda-forge:python-pptx
-  - bioconda::epiweeks
-  - conda-forge::zip
+  - conda-forge:python-pptx=0.6.21
+  - bioconda::epiweeks=2.1.4
+  - conda-forge::zip=3.0
   # For dev users
   #- conda-forge::pre_commit=2.17.0
   #- anaconda::git=2.35.0
