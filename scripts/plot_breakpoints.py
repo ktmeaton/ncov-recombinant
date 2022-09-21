@@ -313,9 +313,9 @@ def main(
         breakpoints_dist_parent_df = breakpoints_dist_df[
             breakpoints_dist_df["parent"] == parent
         ]
-
-        # Is there only one observation?
-        if len(breakpoints_dist_parent_df) == 1:
+        # Is there only one coordinate observation?
+        num_breakpoints_coord = len(set(breakpoints_dist_parent_df["coordinate"]))
+        if num_breakpoints_coord == 1:
             # Double the dataframe to force plotting
             breakpoints_dist_parent_df = pd.concat(
                 [
