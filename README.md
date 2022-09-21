@@ -53,10 +53,12 @@ Novel recombinants (i.e. undesignated) can be identified by a lineage assignment
 
 ## Install
 
-1. Clone the repository, using the `--recursive` flag for submodules:
+1. Clone the repository:
+
+    > Note: that the `--recursive` flag is no longer necessary as of `v0.4.3`.
 
     ```bash
-    git clone --recursive https://github.com/ktmeaton/ncov-recombinant.git
+    git clone https://github.com/ktmeaton/ncov-recombinant.git
     cd ncov-recombinant
     ```
 
@@ -69,25 +71,24 @@ Novel recombinants (i.e. undesignated) can be identified by a lineage assignment
 
 ## Update
 
-> **Tip**: If you have modified any pipeline files, it is often easier to instead do a [fresh install](https://github.com/ktmeaton/ncov-recombinant#install).
+> **Tip**: It is recommended to do a [fresh install](https://github.com/ktmeaton/ncov-recombinant#install) in a separate directory to test a newer version.
 
-1. Save (`stash`) any modifications you may have made to pipeline files.
+Don't forget to update your conda environment!
 
-    ```bash
-    git stash
-    ```
+```bash
+mamba env update -f workflow/envs/environment.yaml
+```
 
-1. Download and apply the latest updates.
+After running the newly installed version, you can compare lineage assignment changes using the following script:
 
-    ```bash
-    git pull --recurse-submodules
-    ```
-
-1. Update your conda environment.
-
-    ```bash
-    mamba env update -f workflow/envs/environment.yaml
-    ```
+```bash
+python3 scripts/compare_positives.py \
+  --positives-1 old_pipeline_ver/results/controls/linelists/positives.tsv \
+  --positives-2 new_pipeline_ver/results/controls/linelists/positives.tsv \
+  --ver-1 "v0.4.2" \
+  --ver-2 "v0.4.3" \
+  --outdir compare/controls
+```
 
 ## Tutorial
 
