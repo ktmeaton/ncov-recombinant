@@ -12,6 +12,7 @@ This is a minor bug fix and enhancement release with the following changes:
 - [Issue #109](https://github.com/ktmeaton/ncov-recombinant/issues/109): `XAN`
 - [Issue #108](https://github.com/ktmeaton/ncov-recombinant/issues/108): `XAP`
 - [Issue #107](https://github.com/ktmeaton/ncov-recombinant/issues/107): `XAQ`
+- [Issue #103](https://github.com/ktmeaton/ncov-recombinant/issues/103): `XAU`
 - [Issue #104](https://github.com/ktmeaton/ncov-recombinant/issues/104): `XAV`
 - [Issue #105](https://github.com/ktmeaton/ncov-recombinant/issues/105): `XAW`
 
