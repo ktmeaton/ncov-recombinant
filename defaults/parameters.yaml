@@ -68,8 +68,10 @@ rule_params:
     max_name_length: 50
     mutation_threshold: 0.25
     mode:
-      - delta_omicron:   "--clades 21I 21J 21K 21L --ansi --parents 2-10 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
-      - omicron_omicron: "--clades 21K 21L 22A 22B --ansi --parents 2-10 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3 --ignore-shared"
+      - XB:              "--clades B.1.631 B.1.634 --ansi --parents 2-10 --breakpoints 1-10 --unique 5 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 20 --ignore-shared"
+      - proposed808:     "--clades 21K B.1.438.1   --ansi --parents 2-10 --breakpoints 1-10 --unique 3 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3  --ignore-shared"
+      - delta_omicron:   "--clades 21I 21J 21K 21L --ansi --parents 2-10 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3  --ignore-shared"
+      - omicron_omicron: "--clades 21K 21L 22A 22B --ansi --parents 2-10 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3  --ignore-shared"
 
   # ---------------------------------------------------------------------------
   # min_len            : (optional) Ignore recombinant regions shorter than this
