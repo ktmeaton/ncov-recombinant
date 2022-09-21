@@ -513,7 +513,7 @@ def main(
         handles=legend_handles,
         labels=legend_labels,
         title=parent_type.title(),
-        bbox_to_anchor=[1.01, 1.01],
+        bbox_to_anchor=[1.02, 1.01],
     )
 
     frame = legend.get_frame()

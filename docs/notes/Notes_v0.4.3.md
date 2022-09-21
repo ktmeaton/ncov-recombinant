@@ -7,6 +7,11 @@ This is a minor bug fix and enhancement release with the following changes:
 - [Issue #25](https://github.com/ktmeaton/ncov-recombinant/issues/25): Positive controls were reduced to one sequence per clade. New positive controls include `XAL`, `XAP`, `XAS`, `XAU`, and `XAZ`.
 - [Issue #92](https://github.com/ktmeaton/ncov-recombinant/issues/92): Negative controls were reduced to one sequence per clade. A negative control for `22D (Omicron) / BA.2.75` was added.
 
+## Validation
+
+- [Issue #108](https://github.com/ktmeaton/ncov-recombinant/issues/109): `XAP`
+- [Issue #109](https://github.com/ktmeaton/ncov-recombinant/issues/109): `XAN`
+
 ## Profile Creation
 
 - [Issue #77](https://github.com/ktmeaton/ncov-recombinant/issues/77): Report slurm command for --hpc profiles in create_profiles
