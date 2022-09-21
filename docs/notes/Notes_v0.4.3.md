@@ -47,6 +47,7 @@ The optional `lapis` parameter for `sc2rf_recombinants` has been removed. Queryi
 
 - [Issue #17](https://github.com/ktmeaton/ncov-recombinant/issues/17]): Created an optional script to plot lineage assignment changes between versions using a Sankey diagram.
 - [Issue #82](https://github.com/ktmeaton/ncov-recombinant/issues/82]): Change epiweek start from Monday to Sunday.
+- [Issue #111](https://github.com/ktmeaton/ncov-recombinant/issues/111]): Fix breakpoint distribution axis empty for clade.
 
 ## Report
 
