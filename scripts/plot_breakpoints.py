@@ -301,7 +301,7 @@ def main(
     i = 0
 
     for parent in list(breakpoints_dist_df["parent"]):
-        if parent == "breakpoint":
+        if parent == "breakpoint" or parent == "Unknown":
             continue
         if parent in parents_seen:
             continue

@@ -9,7 +9,8 @@ This is a minor bug fix and enhancement release with the following changes:
 
 ## Validation
 
-- [Issue #108](https://github.com/ktmeaton/ncov-recombinant/issues/109): `XAP`
+- [Issue #107](https://github.com/ktmeaton/ncov-recombinant/issues/107): `XAQ`
+- [Issue #108](https://github.com/ktmeaton/ncov-recombinant/issues/108): `XAP`
 - [Issue #109](https://github.com/ktmeaton/ncov-recombinant/issues/109): `XAN`
 
 ## Profile Creation
