@@ -87,8 +87,8 @@ fi
 #log_rebuild=${log%.*}_rebuild
 #python3 sc2rf.py --rebuild-examples 1> ${log_rebuild}.log 2> ${log_rebuild}.err
 
-echo "python3 $sc2rf ${alignment} --clades ${clades} ${sc2rf_args[@]}" > ${output_ansi}
-python3 $sc2rf ${alignment} --clades ${clades} ${sc2rf_args[@]} 1>> ${output_ansi} 2> ${log};
+echo "python3 $sc2rf ${alignment} ${sc2rf_args[@]}" > ${output_ansi}
+python3 $sc2rf ${alignment} ${sc2rf_args[@]} 1>> ${output_ansi} 2> ${log};
 
 # Clean up primers
 if [[ "${primers}" ]]; then
