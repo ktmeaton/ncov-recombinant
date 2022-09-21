@@ -23,10 +23,10 @@ XAY	Delta/21J	25000	27384
 XBA	Delta/21J	25000	29903
 XD	Delta/21J	25584	29903
 XAW	Delta/21J	28311	29903
+XAU	Omicron/BA.1/21K	0	2832
 XN	Omicron/BA.1/21K	0	2833
 proposed591	Omicron/BA.1/21K	0	2833
 XAR	Omicron/BA.1/21K	0	2833
-XAU	Omicron/BA.1/21K	0	2833
 XQ	Omicron/BA.1/21K	0	4321
 XR	Omicron/BA.1/21K	0	4321
 XG	Omicron/BA.1/21K	0	5386
@@ -152,10 +152,10 @@ XAV	Omicron/BA.5/22B	22792	29903
 proposed896	Omicron/BA.5/22B	22916	29903
 proposed1006	Omicron/BA.5/22B	29666	29903
 XBA	breakpoint	2791	4180
+XAU	breakpoint	2833	4183
 XN	breakpoint	2834	4183
 proposed591	breakpoint	2834	4183
 XAR	breakpoint	2834	4183
-XAU	breakpoint	2834	4183
 XAZ	breakpoint	3359	9865
 XQ	breakpoint	4322	5385
 XR	breakpoint	4322	5385

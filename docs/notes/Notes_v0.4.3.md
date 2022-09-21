@@ -12,9 +12,12 @@ This is a minor bug fix and enhancement release with the following changes:
 - [Issue #109](https://github.com/ktmeaton/ncov-recombinant/issues/109): `XAN`
 - [Issue #108](https://github.com/ktmeaton/ncov-recombinant/issues/108): `XAP`
 - [Issue #107](https://github.com/ktmeaton/ncov-recombinant/issues/107): `XAQ`
+- [Issue #87](https://github.com/ktmeaton/ncov-recombinant/issues/87): `XAS`
+- [Issue #105](https://github.com/ktmeaton/ncov-recombinant/issues/102): `XAT`
 - [Issue #103](https://github.com/ktmeaton/ncov-recombinant/issues/103): `XAU`
 - [Issue #104](https://github.com/ktmeaton/ncov-recombinant/issues/104): `XAV`
 - [Issue #105](https://github.com/ktmeaton/ncov-recombinant/issues/105): `XAW`
+- [Issue #87](https://github.com/ktmeaton/ncov-recombinant/issues/87): `XAZ`
 
 ## Profile Creation
 
@@ -31,8 +34,6 @@ This is a minor bug fix and enhancement release with the following changes:
 - [Issue #79](https://github.com/ktmeaton/ncov-recombinant/issues/79): Add new parameter `min_consec_allele` to `sc2rf_recombinants` to ignore recombinant regions with less than this number of consecutive alleles (both diagnostic SNPs and diganostic reference alleles).
 - [Issue #80](https://github.com/ktmeaton/ncov-recombinant/issues/80): Migrate [sc2rf](https://github.com/lenaschimmel/sc2rf) froma submodule to a subdirectory (including LICENSE!). This is to simplify the updating process and avoid errors where submodules became out of sync with the main pipeline.
 - [Issue #83](https://github.com/ktmeaton/ncov-recombinant/issues/83): Improve error handling in `sc2rf_recombinants` when the input stats files are empty.
-- [Issue #86](https://github.com/ktmeaton/ncov-recombinant/issues/86): Auto-pass `XAS` through `sc2rf`.
-- [Issue #87](https://github.com/ktmeaton/ncov-recombinant/issues/87): Auto-pass `XAZ` through `sc2rf`.
 - [Issue #89](https://github.com/ktmeaton/ncov-recombinant/issues/89): Reduce the default value of the parmaeter `min_len` in `sc2rf_recombinants` from `1000` to `800`.This is to handle `XAP`, which has a `BA.1` recombinant regions of `854` nucleotides.
 - [Issue #90](https://github.com/ktmeaton/ncov-recombinant/issues/90): Auto-pass select nextclade lineages through `sc2rf`: `XN`, `XP`, `XAS`, and `XAZ`. This requires differentiating the nextclade inputs as separate parameters `--nextclade` and `--nextclade-no-recom`.
 
