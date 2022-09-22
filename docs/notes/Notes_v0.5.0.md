@@ -4,6 +4,15 @@ This is a major release where all recombinant lineages from `XA` to `XAZ` were v
 
 ## Validation
 
+- [Issue #136](https://github.com/ktmeaton/ncov-recombinant/issues/136): `XP`
+- [Issue #135](https://github.com/ktmeaton/ncov-recombinant/issues/135): `XQ`
+- [Issue #134](https://github.com/ktmeaton/ncov-recombinant/issues/134): `XR`
+- [Issue #133](https://github.com/ktmeaton/ncov-recombinant/issues/133): `XS`
+- [Issue #132](https://github.com/ktmeaton/ncov-recombinant/issues/132): `XT`
+- [Issue #131](https://github.com/ktmeaton/ncov-recombinant/issues/131): `XU`
+- [Issue #130](https://github.com/ktmeaton/ncov-recombinant/issues/130): `XV`
+- [Issue #129](https://github.com/ktmeaton/ncov-recombinant/issues/129): `XW`
+- [Issue #128](https://github.com/ktmeaton/ncov-recombinant/issues/128): `XY`
 - [Issue #127](https://github.com/ktmeaton/ncov-recombinant/issues/127): `XZ`
 - [Issue #126](https://github.com/ktmeaton/ncov-recombinant/issues/124): `XAA`
 - [Issue #125](https://github.com/ktmeaton/ncov-recombinant/issues/124): `XAB`
