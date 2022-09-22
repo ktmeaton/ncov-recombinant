@@ -26,6 +26,7 @@ data/requests*
 data/custom*
 data/X*
 data/proposed*
+data/gauntlet
 
 # all-contributors and yarn
 yarn.lock
