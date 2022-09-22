@@ -1080,7 +1080,7 @@ rule validate:
     python scripts/validate.py --expected {input.expected} --observed {input.observed} --outdir {params.outdir};
 
     # Throw a pipeline error if any sample has "Fail"
-    build_status=$(cat results/controls/validate/status.txt)
+    build_status=$(cat {output.status})
 
     if [[ $build_status == "Fail" ]]; then
 
