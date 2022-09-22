@@ -67,3 +67,7 @@ The optional `lapis` parameter for `sc2rf_recombinants` has been removed. Queryi
 ## Report
 
 - [Issue #88](https://github.com/ktmeaton/ncov-recombinant/issues/88): Add pipeline and nextclade versions to powerpoint slides as footer. This required adding `--summary` as param to `report`.
+
+## Validate
+
+- [Issue #56](https://github.com/ktmeaton/ncov-recombinant/issues/56): Changed rule `validate` from simply counting the number of positives to validating the fields `lineage`, `breakpoints`, `parents_clade`. This involved adding a new default parameter `expected` for rule `validate` in `defaults/parameters.yaml`.

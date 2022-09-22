@@ -79,13 +79,6 @@ for build in config["builds"]:
 # Store list of builds for rule wildcard constraints
 BUILDS = list(config["builds"].keys())
 
-# Check if any builds are controls for validation
-validation_df = pd.read_csv("defaults/validation.tsv", sep="\t")
-BUILDS_VALIDATE = []
-for build in BUILDS:
-  if build in list(validation_df["build"]):
-    BUILDS_VALIDATE.append(build)
-
 # ------------------------------------------------------------------------------
 #  Default Target
 # ------------------------------------------------------------------------------
@@ -114,9 +107,9 @@ rule all:
     expand("results/{build_name}/report_historical/report.pptx",
               build_name=BUILDS,
               ),
-    # Stage 4: Validation (optional)
+    # Stage 4: Validation
     expand("results/{build_name}/validate/validation.tsv",
-      build_name=BUILDS_VALIDATE,
+      build_name=BUILDS,
       ),
 
 # ------------------------------------------------------------------------------
@@ -1049,23 +1042,32 @@ rule report_historical:
 
 rule_name = "validate"
 
-rule validate:
-  """Validate recombinants of controlled datasets."""
+def _inputs_validate(build):
+  inputs = {}
 
-  message: """Validating recombinants of controlled datasets.\n
-  build:   {wildcards.build}
-  log:     {log}
-  table:   {output.table}
+  expected = config["builds"][build]["validate"]["expected"]
+  inputs["expected"] = expected
+
+  return inputs
+
+rule validate:
+  """Validate observed values in linelist."""
+
+  message: """Validating observed values in linelist.\n
+  build:    {wildcards.build}
+  log:      {log}
+  expected: {input.expected}
+  table:    {output.table}
   """
 
   input:
-    validation      = "defaults/validation.tsv",
-    linelist        = "results/{build}/linelists/linelist.tsv",
+    expected = lambda wildcards: _inputs_validate(wildcards.build)["expected"],
+    observed = "results/{build}/linelists/linelist.tsv",
   output:
-    table           = "results/{build}/validate/validation.tsv",
+   table     = "results/{build}/validate/validation.tsv",
+   status    = "results/{build}/validate/status.txt",
   params:
-    header          = "build\tpositives\texpected\tstatus",
-    positive_status = "(designated|proposed|unpublished)",
+    outdir   = "results/{build}/validate",
   threads: 1
   resources:
     cpus = 1,
@@ -1075,25 +1077,17 @@ rule validate:
     "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    # Compare the expected number of positives
-    num_positives=$(csvtk grep -t -f "status" -r -p "{params.positive_status}"  {input.linelist} | tail -n+2 | wc -l)
-    num_expected=$(csvtk grep -t -f "build" -p "{wildcards.build}" defaults/validation.tsv | csvtk cut -t -f "positives" | tail -n+2)
+    python scripts/validate.py --expected {input.expected} --observed {input.observed} --outdir {params.outdir};
 
-    if [[ $num_positives -eq $num_expected ]]; then
-      build_status="PASS"
-    else
-      build_status="FAIL"
-    fi
+    # Throw a pipeline error if any sample has "Fail"
+    build_status=$(cat results/controls/validate/status.txt)
 
-    # Create the output file
-    echo "{params.header}" > {output.table};
-    echo "{wildcards.build}\t${{num_positives}}\t${{num_expected}}\t${{build_status}}" >> {output.table}
+    if [[ $build_status == "Fail" ]]; then
 
-    # Throw a pipeline error if it failed
-    if [[ $build_status == "FAIL" ]]; then
-      echo "Build failed validation: {wildcards.build}"
       echo
-      csvtk csv2md -t {output.table}
+      echo "Build failed validation: {wildcards.build}"
+      echo "Samples failing validation:"
+      grep -E "Fail" {output.table} | cut -f 1;
       echo
       exit 1
     fi

@@ -128,3 +128,8 @@ rule_params:
   # Note: the rule `report` is also going to use the `geo` param of rule `linelist`, to summarize recombinants by geographic location
   - name: report
     template: "resources/template.pptx"
+
+  # ---------------------------------------------------------------------------
+  # expected    : path to expected linelist to validate results against
+  - name: validate
+    expected: "defaults/validation.tsv"
