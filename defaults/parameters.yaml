@@ -95,6 +95,7 @@ rule_params:
     auto_pass:
       - XN
       - XP
+      - XAR
       - XAS
       - XAZ
 
