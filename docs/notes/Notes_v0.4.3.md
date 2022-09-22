@@ -1,6 +1,32 @@
 # v0.4.3
 
-This is a minor bug fix and enhancement release with the following changes:
+This is a XXX release with the following changes:
+
+## Validation
+
+- XAA
+- XAB
+- XAC
+- XAD
+- XAE
+- [Issue #120](https://github.com/ktmeaton/ncov-recombinant/issues/120): `XAF`
+- [Issue #121](https://github.com/ktmeaton/ncov-recombinant/issues/119): `XAG`
+- [Issue #119](https://github.com/ktmeaton/ncov-recombinant/issues/119): `XAH`
+- [Issue #117](https://github.com/ktmeaton/ncov-recombinant/issues/117): `XAJ`
+- [Issue #116](https://github.com/ktmeaton/ncov-recombinant/issues/116): `XAK`
+- [Issue #115](https://github.com/ktmeaton/ncov-recombinant/issues/115): `XAL`
+- [Issue #110](https://github.com/ktmeaton/ncov-recombinant/issues/110): `XAM`
+- [Issue #109](https://github.com/ktmeaton/ncov-recombinant/issues/109): `XAN`
+- [Issue #108](https://github.com/ktmeaton/ncov-recombinant/issues/108): `XAP`
+- [Issue #107](https://github.com/ktmeaton/ncov-recombinant/issues/107): `XAQ`
+- [Issue #87](https://github.com/ktmeaton/ncov-recombinant/issues/87): `XAS`
+- [Issue #105](https://github.com/ktmeaton/ncov-recombinant/issues/102): `XAT`
+- [Issue #103](https://github.com/ktmeaton/ncov-recombinant/issues/103): `XAU`
+- [Issue #104](https://github.com/ktmeaton/ncov-recombinant/issues/104): `XAV`
+- [Issue #105](https://github.com/ktmeaton/ncov-recombinant/issues/105): `XAW`
+- [Issue #85](https://github.com/ktmeaton/ncov-recombinant/issues/85): `XAY`
+- [Issue #87](https://github.com/ktmeaton/ncov-recombinant/issues/87): `XAZ`
+- [Issue #94](https://github.com/ktmeaton/ncov-recombinant/issues/94): `XBA`
 
 ## Resources
 
@@ -11,23 +37,6 @@ This is a minor bug fix and enhancement release with the following changes:
 
 - [Issue #25](https://github.com/ktmeaton/ncov-recombinant/issues/25): Positive controls were reduced to one sequence per clade. New positive controls include `XAL`, `XAP`, `XAS`, `XAU`, and `XAZ`.
 - [Issue #92](https://github.com/ktmeaton/ncov-recombinant/issues/92): Negative controls were reduced to one sequence per clade. A negative control for `22D (Omicron) / BA.2.75` was added.
-
-## Validation
-
-- XAJ
-- XAK
-- XAL
-- [Issue #110](https://github.com/ktmeaton/ncov-recombinant/issues/110): `XAN`
-- [Issue #109](https://github.com/ktmeaton/ncov-recombinant/issues/109): `XAN`
-- [Issue #108](https://github.com/ktmeaton/ncov-recombinant/issues/108): `XAP`
-- [Issue #107](https://github.com/ktmeaton/ncov-recombinant/issues/107): `XAQ`
-- [Issue #87](https://github.com/ktmeaton/ncov-recombinant/issues/87): `XAS`
-- [Issue #105](https://github.com/ktmeaton/ncov-recombinant/issues/102): `XAT`
-- [Issue #103](https://github.com/ktmeaton/ncov-recombinant/issues/103): `XAU`
-- [Issue #104](https://github.com/ktmeaton/ncov-recombinant/issues/104): `XAV`
-- [Issue #105](https://github.com/ktmeaton/ncov-recombinant/issues/105): `XAW`
-- XAY
-- [Issue #87](https://github.com/ktmeaton/ncov-recombinant/issues/87): `XAZ`
 
 ## Profile Creation
 
