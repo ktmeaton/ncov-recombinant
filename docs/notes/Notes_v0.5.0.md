@@ -1,9 +1,10 @@
 # v0.5.0
 
-This is a major release with the following changes:
+This is a major release where all recombinant lineages from `XA` to `XAZ` were validated.
 
 ## Validation
 
+- [Issue #127](https://github.com/ktmeaton/ncov-recombinant/issues/127): `XZ`
 - [Issue #126](https://github.com/ktmeaton/ncov-recombinant/issues/124): `XAA`
 - [Issue #125](https://github.com/ktmeaton/ncov-recombinant/issues/124): `XAB`
 - [Issue #124](https://github.com/ktmeaton/ncov-recombinant/issues/124): `XAC`
