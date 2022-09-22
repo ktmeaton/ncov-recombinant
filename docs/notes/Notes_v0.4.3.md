@@ -4,11 +4,11 @@ This is a XXX release with the following changes:
 
 ## Validation
 
-- XAA
-- XAB
-- XAC
-- XAD
-- XAE
+- [Issue #126](https://github.com/ktmeaton/ncov-recombinant/issues/124): `XAA`
+- [Issue #125](https://github.com/ktmeaton/ncov-recombinant/issues/124): `XAB`
+- [Issue #124](https://github.com/ktmeaton/ncov-recombinant/issues/124): `XAC`
+- [Issue #123](https://github.com/ktmeaton/ncov-recombinant/issues/123): `XAD`
+- [Issue #122](https://github.com/ktmeaton/ncov-recombinant/issues/122): `XAE`
 - [Issue #120](https://github.com/ktmeaton/ncov-recombinant/issues/120): `XAF`
 - [Issue #121](https://github.com/ktmeaton/ncov-recombinant/issues/119): `XAG`
 - [Issue #119](https://github.com/ktmeaton/ncov-recombinant/issues/119): `XAH`
