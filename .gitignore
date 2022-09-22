@@ -15,12 +15,16 @@ reporting/
 profiles/custom
 my_profiles/
 
+# Compare
+compare/
+
 # Ignore datasets
 data/public*
 data/sars-cov-2*
 data/canada*
 data/requests*
 data/custom*
+data/X*
 data/proposed*
 
 # all-contributors and yarn

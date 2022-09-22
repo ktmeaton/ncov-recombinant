@@ -192,10 +192,13 @@ def main(token, breakpoints):
     if breakpoints_curated:
         df_breakpoints = pd.read_csv(breakpoints_curated, sep="\t")
 
-        if "breakpoints" in df_breakpoints.columns:
+        if (
+            "breakpoints" in df_breakpoints.columns
+            and "breakpoints_curated" not in df.columns
+        ):
             df.insert(5, "breakpoints_curated", [""] * len(df))
 
-        if "parents" in df_breakpoints.columns:
+        if "parents" in df_breakpoints.columns and "parents_curated" not in df.columns:
             df.insert(5, "parents_curated", [""] * len(df))
 
         for rec in df.iterrows():
@@ -213,6 +216,27 @@ def main(token, breakpoints):
                 df.at[rec[0], "breakpoints_curated"] = bp
             if parents != np.nan:
                 df.at[rec[0], "parents_curated"] = parents
+
+        # Check for lineages with curated breakpoints that are missing
+        # Ex. "XAY" and "XBA" were grouped into one issue
+        for rec in df_breakpoints.iterrows():
+            lineage = rec[1]["lineage"]
+
+            if lineage in list(df["lineage"]):
+                continue
+
+            issue = rec[1]["issue"]
+            breakpoints = rec[1]["breakpoints"]
+            parents = rec[1]["parents"]
+
+            row_data = {col: [""] for col in df.columns}
+            row_data["lineage"][0] = lineage
+            row_data["issue"][0] = rec[1]["issue"]
+            row_data["breakpoints_curated"][0] = rec[1]["breakpoints"]
+            row_data["parents_curated"][0] = rec[1]["parents"]
+
+            row_df = pd.DataFrame(row_data)
+            df = pd.concat([df, row_df])
 
     # -------------------------------------------------------------------------
     # Sort the final dataframe

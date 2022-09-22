@@ -2,6 +2,11 @@
 
 This is a minor bug fix and enhancement release with the following changes:
 
+## Resources
+
+- [Issue #96](https://github.com/ktmeaton/ncov-recombinant/issues/96): Create a newick phylogeny of pango lineage parent child relationships, to get accurate sublineages including aliases.
+- [Issue #118](https://github.com/ktmeaton/ncov-recombinant/issues/118): Fix missing pango-designation issues for XAY and XBA
+
 ## Datasets
 
 - [Issue #25](https://github.com/ktmeaton/ncov-recombinant/issues/25): Positive controls were reduced to one sequence per clade. New positive controls include `XAL`, `XAP`, `XAS`, `XAU`, and `XAZ`.
@@ -9,6 +14,10 @@ This is a minor bug fix and enhancement release with the following changes:
 
 ## Validation
 
+- XAJ
+- XAK
+- XAL
+- [Issue #110](https://github.com/ktmeaton/ncov-recombinant/issues/110): `XAN`
 - [Issue #109](https://github.com/ktmeaton/ncov-recombinant/issues/109): `XAN`
 - [Issue #108](https://github.com/ktmeaton/ncov-recombinant/issues/108): `XAP`
 - [Issue #107](https://github.com/ktmeaton/ncov-recombinant/issues/107): `XAQ`
@@ -17,6 +26,7 @@ This is a minor bug fix and enhancement release with the following changes:
 - [Issue #103](https://github.com/ktmeaton/ncov-recombinant/issues/103): `XAU`
 - [Issue #104](https://github.com/ktmeaton/ncov-recombinant/issues/104): `XAV`
 - [Issue #105](https://github.com/ktmeaton/ncov-recombinant/issues/105): `XAW`
+- XAY
 - [Issue #87](https://github.com/ktmeaton/ncov-recombinant/issues/87): `XAZ`
 
 ## Profile Creation
