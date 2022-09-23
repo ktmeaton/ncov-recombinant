@@ -89,7 +89,9 @@ def main(
         # Largest is special, as it takes the form largest_<lineage>.*
         if label.startswith("largest_"):
 
-            largest_lineage = label.split("_")[1]
+            largest_lineage = "_".join(label.split("_")[1:])
+            # Replace the _DELIM_ character we added for saving files
+            largest_lineage = largest_lineage.replace("_DELIM_", "/")
 
             plot_dict["largest"] = plot_dict[label]
             plot_dict["largest"]["lineage"] = largest_lineage
