@@ -18,7 +18,7 @@ UNKNOWN_RGB = colors.to_rgb(UNKNOWN_COLOR)
 LINEAGE_COLS = ["recombinant_lineage_curated", "lineage", "pango_lineage"]
 
 
-def create_sankey_data(df):
+def create_sankey_data(df, node_order="default", min_y=0.001):
 
     labels = list(set(list(df["source"]) + list(df["target"])))
     labels_i = {label: i for i, label in enumerate(labels)}
@@ -140,25 +140,87 @@ def create_sankey_data(df):
         link_palette.append(color)
     link_data["color"] = link_palette
 
+    # -------------------------------------------------------------------------
+    # Node Ordering
+
+    source_node_order = list(source_node_links.keys())
+
+    # Source: Order Y position alphabetically
+    if node_order.startswith("alphabetical"):
+        source_node_no_suffix = [node[0:-1] for node in source_node_links.keys()]
+        source_node_order = [
+            node + SOURCE_CHAR for node in sorted(source_node_no_suffix)
+        ]
+
     # Source: Order Y position by link size
-    # This doesn't work yet, and I don't know why
-    source_node_rank = sorted(source_node_links.items(), key=lambda x: x[1])
-    source_node_rank = [kv[0] for kv in source_node_rank[::-1]]
+    elif node_order.startswith("size"):
+        # List of tuples, lineage and size: [('XAW*', 1), ('XAY*', 4), ... ]
+        source_node_order = sorted(source_node_links.items(), key=lambda x: x[1])
+        source_node_order = [kv[0] for kv in source_node_order[::-1]]
+
+    if node_order.endswith("rev"):
+        source_node_order.reverse()
+
+    # Put NA at the end
+    if NO_DATA_CHAR + TARGET_CHAR in source_node_order:
+        source_node_order.remove(NO_DATA_CHAR + SOURCE_CHAR)
+        source_node_order.append(NO_DATA_CHAR + SOURCE_CHAR)
+
     source_node_y = {}
 
-    y_buff = 1 / len(source_node_links)
-    for i, label in enumerate(source_node_rank):
-        y = 1 - (i * y_buff)
+    if len(source_node_links) > 1:
+        y_buff = 1 / (len(source_node_links) - 1)
+    else:
+        y_buff = 1
+
+    for i, label in enumerate(source_node_order):
+        if i == 0:
+            y = min_y
+        elif i == len(source_node_links) - 1:
+            y = 0.999
+        else:
+            y = min_y + (i * y_buff)
+
         source_node_y[label] = y
 
-    # Target: Order Y position by link size
-    target_node_rank = sorted(target_node_links.items(), key=lambda x: x[1])
-    target_node_rank = [kv[0] for kv in target_node_rank[::-1]]
+    # Target: Order Y position alphabetically
+    target_node_order = list(target_node_links.keys())
+
+    if node_order.startswith("alphabetical"):
+        target_node_no_suffix = [node[0:-1] for node in target_node_links.keys()]
+        target_node_order = [
+            node + TARGET_CHAR for node in sorted(target_node_no_suffix)
+        ]
+
+    # Source: Order Y position by link size
+    elif node_order.startswith("size"):
+        # List of tuples, lineage and size: [('XAW*', 1), ('XAY*', 4), ... ]
+        target_node_order = sorted(target_node_links.items(), key=lambda x: x[1])
+        target_node_order = [kv[0] for kv in target_node_order[::-1]]
+
+    if node_order.endswith("rev"):
+        target_node_order.reverse()
+
+    # Put NA at the end
+    if NO_DATA_CHAR + TARGET_CHAR in target_node_order:
+        target_node_order.remove(NO_DATA_CHAR + TARGET_CHAR)
+        target_node_order.append(NO_DATA_CHAR + TARGET_CHAR)
+
     target_node_y = {}
 
-    y_buff = 1 / len(target_node_links)
-    for i, label in enumerate(target_node_rank):
-        y = 1 - (i * y_buff)
+    if len(target_node_links) > 1:
+        y_buff = 1 / (len(target_node_links) - 1)
+    else:
+        y_buff = 1
+
+    for i, label in enumerate(target_node_order):
+        if i == 0:
+            y = min_y
+        elif i == len(target_node_links) - 1:
+            y = 0.999
+        else:
+            y = min_y + (i * y_buff)
+
         target_node_y[label] = y
 
     node_x = []
@@ -166,19 +228,22 @@ def create_sankey_data(df):
 
     for label in labels:
         if label in source_node_y:
-            x = 0
+            x = 0.001
             y = source_node_y[label]
 
         elif label in target_node_y:
-            x = 1
+            x = 0.999
             y = target_node_y[label]
 
         node_x.append(x)
         node_y.append(y)
 
     # This doesn't work yet
-    # node_data["x"] = node_x
-    # node_data["y"] = node_y
+    if node_order != "default":
+        node_data["x"] = node_x
+        node_data["y"] = node_y
+
+    # -------------------------------------------------------------------------
 
     # Convert source/target to numeric ID
     for i in range(0, len(link_data["source"])):
@@ -198,9 +263,21 @@ def create_sankey_data(df):
     return data
 
 
-def create_sankey_plot(sankey_data):
+def create_sankey_plot(sankey_data, node_order="default"):
+
+    # if node_order == "default":
+    #    arrangement = "snap"
+    # else:
+    #    arrangement = "fixed"
+
     fig = go.Figure(
-        data=[go.Sankey(node=sankey_data["node"], link=sankey_data["link"])]
+        data=[
+            go.Sankey(
+                node=sankey_data["node"],
+                link=sankey_data["link"],
+                # arrangement=arrangement,
+            )
+        ]
     )
     return fig
 
@@ -213,10 +290,17 @@ def create_sankey_plot(sankey_data):
 @click.option("--outdir", help="Output directory", required=True)
 @click.option("--log", help="Logfile", required=False)
 @click.option(
-    "--node-sort",
-    type=click.Choice(["size", "alphabetical"], case_sensitive=True),
+    "--node-order",
+    help="Method of sorting the order of nodes",
+    type=click.Choice(
+        ["default", "size", "alphabetical", "size-rev", "alphabetical-rev"],
+        case_sensitive=True,
+    ),
     required=False,
     default="alphabetical",
+)
+@click.option(
+    "--min-y", help="Increase if nodes overlap the title", required=False, default=0.001
 )
 def main(
     positives_1,
@@ -225,7 +309,8 @@ def main(
     ver_2,
     outdir,
     log,
-    node_sort,
+    node_order,
+    min_y,
 ):
     """Compare positive recombinants between two tables."""
 
@@ -337,9 +422,9 @@ def main(
 
     # Create sankey data and plot
     logger.info("Creating sankey data.")
-    sankey_data = create_sankey_data(lineages_df)
+    sankey_data = create_sankey_data(lineages_df, node_order=node_order, min_y=min_y)
     logger.info("Creating sankey plot.")
-    sankey_fig = create_sankey_plot(sankey_data)
+    sankey_fig = create_sankey_plot(sankey_data, node_order=node_order)
     sankey_fig.update_layout(title_text=title, font_size=12, width=1000, height=800)
 
     # Rename columns in output tables from source/target to version numbers
