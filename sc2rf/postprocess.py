@@ -164,6 +164,11 @@ def reverse_iter_collapse(
     help="Newick tree of pangolin lineage hierarchies",
     required=False,
 )
+@click.option(
+    "--metadata",
+    help="Sample metadata TSV, used to include negative samples in the final output.",
+    required=False,
+)
 @click.option("--log", help="Path to a log file", required=False)
 def main(
     csv,
@@ -183,6 +188,7 @@ def main(
     motifs,
     log,
     lineage_tree,
+    metadata,
 ):
     """Detect recombinant seqences from sc2rf. Dependencies: pandas, click"""
 
@@ -281,6 +287,12 @@ def main(
         )
         nextclade_no_recomb_df = pd.read_csv(nextclade_no_recomb, sep="\t", index_col=0)
         nextclade_no_recomb_df.fillna(NO_DATA_CHAR, inplace=True)
+
+    # (Optional) metadata tsv dataframe to find negatives missing from sc2rf
+    if metadata:
+        logger.info("Parsing metadata tsv: {}".format(metadata))
+        metadata_df = pd.read_csv(metadata, sep="\t")
+        metadata_df.fillna(NO_DATA_CHAR, inplace=True)
 
     # (Optional) phylogenetic tree of pangolineage lineages
     if lineage_tree:
@@ -861,21 +873,17 @@ def main(
     # Add in the Negatives (if alignment was specified)
     # Avoiding the Bio module, I just need names not sequence
 
-    if aligned:
-        logger.info("Reporting non-recombinants in the alignment: {}".format(aligned))
-        with open(aligned) as infile:
-            aligned_content = infile.read()
-            for line in aligned_content.split("\n"):
-                if line.startswith(">"):
-                    strain = line.replace(">", "")
-                    # Ignore this strain if it's already in dataframe
-                    # (it's a recombinant)
-                    if strain in df.index:
-                        continue
-                    # Otherwise add it, with no data as default
-                    df.loc[strain] = NO_DATA_CHAR
-                    df.at[strain, "sc2rf_status"] = "negative"
-                    df.at[strain, "sc2rf_details"] = "no recombination detected"
+    if metadata:
+
+        logger.info("Reporting non-recombinants in metadata as negatives")
+        for strain in list(metadata_df["strain"]):
+            # Ignore this strain if it's already in dataframe (it's a recombinant)
+            if strain in df.index:
+                continue
+            # Otherwise add it, with no data as default
+            df.loc[strain] = NO_DATA_CHAR
+            df.at[strain, "sc2rf_status"] = "negative"
+            df.at[strain, "sc2rf_details"] = "no recombination detected"
 
     # -------------------------------------------------------------------------
     # write output table

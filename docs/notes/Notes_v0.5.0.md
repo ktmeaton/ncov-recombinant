@@ -74,6 +74,7 @@ This is a major release where all recombinant lineages from `XA` to `XAZ` were v
 
 - [Issue #95](https://github.com/ktmeaton/ncov-recombinant/issues/95): Generalize `sc2rf_recombinants` to take any number of ansi and csv input files. This allows greater flexibility in command-line arguments to `sc2rf` and are not locked into the hardocded `primary` and `secondary` parameter sets.
 - [Issue #96](https://github.com/ktmeaton/ncov-recombinant/issues/96): Include sub-lineage proportions in the `parents_lineage_confidence`. This reduces underestimating the confidence of a parental lineage.
+- [Issue #150](https://github.com/ktmeaton/ncov-recombinant/issues/150): Fix bug where `sc2rf` would write empty output csvfiles if no recombinants were found.
 
 The optional `lapis` parameter for `sc2rf_recombinants` has been removed. Querying [LAPIS](https://lapis.cov-spectrum.org/) for parental lineages is no longer experimental and is now an essential component (cannot be disabled).
 

@@ -598,6 +598,7 @@ rule sc2rf_recombinants:
     nextclade       = "results/{build}/nextclade/qc.tsv",
     nextclade_no_recomb = "results/{build}/nextclade_no-recomb/qc.tsv",
     lineage_tree    = rules.pango_lineage_tree.output.tree,
+    metadata        = "data/{build}/metadata.tsv",
   output:
     stats           = "results/{build}/sc2rf/stats.tsv",
     strains         = "results/{build}/sc2rf/recombinants.txt",
@@ -635,7 +636,7 @@ rule sc2rf_recombinants:
       --nextclade {input.nextclade} \
       --nextclade-no-recomb {input.nextclade_no_recomb} \
       --lineage-tree {input.lineage_tree} \
-      --log {log} \
+      --metadata {input.metadata} \
       {params.auto_pass} \
       {params.motifs} \
       {params.min_len} \
@@ -643,6 +644,7 @@ rule sc2rf_recombinants:
       {params.max_breakpoint_len} \
       {params.max_parents} \
       {params.max_breakpoints} \
+      --log {log} \
       >> {log} 2>&1;
 
     # Cleanup
