@@ -15,6 +15,8 @@ TARGET_CHAR = "†"
 UNKNOWN_COLOR = "dimgrey"
 UNKNOWN_RGB = colors.to_rgb(UNKNOWN_COLOR)
 
+LINEAGE_COLS = ["recombinant_lineage_curated", "lineage", "pango_lineage"]
+
 
 def create_sankey_data(df):
 
@@ -210,6 +212,12 @@ def create_sankey_plot(sankey_data):
 @click.option("--ver-2", help="Second version for title", required=True)
 @click.option("--outdir", help="Output directory", required=True)
 @click.option("--log", help="Logfile", required=False)
+@click.option(
+    "--node-sort",
+    type=click.Choice(["size", "alphabetical"], case_sensitive=True),
+    required=False,
+    default="alphabetical",
+)
 def main(
     positives_1,
     positives_2,
@@ -217,6 +225,7 @@ def main(
     ver_2,
     outdir,
     log,
+    node_sort,
 ):
     """Compare positive recombinants between two tables."""
 
@@ -231,11 +240,18 @@ def main(
     logger.info("Parsing table: {}".format(positives_2))
     positives_2_df = pd.read_csv(positives_2, sep="\t")
 
-    lineages_1 = positives_1_df[["strain", "recombinant_lineage_curated"]]
-    lineages_2 = positives_2_df[["strain", "recombinant_lineage_curated"]]
+    # Try to find the lineage col for each df
+    for col in LINEAGE_COLS:
+        if col in positives_1_df.columns:
+            lineages_1 = positives_1_df[["strain", col]]
+            lineages_1 = lineages_1.rename(columns={col: "source"})
+            break
 
-    lineages_1 = lineages_1.rename(columns={"recombinant_lineage_curated": "source"})
-    lineages_2 = lineages_2.rename(columns={"recombinant_lineage_curated": "target"})
+    for col in LINEAGE_COLS:
+        if col in positives_2_df.columns:
+            lineages_2 = positives_2_df[["strain", col]]
+            lineages_2 = lineages_2.rename(columns={col: "target"})
+            break
 
     logger.info("Merging tables.")
     lineages_df = pd.merge(lineages_1, lineages_2, how="outer", on="strain")

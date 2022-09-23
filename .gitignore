@@ -19,14 +19,13 @@ my_profiles/
 compare/
 
 # Ignore datasets
-data/public*
 data/sars-cov-2*
 data/canada*
 data/requests*
 data/custom*
 data/X*
 data/proposed*
-data/gauntlet
+data/*gisaid*
 
 # all-contributors and yarn
 yarn.lock
