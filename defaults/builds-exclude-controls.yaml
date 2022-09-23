@@ -5,7 +5,9 @@
 # These are the analyses, you want to run.
 
 # name              : A directory will be created as results/{name}
-# metadata (local)  : path to metadata for local input
-# sequences (local) : path to sequences for local input
+# metadata (local)  : (optional) path to metadata TSV
+#                   :   Default: 'data/{BUILD}/metadata.tsv'
+# sequences (local) : (optiona) path to sequences fasta
+#                   :   Default: 'data/{BUILD}/sequences.fasta'
 
 builds:

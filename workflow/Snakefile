@@ -80,6 +80,30 @@ for build in config["builds"]:
 BUILDS = list(config["builds"].keys())
 
 # ------------------------------------------------------------------------------
+#  Functions
+# ------------------------------------------------------------------------------
+
+def _inputs(build):
+
+  inputs = {}
+
+  # Metadata
+  metadata = "data/{build}/metadata.tsv"
+  if "metadata" in config["builds"][build].keys():
+    metadata = config["builds"][build]["metadata"]
+    if metadata:
+      inputs["metadata"] = metadata
+
+  # Sequences
+  sequences = "data/{build}/sequences.fasta"
+  if "sequences" in config["builds"][build].keys():
+    sequences = config["builds"][build]["sequences"]
+    if sequences:
+      inputs["sequences"] = sequences
+
+  return inputs
+
+# ------------------------------------------------------------------------------
 #  Default Target
 # ------------------------------------------------------------------------------
 
@@ -332,8 +356,8 @@ rule nextclade:
                       dataset=_inputs_nextclade(wildcards.build, wildcards.nextclade_prefix)["dataset"],
                       tag=_inputs_nextclade(wildcards.build, wildcards.nextclade_prefix)["tag"],
                       ),
-    sequences     = "data/{build}/sequences.fasta",
-    metadata      = "data/{build}/metadata.tsv",
+    sequences     = lambda wildcards: _inputs(wildcards.build)["sequences"],
+    metadata      = lambda wildcards: _inputs(wildcards.build)["metadata"],
   output:
     alignment     = "results/{build}/{nextclade_prefix}/alignment.fasta",
     qc            = "results/{build}/{nextclade_prefix}/qc.tsv",
@@ -598,7 +622,7 @@ rule sc2rf_recombinants:
     nextclade       = "results/{build}/nextclade/qc.tsv",
     nextclade_no_recomb = "results/{build}/nextclade_no-recomb/qc.tsv",
     lineage_tree    = rules.pango_lineage_tree.output.tree,
-    metadata        = "data/{build}/metadata.tsv",
+    metadata        = lambda wildcards: _inputs(wildcards.build)["metadata"],
   output:
     stats           = "results/{build}/sc2rf/stats.tsv",
     strains         = "results/{build}/sc2rf/recombinants.txt",

@@ -4,6 +4,8 @@ This is a major release where all recombinant lineages from `XA` to `XAZ` were v
 
 ## Validation
 
+### Designated
+
 - [Issue #136](https://github.com/ktmeaton/ncov-recombinant/issues/136): `XP`
 - [Issue #135](https://github.com/ktmeaton/ncov-recombinant/issues/135): `XQ`
 - [Issue #134](https://github.com/ktmeaton/ncov-recombinant/issues/134): `XR`
@@ -38,6 +40,10 @@ This is a major release where all recombinant lineages from `XA` to `XAZ` were v
 - [Issue #87](https://github.com/ktmeaton/ncov-recombinant/issues/87): `XAZ`
 - [Issue #94](https://github.com/ktmeaton/ncov-recombinant/issues/94): `XBA`
 
+### Proposed (Monitor)
+
+- [Issue #99](https://github.com/ktmeaton/ncov-recombinant/issues/99): `proposed808`
+
 ## Resources
 
 - [Issue #96](https://github.com/ktmeaton/ncov-recombinant/issues/96): Create a newick phylogeny of pango lineage parent child relationships, to get accurate sublineages including aliases.
@@ -51,6 +57,7 @@ This is a major release where all recombinant lineages from `XA` to `XAZ` were v
 ## Profile Creation
 
 - [Issue #77](https://github.com/ktmeaton/ncov-recombinant/issues/77): Report slurm command for --hpc profiles in create_profiles
+- [Issue #153](https://github.com/ktmeaton/ncov-recombinant/issues/153): Fix bug where build parameters `metadata` and `sequences` were not implemented.
 
 ## Nextclade
 
