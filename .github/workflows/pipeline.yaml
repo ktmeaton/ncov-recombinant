@@ -258,19 +258,3 @@ jobs:
         with:
           name: report-controls
           path: results/controls/report/report.pptx
-
-  #----------------------------------------------------------------------------
-  controls-gisaid:
-    name: Controls (GISAID)
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    steps:
-      - name: secret test
-        shell: bash -l {0}
-        env:
-          METADATA_1: ${{ secrets.METADATA_1 }}
-        run: |
-          echo "METADATA_1: ${METADATA_1}";
-          echo -e ${METADATA_1} > metadata_1.csv;
-          cat metadata_1.csv;
