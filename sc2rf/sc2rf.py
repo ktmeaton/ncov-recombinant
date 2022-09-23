@@ -361,22 +361,25 @@ def main():
 
     vprint("Done.\nPrinting detailed analysis:\n\n")
 
+    # Write the headers to output csv file
+    writer = None
+    if args.csvfile:
+        fieldnames = [
+            "sample",
+            "examples",
+            "intermissions",
+            "breakpoints",
+            "regions",
+            "unique_subs",
+            "alleles",
+        ]
+        if args.show_private_mutations:
+            fieldnames.append("privates")
+        writer = csv.DictWriter(args.csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+    # Write the data to the output csv file
     if len(match_sets):
-        writer = None
-        if args.csvfile:
-            fieldnames = [
-                "sample",
-                "examples",
-                "intermissions",
-                "breakpoints",
-                "regions",
-                "unique_subs",
-                "alleles",
-            ]
-            if args.show_private_mutations:
-                fieldnames.append("privates")
-            writer = csv.DictWriter(args.csvfile, fieldnames=fieldnames)
-            writer.writeheader()
 
         for matching_example_indices, samples in match_sets.items():
             show_matches(
