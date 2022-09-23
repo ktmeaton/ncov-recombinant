@@ -41,8 +41,6 @@ jobs:
       # checkout repository
       - name: checkout repo
         uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
 
       # setup conda with mamba
       - name: setup conda
@@ -103,8 +101,6 @@ jobs:
       # checkout repository
       - name: checkout repo
         uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
 
       # setup conda with mamba
       - name: setup conda
@@ -165,8 +161,6 @@ jobs:
       # checkout repository
       - name: checkout repo
         uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
 
       # setup conda with mamba
       - name: setup conda
@@ -227,8 +221,6 @@ jobs:
       # checkout repository
       - name: checkout repo
         uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
 
       # setup conda with mamba
       - name: setup conda
@@ -266,3 +258,19 @@ jobs:
         with:
           name: report-controls
           path: results/controls/report/report.pptx
+
+  #----------------------------------------------------------------------------
+  controls-gisaid:
+    name: Controls (GISAID)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: secret test
+        shell: bash -l {0}
+        env:
+              TEST_1: ${{ secrets.TEST_1 }}
+              TEST_2: test_2
+        run: |
+          echo "TEST_1: ${TEST_1}";
+          echo "TEST_2: ${TEST_2}";
