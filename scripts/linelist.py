@@ -191,6 +191,13 @@ def main(
         issues = []
 
         for lin in set(lineages_sc2rf + [lineage_nextclade]):
+            # There are two weird examples in sc2rf lineages
+            # which are proposed808-1 and proposed808-2
+            # because two lineages got the same issue post
+            # Transform proposed808-1 to proposed808
+            if lin.startswith("proposed") and "-" in lin:
+                lin = lin.split("-")[0]
+
             if lin in list(issues_df["lineage"]):
                 match = issues_df[issues_df["lineage"] == lin]
                 issue = match["issue"].values[0]

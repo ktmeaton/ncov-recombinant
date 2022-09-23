@@ -13,6 +13,9 @@ base_url = "https://api.github.com/repos/cov-lineages/pango-designation/issues"
 params = "?state=all&per_page=100&page={page_num}"
 query_url = base_url + params
 
+# These issues have problems, and are manually curated in the breakpoints file
+EXCLUDE_ISSUES = [808]
+
 
 @click.command()
 @click.option("--token", help="Github API Token", required=False)
@@ -83,6 +86,11 @@ def main(token, breakpoints):
             # Assume not a recombinant
             recombinant = False
             number = issue["number"]
+
+            # Check for excluded issues
+            if number in EXCLUDE_ISSUES:
+                continue
+
             # sanitize quotes out of title
             title = issue["title"].replace('"', "")
             # sanitize markdown formatters
