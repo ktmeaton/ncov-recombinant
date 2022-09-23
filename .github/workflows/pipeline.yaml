@@ -269,8 +269,8 @@ jobs:
       - name: secret test
         shell: bash -l {0}
         env:
-              TEST_1: ${{ secrets.TEST_1 }}
-              TEST_2: test_2
+          METADATA_1: ${{ secrets.METADATA_1 }}
         run: |
-          echo "TEST_1: ${TEST_1}";
-          echo "TEST_2: ${TEST_2}";
+          echo "METADATA_1: ${METADATA_1}";
+          echo -e ${METADATA_1} > metadata_1.csv;
+          cat metadata_1.csv;
