@@ -108,9 +108,15 @@ rule_params:
     #  - genbank_accession
 
   # ---------------------------------------------------------------------------
-  # geo            : Column to use for a geographic summary (typically region, country, or division)
+  # geo             : Column to use for a geographic summary (typically region, country, or division)
+  # min_lineage_size: If a designated lineage has more than this number of sequences, investigate
+  #                   whether it is a mimic (X*-like), based on the presence of private mutations.
+  # min_private_muts: When checking for a mimic (X*-like), all sequences of the lineage must have at least
+  #                   this many shared private mutations.
   - name: linelist
     geo: country
+    min_lineage_size: 10
+    min_private_muts: 3
 
   # ---------------------------------------------------------------------------
   # lag           : The number of weeks before the present where data is accurate (ex. 4). Used to plot a light grey box.

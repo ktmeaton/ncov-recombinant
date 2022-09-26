@@ -36,12 +36,6 @@ LINELIST_COLS = {
     "nextclade_dataset": "nextclade_dataset",
 }
 
-# If a designated lineage has more this number of strains
-# and more than this number of private muts, flag the assignment
-# as possibly incorrect
-MIN_LINEAGE_SIZE = 10
-MAX_PRIVATE_MUTS = 3
-
 
 @click.command()
 @click.option("--input", help="Summary (tsv).", required=True)
@@ -61,6 +55,18 @@ MAX_PRIVATE_MUTS = 3
     help="Output directory for linelists",
     required=True,
 )
+@click.option(
+    "--min-lineage-size",
+    help="For lineage sizes larger than this, investigate -like status.",
+    default=10,
+    required=False,
+)
+@click.option(
+    "--min-private-muts",
+    help="If more than this number of private mutations, investigate -like status.",
+    required=False,
+    default=3,
+)
 @click.option("--log", help="Logfile", required=False)
 def main(
     input,
@@ -68,6 +74,8 @@ def main(
     extra_cols,
     outdir,
     log,
+    min_lineage_size,
+    min_private_muts,
 ):
     """Create a linelist and recombinant report"""
 
@@ -393,8 +401,8 @@ def main(
         if (
             lineage.startswith("X")
             and not lineage.endswith("like")
-            and lineage_size > MIN_LINEAGE_SIZE
-            and num_privates > MAX_PRIVATE_MUTS
+            and lineage_size >= min_lineage_size
+            and num_privates >= min_private_muts
         ):
             lineage = lineage + "-like"
             rec_rename = linelist_df["strain"].isin(rec_strains)

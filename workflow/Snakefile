@@ -743,6 +743,14 @@ def _params_linelist(build):
   if geo: params["geo"] = "--geo {}".format(geo)
   else: params["geo"] = ""
 
+  min_lineage_size = config["builds"][build]["linelist"]["min_lineage_size"]
+  if min_lineage_size: params["min_lineage_size"] = "--min-lineage-size {}".format(min_lineage_size)
+  else: params["min_lineage_size"] = ""
+
+  min_private_muts = config["builds"][build]["linelist"]["min_private_muts"]
+  if min_private_muts: params["min_private_muts"] = "--min-private-muts {}".format(min_private_muts)
+  else: params["min_private_muts"] = ""
+
   return params
 
 
@@ -774,6 +782,8 @@ rule linelist:
     outdir         = "results/{build}/linelists",
     extra_cols     = lambda wildcards: _params_summary(wildcards.build)["extra_cols"],
     geo            = lambda wildcards: _params_linelist(wildcards.build)["geo"],
+    min_lineage_size = lambda wildcards: _params_linelist(wildcards.build)["min_lineage_size"],
+    min_private_muts = lambda wildcards: _params_linelist(wildcards.build)["min_private_muts"],
   threads: 1
   resources:
     cpus = 1,
@@ -784,7 +794,14 @@ rule linelist:
   shell:
     """
     # Create the strain tables
-    python3 scripts/linelist.py --input {input.summary} --issues {input.issues} --outdir {params.outdir} {params.extra_cols} > {log} 2>&1;
+    python3 scripts/linelist.py \
+      --input {input.summary} \
+      --issues {input.issues} \
+      --outdir {params.outdir} \
+      {params.extra_cols} \
+      {params.min_lineage_size} \
+      {params.min_private_muts} \
+      > {log} 2>&1;
 
     # Create the lineages table
     python3 scripts/lineages.py --input {output.positives} --output {output.lineages} {params.geo} >> {log} 2>&1;
