@@ -75,8 +75,8 @@ rule_params:
       - XAJ:             "--clades 22A 22C         --ansi --parents 2-10 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
       - XAY:             "--clades 21I 21J 21K 21L --ansi --parents 2-10 --breakpoints 2-10 --unique 3 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 20 --ignore-shared --mutation-threshold 0.25"
       # General (discovery and validation)
-      - delta_omicron:   "--clades 21I 21J 21K 21L --ansi --parents 2-10 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3  --ignore-shared"
-      - omicron_omicron: "--clades 21K 21L 22A 22B --ansi --parents 2-10 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3  --ignore-shared"
+      - delta_omicron:   "--clades 21I 21J 21K 21L --ansi --parents 2-10 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
+      - omicron_omicron: "--clades 21K 21L 22A 22B --ansi --parents 2-10 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 3 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
   # ---------------------------------------------------------------------------
   # min_len            : (optional) Ignore recombinant regions shorter than this
   # min_consec_allele  : (optional) Ignore recombinant regions with less than this number of consecutive alleles (both subs and ref)

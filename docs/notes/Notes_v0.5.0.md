@@ -85,6 +85,8 @@ This is a major release where all recombinant lineages from `XA` to `XAZ` were v
 
 The optional `lapis` parameter for `sc2rf_recombinants` has been removed. Querying [LAPIS](https://lapis.cov-spectrum.org/) for parental lineages is no longer experimental and is now an essential component (cannot be disabled).
 
+The mandatory `mutation_threshold` parameter for `sc2rf` has been removed. Instead, `--mutation-threshold` can be set independently in each of the `scrf` modes.
+
 ## Plot
 
 - [Issue #17](https://github.com/ktmeaton/ncov-recombinant/issues/17]): Created an optional script to plot lineage assignment changes between versions using a Sankey diagram.
