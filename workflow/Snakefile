@@ -513,7 +513,6 @@ rule sc2rf:
     csv                  = "results/{build}/sc2rf/stats.{mode}.csv",
   params:
     outdir               = "results/{build}",
-    mutation_threshold   = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["mutation_threshold"],
     sc2rf_args           = lambda wildcards: _params_sc2rf(wildcards.build)["sc2rf_args"][wildcards.mode],
     max_name_length      = lambda wildcards: config["builds"][wildcards.build]["sc2rf"]["max_name_length"]
   threads: 1
@@ -531,7 +530,6 @@ rule sc2rf:
       --output-csv {output.csv} \
       --log {log} \
       --max-name-length {params.max_name_length} \
-      --mutation-threshold {params.mutation_threshold} \
       {params.sc2rf_args};
     """
 

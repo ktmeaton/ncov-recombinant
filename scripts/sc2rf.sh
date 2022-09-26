@@ -22,11 +22,6 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    --mutation-threshold)
-      mutation_threshold=$2
-      shift # past argument
-      shift # past value
-      ;;
     --output-ansi)
       output_ansi=$2
       shift # past argument
@@ -76,11 +71,6 @@ sc2rf_args+=("--csvfile $output_csv")
 if [[ "${primers}" ]]; then
   cp $primers sc2rf/${primers_name}.bed
   sc2rf_args+=("--primers ${primers_name}.bed")
-fi
-
-# Add mutation threshold
-if [[ "${mutation_threshold}" ]]; then
-  sc2rf_args+=("--mutation-threshold ${mutation_threshold}")
 fi
 
 # rebuild examples
