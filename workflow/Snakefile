@@ -597,6 +597,12 @@ def _params_sc2rf_recombinants(build):
   if auto_pass: params["auto_pass"] = "--nextclade-auto-pass {}".format(",".join(auto_pass))
   else: params["auto_pass"] = ""
 
+  # The metadata param will not be used if we are excluding negatives
+  metadata = _inputs(build)["metadata"]
+  exclude_negatives = config["builds"][build]["sc2rf"]["exclude_negatives"]
+  if not exclude_negatives: params["metadata"] = "--metadata {}".format(metadata)
+  else: params["metadata"] = ""
+
   return params
 
 
@@ -636,6 +642,7 @@ rule sc2rf_recombinants:
     max_breakpoints = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_breakpoints"],
     motifs          = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["motifs"],
     auto_pass       = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["auto_pass"],
+    metadata        = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["metadata"],
     # Join inputs together with commas
     ansi            = lambda wildcards: ",".join(_inputs_sc2rf_recombinants(wildcards.build)["ansi"]),
     csv             = lambda wildcards: ",".join(_inputs_sc2rf_recombinants(wildcards.build)["csv"]),
@@ -658,7 +665,7 @@ rule sc2rf_recombinants:
       --nextclade {input.nextclade} \
       --nextclade-no-recomb {input.nextclade_no_recomb} \
       --lineage-tree {input.lineage_tree} \
-      --metadata {input.metadata} \
+      {params.metadata} \
       {params.auto_pass} \
       {params.motifs} \
       {params.min_len} \

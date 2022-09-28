@@ -813,6 +813,12 @@ def main(
 
     if nextclade and nextclade_auto_pass:
 
+        logger.info(
+            "Auto-passing lineages through sc2rf: {}".format(
+                ",".join(nextclade_auto_pass_lineages)
+            )
+        )
+
         # Identify negative samples to auto-pass
         auto_pass_df = nextclade_df[
             (nextclade_df["Nextclade_pango"] != NO_DATA_CHAR)
@@ -860,7 +866,9 @@ def main(
 
     # ---------------------------------------------------------------------
     # Write exclude strains (false positives)
+
     outpath_exclude = os.path.join(outdir, prefix + ".exclude.tsv")
+    logger.info("Writing strains to exclude: {}".format(outpath_exclude))
     if len(false_positives) > 0:
         with open(outpath_exclude, "w") as outfile:
             for strain, reason in false_positives.items():
@@ -889,6 +897,7 @@ def main(
     # write output table
 
     # Drop old columns, if there were only negative samples, these columns don't exist
+    logger.info("Formatting output columns.")
     if set(df["sc2rf_status"]) != set(["negative"]):
         df.drop(
             [
