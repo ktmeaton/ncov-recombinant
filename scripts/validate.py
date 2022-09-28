@@ -29,11 +29,20 @@ def main(
     expected_df.fillna(NO_DATA_CHAR, inplace=True)
     observed_df.fillna(NO_DATA_CHAR, inplace=True)
 
-    output_data = {"strain": [], "status": []}
+    output_data = {
+        "strain": [],
+        "status": [],
+        "fail_cols": [],
+        "expected": [],
+        "observed": [],
+    }
 
     # Validate observed values
     for rec in observed_df.iterrows():
         strain = rec[1]["strain"]
+        fail_cols = []
+        expected_vals = []
+        observed_vals = []
 
         # Check if this in the validation table
         if strain not in expected_df["strain"].values:
@@ -49,6 +58,9 @@ def main(
 
                 if exp_val != obs_val:
                     match = False
+                    fail_cols.append(col)
+                    expected_vals.append(exp_val)
+                    observed_vals.append(obs_val)
 
             # Check if any columns failed matching
             if match:
@@ -58,6 +70,9 @@ def main(
 
         output_data["strain"].append(strain)
         output_data["status"].append(status)
+        output_data["fail_cols"].append(";".join(fail_cols))
+        output_data["expected"].append(";".join(expected_vals))
+        output_data["observed"].append(";".join(observed_vals))
 
     # Table of validation
     output_df = pd.DataFrame(output_data)
