@@ -1132,11 +1132,8 @@ rule validate:
 
     if [[ $build_status == "Fail" ]]; then
 
-      echo
-      echo "Build failed validation: {wildcards.build}"
-      echo "Samples failing validation:"
-      grep -E "Fail" {output.table} | cut -f 1;
-      echo
+      echo "Build failed validation: {wildcards.build}" > {log}
+      csvtk grep -t -f "status" -p "Fail" {output.table} >> {log}
       exit 1
     fi
     """
