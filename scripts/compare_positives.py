@@ -18,61 +18,7 @@ UNKNOWN_RGB = colors.to_rgb(UNKNOWN_COLOR)
 LINEAGE_COLS = ["recombinant_lineage_curated", "lineage", "pango_lineage"]
 
 
-def create_sankey_data(df, node_order="default", min_y=0.001):
-
-    labels = list(set(list(df["source"]) + list(df["target"])))
-    labels_i = {label: i for i, label in enumerate(labels)}
-
-    # -------------------------------------------------------------------------
-    # Option 1. Categorical Palette
-
-    # node_palette_raw = categorical_palette(num_cat=len(labels_i))
-    # # Recolor NA
-    # if NO_DATA_CHAR in labels:
-    #    na_i = labels.index(NO_DATA_CHAR)
-    #    node_palette_raw[na_i] = list(UNKNOWN_RGB)
-    # # Convert matplotlib rgb colors ([0.12156863 0.46666667 0.70588235])
-    # # to plotly rgb colors 'rgb(255,0,0')
-    # node_palette = []
-    # for rgb in node_palette_raw:
-    #     plotly_rgb = [str(round(col * 255)) for col in rgb]
-    #     plotly_rgb_str = "rgb({})".format(",".join(plotly_rgb))
-    #     node_palette.append(plotly_rgb_str)
-
-    # -------------------------------------------------------------------------
-    # Option 2. Binary Palette
-
-    # node_palette = []
-    # for label in labels:
-    #     if label.startswith("X"):
-    #         node_palette.append("red")
-    #     elif label.startswith(NO_DATA_CHAR):
-    #         node_palette.append(UNKNOWN_COLOR)
-    #     else:
-    #         node_palette.append("blue")
-
-    # -------------------------------------------------------------------------
-    # Option 3. Constant Palette
-
-    node_palette = []
-    for label in labels:
-        if label.startswith(NO_DATA_CHAR):
-            node_palette.append(UNKNOWN_COLOR)
-        else:
-            node_palette.append("#1f77b4")
-
-    # -------------------------------------------------------------------------
-    # Nodes
-
-    node_data = {
-        "pad": 15,
-        "thickness": 20,
-        "line": dict(color="black", width=0.5),
-        "label": labels,
-        "color": node_palette,
-        "x": [],
-        "y": [],
-    }
+def create_sankey_data(df, node_order="default", min_y=0.001, min_link_size=1):
 
     # -------------------------------------------------------------------------
     # Links
@@ -83,9 +29,6 @@ def create_sankey_data(df, node_order="default", min_y=0.001):
         "value": [],
         "color": None,
     }
-
-    source_node_links = {}
-    target_node_links = {}
 
     for rec in df.iterrows():
         source = rec[1]["source"]
@@ -109,16 +52,67 @@ def create_sankey_data(df, node_order="default", min_y=0.001):
             link_data["target"].append(target)
             link_data["value"].append(1)
 
+    # -------------------------------------------------------------------------
+    # Filter on minimum link size
+
+    remove_link_i = []
+    for i, v in enumerate(link_data["value"]):
+        s = link_data["source"][i]
+        t = link_data["target"][i]
+
+        if v < min_link_size:
+            remove_link_i.append(i)
+
+    # Delete links in reverse index order
+    for i in sorted(remove_link_i, reverse=True):
+        del link_data["source"][i]
+        del link_data["target"][i]
+        del link_data["value"][i]
+
+    # Create source and target nodes links
+    source_node_links = {}
+    target_node_links = {}
+    for source, target, value in zip(
+        link_data["source"], link_data["target"], link_data["value"]
+    ):
         if source not in source_node_links:
             source_node_links[source] = 0
         if target not in target_node_links:
             target_node_links[target] = 0
 
         # Incrememnt count of these nodes
-        source_node_links[source] += 1
-        target_node_links[target] += 1
+        source_node_links[source] += value
+        target_node_links[target] += value
 
-    # Create a color palette for links
+    # -------------------------------------------------------------------------
+    # Node Palette
+
+    # labels = list(set(list(df["source"]) + list(df["target"])))
+    labels = list(set(list(source_node_links.keys()) + list(target_node_links.keys())))
+    labels_i = {label: i for i, label in enumerate(labels)}
+
+    node_palette = []
+    for label in labels:
+        if label.startswith(NO_DATA_CHAR):
+            node_palette.append(UNKNOWN_COLOR)
+        else:
+            node_palette.append("#1f77b4")
+
+    # -------------------------------------------------------------------------
+    # Nodes
+
+    node_data = {
+        "pad": 15,
+        "thickness": 20,
+        "line": dict(color="black", width=0.5),
+        "label": labels,
+        "color": node_palette,
+        "x": [],
+        "y": [],
+    }
+
+    # -------------------------------------------------------------------------
+    # Link Palette
     link_palette = []
     for s, t in zip(link_data["source"], link_data["target"]):
 
@@ -302,6 +296,12 @@ def create_sankey_plot(sankey_data, node_order="default"):
 @click.option(
     "--min-y", help="Increase if nodes overlap the title", required=False, default=0.001
 )
+@click.option(
+    "--min-link-size",
+    help="Remove links smaller than this",
+    required=False,
+    default=1,
+)
 def main(
     positives_1,
     positives_2,
@@ -311,6 +311,7 @@ def main(
     log,
     node_order,
     min_y,
+    min_link_size,
 ):
     """Compare positive recombinants between two tables."""
 
@@ -422,7 +423,9 @@ def main(
 
     # Create sankey data and plot
     logger.info("Creating sankey data.")
-    sankey_data = create_sankey_data(lineages_df, node_order=node_order, min_y=min_y)
+    sankey_data = create_sankey_data(
+        lineages_df, node_order=node_order, min_y=min_y, min_link_size=min_link_size
+    )
     logger.info("Creating sankey plot.")
     sankey_fig = create_sankey_plot(sankey_data, node_order=node_order)
     sankey_fig.update_layout(title_text=title, font_size=12, width=1000, height=800)
