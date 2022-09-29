@@ -175,14 +175,15 @@ def reverse_iter_collapse(
         "Method for resolving duplicate results:\n"
         + "\nfirst: Use first positive results found.\n"
         + "\nlast: Use last positive results found.\n"
-        + "\nmin_bp: Use fewest breakpoints with least uncertainty."
+        + "\nmin_bp: Use fewest breakpoints."
+        + "\nmin_uncertainty: Use small breakpoint intervals."
     ),
     type=click.Choice(
-        ["first", "last", "min_bp"],
+        ["first", "last", "min_bp", "min_uncertainty"],
         case_sensitive=False,
     ),
     required=False,
-    default="min_bp",
+    default="lineage",
 )
 def main(
     csv,
@@ -721,11 +722,26 @@ def main(
             remove_dups.remove(keep_strain)
 
         # Case 2. Multiple keeps found, use dup_method
-        #   first: retain first one
-        #   min_bp: fewest breakpoints and least uncertainty
         elif len(keep_dups) > 1:
 
-            if dup_method == "first":
+            # First try to match to a published lineage
+            lineage_strain = None
+
+            for dup_strain in keep_dups:
+                dup_lineage = df["sc2rf_lineage"][dup_strain]
+
+                if dup_lineage != NO_DATA_CHAR:
+                    lineage_strain = dup_strain
+
+            # Check if a match was found
+            if lineage_strain:
+                # Remove all strains except the min one
+                remove_dups = keep_dups + remove_dups
+                remove_dups.remove(lineage_strain)
+                keep_dups = [lineage_strain]
+
+            # Otherwise, use a duplicate resolving method
+            elif dup_method == "first":
                 remove_dups += keep_dups[1:]
                 keep_dups = [keep_dups[0]]
 
@@ -734,13 +750,28 @@ def main(
                 keep_dups = [keep_dups[-1]]
 
             elif dup_method == "min_bp":
-
                 min_bp = None
-                min_bp_uncertainty = None
                 min_bp_strain = None
-
                 for dup_strain in keep_dups:
                     num_bp = df["sc2rf_num_breakpoints_filter"][dup_strain]
+                    if not min_bp:
+                        min_bp = num_bp
+                        min_bp_strain = dup_strain
+                    elif num_bp < min_bp:
+                        min_bp = num_bp
+                        min_bp_strain = dup_strain
+                # Remove all strains except the min one
+                remove_dups = keep_dups + remove_dups
+                remove_dups.remove(min_bp_strain)
+                keep_dups = [min_bp_strain]
+
+            elif dup_method == "min_uncertainty":
+
+                min_uncertainty = None
+                min_uncertainty_strain = None
+
+                for dup_strain in keep_dups:
+
                     # '8394:12879,13758:22000'
                     bp = df["sc2rf_breakpoints_filter"][dup_strain]
                     # ['8394:12879','13758:22000']
@@ -750,19 +781,17 @@ def main(
                     bp_uncertainty = sum(bp)
 
                     # Set to the first strain by default
-                    if not min_bp_strain:
-                        min_bp_strain = dup_strain
-                        min_bp = num_bp
-                        min_bp_uncertainty = bp_uncertainty
-                    elif num_bp <= min_bp and bp_uncertainty < min_bp_uncertainty:
-                        min_bp_strain = dup_strain
-                        min_bp = num_bp
-                        min_bp_uncertainty = bp_uncertainty
+                    if not min_uncertainty:
+                        min_uncertainty_strain = dup_strain
+                        min_uncertainty = bp_uncertainty
+                    elif bp_uncertainty < min_uncertainty:
+                        min_uncertainty_strain = dup_strain
+                        min_uncertainty = bp_uncertainty
 
                 # Remove all strains except the min one
                 remove_dups = keep_dups + remove_dups
-                remove_dups.remove(min_bp_strain)
-                keep_dups = [min_bp_strain]
+                remove_dups.remove(min_uncertainty_strain)
+                keep_dups = [min_uncertainty_strain]
 
         keep_csv_file = df["csv_file"][keep_dups[0]]
         logger.info(

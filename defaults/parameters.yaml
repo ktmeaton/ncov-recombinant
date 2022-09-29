@@ -88,17 +88,18 @@ rule_params:
   # dup_method         : (optional, experimental) Method for resolving duplicate results when multiple sc2rf modes generated postives
   #                    :  'first' : Retain positive results from first mode encountered (top in mode list)
   #                    :  'last'  : Retain positive results from last mode encountered (bottom in mode list)
-  #                    :  'min_bp': Prioritize positives results with the fewest breakpoints and least breakpoint uncertainty
+  #                    :  'min_bp': Prioritize positive results with the fewest breakpoints.
+  #                    :  'min_uncertainty': Prioritize positive results with the smallest breakpoint intervals.
   # auto_pass          : (optional) Samples with these lineage assignments by nextclade will
   #                      automatically be classified as 'positive', regardless of sc2rf results.
   - name: sc2rf_recombinants
-    min_len: 800
+    min_len: 500
     min_consec_allele: 3
     max_breakpoint_len:
     max_parents:
     max_breakpoints:
     motifs:
-    dup_method: min_bp
+    dup_method: min_uncertainty
     auto_pass:
       - XN
       - XP
