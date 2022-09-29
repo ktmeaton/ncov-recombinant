@@ -170,6 +170,21 @@ def reverse_iter_collapse(
     required=False,
 )
 @click.option("--log", help="Path to a log file", required=False)
+@click.option(
+    "--dup-method",
+    help=(
+        "Method for resolving duplicate results:\n"
+        + "\nfirst: Use first positive results found.\n"
+        + "\nlast: Use last positive results found.\n"
+        + "\nmin_bp: Use fewest breakpoints with least uncertainty."
+    ),
+    type=click.Choice(
+        ["first", "last", "min_bp"],
+        case_sensitive=False,
+    ),
+    required=False,
+    default="min_bp",
+)
 def main(
     csv,
     ansi,
@@ -189,6 +204,7 @@ def main(
     log,
     lineage_tree,
     metadata,
+    dup_method,
 ):
     """Detect recombinant seqences from sc2rf. Dependencies: pandas, click"""
 
@@ -217,10 +233,18 @@ def main(
             logger.warning("No records in csv: {}".format(csv_file))
             temp_df = pd.DataFrame()
 
+        # Add column to indicate which csv file results come from (debugging)
         temp_df.insert(
             loc=len(temp_df.columns),
             column="csv_file",
             value=os.path.basename(csv_file),
+        )
+
+        # Add column to hold original strain name before marking duplicates
+        temp_df.insert(
+            loc=len(temp_df.columns),
+            column="strain",
+            value=temp_df.index,
         )
 
         # If the df has no records, this is the first csv
@@ -238,9 +262,9 @@ def main(
             # # Remove the override strains from the previous dataframe
             # df = df[~df.index.isin(override_strains)]
 
-            # Option 2: Keep both for now, only retain best results at end
+            # Option 2: Keep all dups for now, only retain best results at end
             for strain in temp_df.index:
-                if strain in df.index:
+                if strain in list(df["strain"]):
                     if strain not in duplicate_strains:
                         duplicate_strains[strain] = 1
 
@@ -255,6 +279,9 @@ def main(
 
             # Combine primary and secondary data frames
             df = pd.concat([df, temp_df])
+
+    # Remove temporary strain column
+    df.drop(columns="strain", inplace=True)
 
     df.fillna("", inplace=True)
 
@@ -669,6 +696,87 @@ def main(
             df.at[strain, "sc2rf_details"] = "recombination detected"
 
     # ---------------------------------------------------------------------
+    # Resolve strains with duplicate results
+
+    logger.info("Reconciling duplicate results with method: {}".format(dup_method))
+    for strain in duplicate_strains:
+
+        num_dups = duplicate_strains[strain]
+        # Which duplicates should we keep (1), which should we remove (many)
+        keep_dups = []
+        remove_dups = []
+
+        for i in range(1, num_dups + 1):
+            dup_strain = strain + "_dup{}".format(i)
+            dup_status = df["sc2rf_status"][dup_strain]
+
+            if dup_status == "positive":
+                keep_dups.append(dup_strain)
+            else:
+                remove_dups.append(dup_strain)
+
+        # Case 1. No keep dups were found, retain first removal dup, remove all else
+        if len(keep_dups) == 0:
+            keep_strain = remove_dups[0]
+            keep_dups.append(keep_strain)
+            remove_dups.remove(keep_strain)
+
+        # Case 2. Multiple keeps found, use dup_method
+        #   first: retain first one
+        #   min_bp: fewest breakpoints and least uncertainty
+        elif len(keep_dups) > 1:
+
+            if dup_method == "first":
+                remove_dups += keep_dups[1:]
+                keep_dups = [keep_dups[0]]
+
+            elif dup_method == "last":
+                remove_dups += keep_dups[0:-1]
+                keep_dups = [keep_dups[-1]]
+
+            elif dup_method == "min_bp":
+
+                min_bp = None
+                min_bp_uncertainty = None
+                min_bp_strain = None
+
+                for dup_strain in keep_dups:
+                    num_bp = df["sc2rf_num_breakpoints_filter"][dup_strain]
+                    # '8394:12879,13758:22000'
+                    bp = df["sc2rf_breakpoints_filter"][dup_strain]
+                    # ['8394:12879','13758:22000']
+                    bp = bp.split(",")
+                    # [4485, 8242]
+                    bp = [int(c.split(":")[1]) - int(c.split(":")[0]) for c in bp]
+                    bp_uncertainty = sum(bp)
+
+                    # Set to the first strain by default
+                    if not min_bp_strain:
+                        min_bp_strain = dup_strain
+                        min_bp = num_bp
+                        min_bp_uncertainty = bp_uncertainty
+                    elif num_bp <= min_bp and bp_uncertainty < min_bp_uncertainty:
+                        min_bp_strain = dup_strain
+                        min_bp = num_bp
+                        min_bp_uncertainty = bp_uncertainty
+
+                # Remove all strains except the min one
+                remove_dups = keep_dups + remove_dups
+                remove_dups.remove(min_bp_strain)
+                keep_dups = [min_bp_strain]
+
+        keep_csv_file = df["csv_file"][keep_dups[0]]
+        logger.info(
+            "Reconciling duplicate results for {}, retaining output from: {}".format(
+                strain, keep_csv_file
+            )
+        )
+        # Rename the accepted duplicate
+        df.rename(index={keep_dups[0]: strain}, inplace=True)
+        # Drop the rejected duplicates
+        df.drop(labels=remove_dups, inplace=True)
+
+    # ---------------------------------------------------------------------
     # Identify parent lineages by querying cov-spectrum mutations
 
     # We can only do this if:
@@ -691,8 +799,6 @@ def main(
         for rec in positive_df.iterrows():
 
             strain = rec[0]
-            # Remove the _dup<i> suffix for looking up in nextclade df
-            orig_strain = strain.split("_dup")[0]
             progress_i += 1
             logger.info("{} / {}: {}".format(progress_i, total_positives, strain))
 
@@ -702,12 +808,10 @@ def main(
             parent_lineages_confidence = []
             parent_lineages_subs = []
 
-            substitutions = nextclade_no_recomb_df["substitutions"][orig_strain].split(
-                ","
-            )
+            substitutions = nextclade_no_recomb_df["substitutions"][strain].split(",")
             unlabeled_privates = nextclade_no_recomb_df[
                 "privateNucMutations.unlabeledSubstitutions"
-            ][orig_strain].split(",")
+            ][strain].split(",")
 
             # Remove NA char
             if NO_DATA_CHAR in substitutions:
@@ -840,46 +944,6 @@ def main(
             df.at[strain, "cov-spectrum_parents_subs"] = ";".join(parent_lineages_subs)
 
     # ---------------------------------------------------------------------
-    # Resolve strains with duplicate results
-    for strain in duplicate_strains:
-
-        num_dups = duplicate_strains[strain]
-        # Which duplicates should we keep (1), which should we remove (many)
-        keep_dups = []
-        remove_dups = []
-
-        for i in range(1, num_dups + 1):
-            dup_strain = strain + "_dup{}".format(i)
-            dup_status = df["sc2rf_status"][dup_strain]
-
-            if dup_status == "positive":
-                keep_dups.append(dup_strain)
-            else:
-                remove_dups.append(dup_strain)
-
-        # Case 1. No keep dups were found, retain first removal dup, remove all else
-        if len(keep_dups) == 0:
-            keep_strain = remove_dups[0]
-            keep_dups.append(keep_strain)
-            remove_dups.remove(keep_strain)
-
-        # Case 3. Multiple keeps found, retain first one
-        elif len(keep_dups) > 1:
-            # Add the rest to the removal list
-            remove_dups += keep_dups[1:]
-
-        keep_csv_file = df["csv_file"][keep_dups[0]]
-        logger.info(
-            "Reconciling duplicate results for {}, retaining output from: {}".format(
-                strain, keep_csv_file
-            )
-        )
-        # Rename the accepted duplicate
-        df.rename(index={keep_dups[0]: strain}, inplace=True)
-        # Drop the rejected duplicates
-        df.drop(labels=remove_dups, inplace=True)
-
-    # ---------------------------------------------------------------------
     # Auto-pass lineages from nextclade assignment
 
     if nextclade and nextclade_auto_pass:
@@ -899,7 +963,7 @@ def main(
         # If already in the df, set the status to positive, update details
         for rec in df[df.index.isin(auto_pass_df.index)].iterrows():
             strain = rec[0]
-            lineage = auto_pass_df.loc[orig_strain]["Nextclade_pango"]
+            lineage = auto_pass_df.loc[strain]["Nextclade_pango"]
             sc2rf_details = rec[1]["sc2rf_details"].split(";")
             sc2rf_details.append("nextclade-auto-pass {}".format(lineage))
 

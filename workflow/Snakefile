@@ -593,6 +593,10 @@ def _params_sc2rf_recombinants(build):
   if max_parents: params["max_parents"] = "--max-parents {}".format(max_parents)
   else: params["max_parents"] = ""
 
+  dup_method = config["builds"][build]["sc2rf_recombinants"]["dup_method"]
+  if dup_method: params["dup_method"] = "--dup-method {}".format(dup_method)
+  else: params["dup_method"] = ""
+
   auto_pass = config["builds"][build]["sc2rf_recombinants"]["auto_pass"]
   if auto_pass: params["auto_pass"] = "--nextclade-auto-pass {}".format(",".join(auto_pass))
   else: params["auto_pass"] = ""
@@ -641,6 +645,7 @@ rule sc2rf_recombinants:
     max_parents     = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_parents"],
     max_breakpoints = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["max_breakpoints"],
     motifs          = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["motifs"],
+    dup_method      = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["dup_method"],
     auto_pass       = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["auto_pass"],
     metadata        = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["metadata"],
     # Join inputs together with commas
@@ -673,6 +678,7 @@ rule sc2rf_recombinants:
       {params.max_breakpoint_len} \
       {params.max_parents} \
       {params.max_breakpoints} \
+      {params.dup_method} \
       --log {log} \
       >> {log} 2>&1;
 
