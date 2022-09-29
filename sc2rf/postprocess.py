@@ -205,6 +205,9 @@ def main(
     # sc2rf csv output (required)
     df = pd.DataFrame()
     csv_split = csv.split(",")
+    # Store a dict of duplicate strains
+    duplicate_strains = {}
+
     for csv_file in csv_split:
         logger.info("Parsing csv: {}".format(csv_file))
 
@@ -214,18 +217,42 @@ def main(
             logger.warning("No records in csv: {}".format(csv_file))
             temp_df = pd.DataFrame()
 
+        temp_df.insert(
+            loc=len(temp_df.columns),
+            column="csv_file",
+            value=os.path.basename(csv_file),
+        )
+
         # If the df has no records, this is the first csv
         if len(df) == 0:
             df = temp_df
         else:
+            # -----------------------------------------------------------------
+            # Option 1: Override
             # Identify new strains in to override previous csv
-            override_strains = []
+            # override_strains = []
+            # for strain in temp_df.index:
+            #     if strain in df.index:
+            #         override_strains.append(strain)
+
+            # # Remove the override strains from the previous dataframe
+            # df = df[~df.index.isin(override_strains)]
+
+            # Option 2: Keep both for now, only retain best results at end
             for strain in temp_df.index:
                 if strain in df.index:
-                    override_strains.append(strain)
+                    if strain not in duplicate_strains:
+                        duplicate_strains[strain] = 1
 
-            # Remove the override strains from the previous dataframe
-            df = df[~df.index.isin(override_strains)]
+                    # add suffix "_dup<i>", remove at the end of scripts
+                    dup_1 = strain + "_dup{}".format(duplicate_strains[strain])
+                    df.rename(index={strain: dup_1}, inplace=True)
+
+                    duplicate_strains[strain] += 1
+
+                    dup_2 = strain + "_dup{}".format(duplicate_strains[strain])
+                    temp_df.rename(index={strain: dup_2}, inplace=True)
+
             # Combine primary and secondary data frames
             df = pd.concat([df, temp_df])
 
@@ -664,6 +691,8 @@ def main(
         for rec in positive_df.iterrows():
 
             strain = rec[0]
+            # Remove the _dup<i> suffix for looking up in nextclade df
+            orig_strain = strain.split("_dup")[0]
             progress_i += 1
             logger.info("{} / {}: {}".format(progress_i, total_positives, strain))
 
@@ -673,10 +702,12 @@ def main(
             parent_lineages_confidence = []
             parent_lineages_subs = []
 
-            substitutions = nextclade_no_recomb_df["substitutions"][strain].split(",")
+            substitutions = nextclade_no_recomb_df["substitutions"][orig_strain].split(
+                ","
+            )
             unlabeled_privates = nextclade_no_recomb_df[
                 "privateNucMutations.unlabeledSubstitutions"
-            ][strain].split(",")
+            ][orig_strain].split(",")
 
             # Remove NA char
             if NO_DATA_CHAR in substitutions:
@@ -809,6 +840,46 @@ def main(
             df.at[strain, "cov-spectrum_parents_subs"] = ";".join(parent_lineages_subs)
 
     # ---------------------------------------------------------------------
+    # Resolve strains with duplicate results
+    for strain in duplicate_strains:
+
+        num_dups = duplicate_strains[strain]
+        # Which duplicates should we keep (1), which should we remove (many)
+        keep_dups = []
+        remove_dups = []
+
+        for i in range(1, num_dups + 1):
+            dup_strain = strain + "_dup{}".format(i)
+            dup_status = df["sc2rf_status"][dup_strain]
+
+            if dup_status == "positive":
+                keep_dups.append(dup_strain)
+            else:
+                remove_dups.append(dup_strain)
+
+        # Case 1. No keep dups were found, retain first removal dup, remove all else
+        if len(keep_dups) == 0:
+            keep_strain = remove_dups[0]
+            keep_dups.append(keep_strain)
+            remove_dups.remove(keep_strain)
+
+        # Case 3. Multiple keeps found, retain first one
+        elif len(keep_dups) > 1:
+            # Add the rest to the removal list
+            remove_dups += keep_dups[1:]
+
+        keep_csv_file = df["csv_file"][keep_dups[0]]
+        logger.info(
+            "Reconciling duplicate results for {}, retaining output from: {}".format(
+                strain, keep_csv_file
+            )
+        )
+        # Rename the accepted duplicate
+        df.rename(index={keep_dups[0]: strain}, inplace=True)
+        # Drop the rejected duplicates
+        df.drop(labels=remove_dups, inplace=True)
+
+    # ---------------------------------------------------------------------
     # Auto-pass lineages from nextclade assignment
 
     if nextclade and nextclade_auto_pass:
@@ -828,7 +899,7 @@ def main(
         # If already in the df, set the status to positive, update details
         for rec in df[df.index.isin(auto_pass_df.index)].iterrows():
             strain = rec[0]
-            lineage = auto_pass_df.loc[strain]["Nextclade_pango"]
+            lineage = auto_pass_df.loc[orig_strain]["Nextclade_pango"]
             sc2rf_details = rec[1]["sc2rf_details"].split(";")
             sc2rf_details.append("nextclade-auto-pass {}".format(lineage))
 
