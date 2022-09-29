@@ -46,7 +46,9 @@ This is a minor release that includes the following changes:
 - [Issue #150](https://github.com/ktmeaton/ncov-recombinant/issues/150): Fix bug where `sc2rf` would write empty output csvfiles if no recombinants were found.
 - [Issue #151](https://github.com/ktmeaton/ncov-recombinant/issues/151): Fix bug where samples that failed to align were missing from the linelists.
 - [Issue #158](https://github.com/ktmeaton/ncov-recombinant/issues/158): Reduce `sc2rf` param `--max-intermission-length` from `3` to `2` to be consistent with [Issue #79](https://github.com/ktmeaton/ncov-recombinant/issues/79).
-- [Issue #162](https://github.com/ktmeaton/ncov-recombinant/issues/162): Upgrade `sc2rf` `virus_properties` to use LAPIS `nextcladePangoLineage` instead of `pangoLineage`. Also disable default filter `max_breakpoint_len` for `XAN`.
+- [Issue #161](https://github.com/ktmeaton/ncov-recombinant/issues/161): Implement selection method to pick best results from various `sc2rf` modes.
+- [Issue #162](https://github.com/ktmeaton/ncov-recombinant/issues/162): Upgrade `sc2rf` `virus_properties`.
+- [Issue #163](https://github.com/ktmeaton/ncov-recombinant/issues/163): Use LAPIS `nextcladePangoLineage` instead of `pangoLineage`. Also disable default filter `max_breakpoint_len` for `XAN`.
 
 The optional `lapis` parameter for `sc2rf_recombinants` has been removed. Querying [LAPIS](https://lapis.cov-spectrum.org/) for parental lineages is no longer experimental and is now an essential component (cannot be disabled).
 
