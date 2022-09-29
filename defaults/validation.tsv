@@ -270,7 +270,7 @@ hCoV-19/Switzerland/VD-CHUV-GEN12048/2022	XAZ	NA	NA	controls-gisaid
 hCoV-19/Denmark/DCGC-530735/2022	XAZ	NA	NA	controls-gisaid
 hCoV-19/France/ARA-CFD700000316360/2022	XAZ	NA	NA	controls-gisaid
 hCoV-19/Germany/NW-RKI-I-869033/2022	XAZ	NA	NA	controls-gisaid
-hCoV-19/Germany/BW-RKI-I-867631/2022	XAZ	NA	Omicron/BA.5/22B	controls-gisaid
+hCoV-19/Germany/BW-RKI-I-867631/2022	XAZ	NA	Omicron/BA.2/21L	controls-gisaid
 hCoV-19/Germany/NW-RKI-I-867042/2022	XAZ	NA	NA	controls-gisaid
 hCoV-19/Switzerland/VD-CHUV-GEN12026/2022	XAZ	NA	NA	controls-gisaid
 hCoV-19/USA/CA-UCSF-JD989/2021	XB	22917:23011	B.1.634,B.1.631	controls-gisaid
@@ -596,7 +596,7 @@ hCoV-19/USA/CA-CDC-FG-047456/2021	B.1.621	NA	NA	controls-gisaid
 hCoV-19/USA/NJ-CDC-LC0132496/2021	B.1.621.1	NA	NA	controls-gisaid
 hCoV-19/Colombia/COR-INS-VG-8954/2021	B.1.621.2	NA	NA	controls-gisaid
 hCoV-19/Australia/NSW-SAVID-3236/2020	B.3	NA	NA	controls-gisaid
-hCoV-19/India/DL-MaxCov0035-CSIR-IGIB/2020	B.6.6	NA	NA	controls-gisaid
+hCoV-19/India/DL-MaxCov0035-CSIR-IGIB/2020	B.6	NA	NA	controls-gisaid
 hCoV-19/England/PHEP-YYDZTEP/2022	BA.1	NA	NA	controls-gisaid
 hCoV-19/Peru/CAJ-INS-17274/2022	BA.1.1	NA	NA	controls-gisaid
 hCoV-19/USA/VT-Broad-CRSP_LIHGCVZUYVXNTXJQ/2022	BA.1.1	NA	NA	controls-gisaid
