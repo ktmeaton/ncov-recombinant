@@ -42,7 +42,6 @@ def reverse_iter_collapse(
     start_coord,
     end_coord,
     clade,
-    min_consec_alleles=-1,
 ):
     """Collapse adjacent regions from the same parent into one region."""
 

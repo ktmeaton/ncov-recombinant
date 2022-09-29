@@ -1,0 +1,114 @@
+Update: 2022-09-29
+Rebuilding examples from cov-spectrum.org...
+Fetching data for ?nextstrainClade=20A
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextstrainClade=20A&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.160*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.160*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.620*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.620*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.258*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.258*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.221*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.221*&minProportion=0.05
+Fetching data for ?nextstrainClade=20B
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextstrainClade=20B&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.1.302*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.1.302*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.1.277*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.1.277*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.1.519*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.1.519*&minProportion=0.05
+Fetching data for ?nextstrainClade=20C
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextstrainClade=20C&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.367*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.367*&minProportion=0.05
+Fetching data for ?nextstrainClade=20D
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextstrainClade=20D&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.177*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.177*&minProportion=0.05
+Fetching data for ?nextstrainClade=20F
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextstrainClade=20F&minProportion=0.05
+Fetching data for ?nextstrainClade=20G
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextstrainClade=20G&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.351*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.351*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.1.7*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.1.7*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=P.1*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=P.1*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.617.2*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.617.2*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.617.1*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.617.1*&minProportion=0.05
+Fetching data for ?nextstrainClade=21C
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextstrainClade=21C&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.525*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.525*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.526*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.526*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=C.37*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=C.37*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.621*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.621*&minProportion=0.05
+Fetching data for ?nextstrainClade=21I
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextstrainClade=21I&minProportion=0.05
+Fetching data for ?nextstrainClade=21J
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextstrainClade=21J&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BA.1*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BA.1*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BA.2*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BA.2*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.1.529*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.1.529*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BA.4*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BA.4*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BA.5*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BA.5*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BA.2.12*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BA.2.12*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BA.2.75*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BA.2.75*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=AY.4*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=AY.4*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=AY.103*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=AY.103*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=AY.43*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=AY.43*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=AY.44*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=AY.44*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=AY.122*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=AY.122*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=AY.3*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=AY.3*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=AY.4.2*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=AY.4.2*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=AY.100*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=AY.100*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=AY.25.1*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=AY.25.1*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=AY.25*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=AY.25*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BA.2.10*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BA.2.10*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BA.2.10.1*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BA.2.10.1*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BA.2.12.1*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BA.2.12.1*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BA.2.75.3*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BA.2.75.3*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BA.3*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BA.3*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.631*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.631*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.438.1*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.438.1*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=B.1.634*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=B.1.634*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BJ.1*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BJ.1*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BM.1*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BM.1*&minProportion=0.05
+Fetching data for ?nextcladePangoLineage=BM.1.1*
+Url is https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations?nextcladePangoLineage=BM.1.1*&minProportion=0.05
+Examples written to disk.
+Examples were rebuilt, and no input sequences were provided. Program exits.

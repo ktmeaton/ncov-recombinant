@@ -449,10 +449,13 @@ def rebuild_examples():
                     f"?variantQuery={urllib.parse.quote_plus(variant_props['Query'])}"
                 )
             elif pango and len(pango) > 0:
-                query = f"?pangoLineage={pango}*"
-            elif clade and len(clade) > 0 and who_label:
-                query = f"?nextstrainClade={clade}%20({who_label})"
-            elif clade and len(clade) > 0 and not who_label:
+                query = f"?nextcladePangoLineage={pango}*"
+            # WHO Labels were deprecated in cov-spectrum #546
+            # elif clade and len(clade) > 0 and who_label:
+            #     query = f"?nextstrainClade={clade}%20({who_label})"
+            # elif clade and len(clade) > 0 and not who_label:
+            #     query = f"?nextstrainClade={clade}"
+            elif clade and len(clade) > 0:
                 query = f"?nextstrainClade={clade}"
             else:
                 print("Variant has neither pango nor clade, check out mapping.csv!")

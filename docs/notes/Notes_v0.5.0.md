@@ -61,7 +61,7 @@ This is a major release where all recombinant lineages from `XA` to `XAZ` were v
 
 ## Nextclade
 
-- [Issue #81](https://github.com/ktmeaton/ncov-recombinant/issues/81): Upgrade Nextclade datasets to 2022-09-09
+- [Issue #81](https://github.com/ktmeaton/ncov-recombinant/issues/81): Upgrade Nextclade datasets to 2022-09-27
 - [Issue #91](https://github.com/ktmeaton/ncov-recombinant/issues/91): Upgrade Nextclade to v2.5.0
 
 ## sc2rf
