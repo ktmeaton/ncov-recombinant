@@ -804,6 +804,18 @@ def main(
         # Drop the rejected duplicates
         df.drop(labels=remove_dups, inplace=True)
 
+    # Fix up duplicate strain names in false_positives
+    false_positives_filter = {}
+    for strain in false_positives:
+        strain_orig = strain.split("_dup")[0]
+        status = df["sc2rf_status"][strain_orig]
+        # If the original strain isn't positive
+        # All duplicates were false positives and should be removed
+        if status != "positive":
+            false_positives_filter[strain_orig] = false_positives[strain]
+
+    false_positives = false_positives_filter
+
     # ---------------------------------------------------------------------
     # Identify parent lineages by querying cov-spectrum mutations
 

@@ -636,6 +636,7 @@ rule sc2rf_recombinants:
     strains         = "results/{build}/sc2rf/recombinants.txt",
     alignment       = "results/{build}/sc2rf/recombinants.fasta",
     ansi            = "results/{build}/sc2rf/recombinants.ansi.txt",
+    exclude         = "results/{build}/sc2rf/recombinants.exclude.tsv",
   params:
     outdir          = "results/{build}/sc2rf",
     prefix          = "recombinants",
@@ -684,7 +685,6 @@ rule sc2rf_recombinants:
 
     # Cleanup
     mv -f {params.outdir}/recombinants.tsv {params.outdir}/stats.tsv >> {log} 2>&1;
-    rm -f {params.outdir}/recombinants.exclude.tsv >> {log} 2>&1;
     """
 
 # ------------------------------------------------------------------------------
