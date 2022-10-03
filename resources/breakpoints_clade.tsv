@@ -74,9 +74,9 @@ proposed476	Omicron/BA.1/21K	21846	29903
 proposed439	Omicron/BA.1/21K	22578	29903
 XD	Omicron/BA.1/21K	22673	25469
 proposed808-1	Omicron/BA.1/21K	25563	29903
-XAE	Omicron/BA.1/21K	26049	29903
 XAC	Omicron/BA.1/21K	26060	29903
 proposed608	Omicron/BA.1/21K	26060	29903
+XAE	Omicron/BA.1/21K	26060	29903
 XT	Omicron/BA.1/21K	26529	29903
 proposed482	Omicron/BA.1/21K	26529	29903
 XAD	Omicron/BA.1/21K	26529	29903
@@ -99,7 +99,7 @@ proposed498	Omicron/BA.2/21L	0	17409
 proposed896	Omicron/BA.2/21L	0	22600
 XAC	Omicron/BA.2/21L	0	24503
 proposed608	Omicron/BA.2/21L	0	24503
-XAE	Omicron/BA.2/21L	0	24505
+XAE	Omicron/BA.2/21L	0	24503
 XZ	Omicron/BA.2/21L	0	26060
 XAH	Omicron/BA.2/21L	0	26060
 XAP	Omicron/BA.2/21L	0	26060
@@ -152,7 +152,7 @@ XAS	Omicron/BA.2/21L	26529	29903
 proposed1006	Omicron/BA.2/21L	27382	27809
 XAY	Omicron/BA.2/21L	27638	29903
 XP	Omicron/BA.2/21L	29510	29903
-XAJ	Omicron/BA.4/22A	21721	23040
+XAJ	Omicron/BA.4/22A	23018	23535
 XAS	Omicron/BA.5/22B	0	23040
 proposed1006	Omicron/BA.5/22B	0	26531
 proposed820	Omicron/BA.5/22B	0	29903
@@ -214,7 +214,7 @@ proposed514	breakpoint	20055	21618
 proposed477	breakpoint	20056	21617
 XAW	breakpoint	20056	22577
 XA	breakpoint	21256	21613
-XAJ	breakpoint	21571	21720
+XAJ	breakpoint	21571	23017
 XAK	breakpoint	21618	21762
 proposed441	breakpoint	21619	21761
 proposed484	breakpoint	21619	21761
@@ -226,15 +226,15 @@ XBB	breakpoint	22332	22576
 XBC	breakpoint	22579	22673
 proposed896	breakpoint	22601	22915
 XB	breakpoint	22917	23011
-XAJ	breakpoint	23041	23672
 XAS	breakpoint	23041	26528
+XAJ	breakpoint	23536	23672
 proposed498	breakpoint	24130	24503
 XAY	breakpoint	24470	24999
 XBA	breakpoint	24470	24999
 proposed808-1	breakpoint	24504	25562
 XAC	breakpoint	24504	26059
 proposed608	breakpoint	24504	26059
-XAE	breakpoint	24506	26048
+XAE	breakpoint	24504	26059
 XD	breakpoint	25470	25583
 XBC	breakpoint	25470	25583
 XZ	breakpoint	26061	26529

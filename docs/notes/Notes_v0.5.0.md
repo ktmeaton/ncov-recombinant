@@ -8,17 +8,17 @@ This is a minor release that includes the following changes:
 ## Resources
 
 - [Issue #96](https://github.com/ktmeaton/ncov-recombinant/issues/96): Create newick phylogeny of pango lineage parent child relationships, to get accurate sublineages including aliases.
-- [Issue #118](https://github.com/ktmeaton/ncov-recombinant/issues/118): Fix missing pango-designation issues for XAY and XBA
+- [Issue #118](https://github.com/ktmeaton/ncov-recombinant/issues/118): Fix missing pango-designation issues for XAY and XBA.
 
 ## Datasets
 
 - [Issue #25](https://github.com/ktmeaton/ncov-recombinant/issues/25): Reduce positive controls to one sequence per clade. Add new positive controls `XAL`, `XAP`, `XAS`, `XAU`, and `XAZ`.
 - [Issue #92](https://github.com/ktmeaton/ncov-recombinant/issues/92): Reduce negative controls to one sequence per clade. Add negative control for `22D (Omicron) / BA.2.75`.
-- [Issue #155](https://github.com/ktmeaton/ncov-recombinant/issues/155): Add new profile and dataset `controls-gisaid`. Only a list of strains is provided, as GISAID policy prohibits public sharing of sequences and metadta.
+- [Issue #155](https://github.com/ktmeaton/ncov-recombinant/issues/155): Add new profile and dataset `controls-gisaid`. Only a list of strains is provided, as GISAID policy prohibits public sharing of sequences and metadata.
 
 ## Profile Creation
 
-- [Issue #77](https://github.com/ktmeaton/ncov-recombinant/issues/77): Report slurm command for --hpc profiles in create_profiles
+- [Issue #77](https://github.com/ktmeaton/ncov-recombinant/issues/77): Report slurm command for `--hpc` profiles in `scripts/create_profiles.sh`.
 - [Issue #153](https://github.com/ktmeaton/ncov-recombinant/issues/153): Fix bug where build parameters `metadata` and `sequences` were not implemented.
 
 ## Nextclade
@@ -32,27 +32,26 @@ This is a minor release that includes the following changes:
 - [Issue #79](https://github.com/ktmeaton/ncov-recombinant/issues/79): Add new parameter `min_consec_allele` to `sc2rf_recombinants` to ignore recombinant regions with less than this number of consecutive alleles (both diagnostic SNPs and diganostic reference alleles).
 - [Issue #80](https://github.com/ktmeaton/ncov-recombinant/issues/80): Migrate [sc2rf](https://github.com/lenaschimmel/sc2rf) froma submodule to a subdirectory (including LICENSE!). This is to simplify the updating process and avoid errors where submodules became out of sync with the main pipeline.
 - [Issue #83](https://github.com/ktmeaton/ncov-recombinant/issues/83): Improve error handling in `sc2rf_recombinants` when the input stats files are empty.
-- [Issue #89](https://github.com/ktmeaton/ncov-recombinant/issues/89): Reduce the default value of the parmaeter `min_len` in `sc2rf_recombinants` from `1000` to `500`.This is to handle `XAP` and `XAJ`.
-- [Issue #90](https://github.com/ktmeaton/ncov-recombinant/issues/90): Auto-pass select nextclade lineages through `sc2rf`: `XN`, `XP`, `XAS`, and `XAZ`. This requires differentiating the nextclade inputs as separate parameters `--nextclade` and `--nextclade-no-recom`.
+- [Issue #89](https://github.com/ktmeaton/ncov-recombinant/issues/89): Reduce the default value of the parameter `min_len` in `sc2rf_recombinants` from `1000` to `500`.This is to handle `XAP` and `XAJ`.
+- [Issue #90](https://github.com/ktmeaton/ncov-recombinant/issues/90): Auto-pass select nextclade lineages through `sc2rf`: `XN`, `XP`, `XAR`, `XAS`, and `XAZ`. This requires differentiating the nextclade inputs as separate parameters `--nextclade` and `--nextclade-no-recom`.
 
-    `XN` and `XP` have extremely small recombinant regions at the terminal ends of the genome. Depending on sequencing coverage, `sc2rf` may not reliably detect these lineages.
+    `XN`,`XP`, and `XAR` have extremely small recombinant regions at the terminal ends of the genome. Depending on sequencing coverage, `sc2rf` may not reliably detect these lineages.
 
     The newly designated `XAS` and `XAZ` pose a challenge for recombinant detection using diagnostic alleles. The first region of `XAS` could be either `BA.5` or `BA.4` based on subsitutions, but is mostly likely `BA.5` based on deletions. Since the region contains no diagnostic alleles to discriminate `BA.5` vs. `BA.4`, breakpoints cannot be detected by `sc2rf`.
 
     Similarly for `XAZ`, the `BA.2` segments do not contain any `BA.2` diagnostic alleles, but instead are all reversion from `BA.5` alleles. The `BA.2` parent was discovered by deep, manual investigation in the corresponding pango-designation issue. Since the `BA.2` regions contain no diagnostic for `BA.2`, breakpoints cannot be detected by `sc2rf`.
 
-- [Issue #95](https://github.com/ktmeaton/ncov-recombinant/issues/95): Generalize `sc2rf_recombinants` to take any number of ansi and csv input files. This allows greater flexibility in command-line arguments to `sc2rf` and are not locked into the hardocded `primary` and `secondary` parameter sets.
+- [Issue #95](https://github.com/ktmeaton/ncov-recombinant/issues/95): Generalize `sc2rf_recombinants` to take any number of ansi and csv input files. This allows greater flexibility in command-line arguments to `sc2rf` and are not locked into the hardcoded `primary` and `secondary` parameter sets.
 - [Issue #96](https://github.com/ktmeaton/ncov-recombinant/issues/96): Include sub-lineage proportions in the `parents_lineage_confidence`. This reduces underestimating the confidence of a parental lineage.
 - [Issue #150](https://github.com/ktmeaton/ncov-recombinant/issues/150): Fix bug where `sc2rf` would write empty output csvfiles if no recombinants were found.
 - [Issue #151](https://github.com/ktmeaton/ncov-recombinant/issues/151): Fix bug where samples that failed to align were missing from the linelists.
 - [Issue #158](https://github.com/ktmeaton/ncov-recombinant/issues/158): Reduce `sc2rf` param `--max-intermission-length` from `3` to `2` to be consistent with [Issue #79](https://github.com/ktmeaton/ncov-recombinant/issues/79).
 - [Issue #161](https://github.com/ktmeaton/ncov-recombinant/issues/161): Implement selection method to pick best results from various `sc2rf` modes.
-- [Issue #162](https://github.com/ktmeaton/ncov-recombinant/issues/162): Upgrade `sc2rf` `virus_properties`.
+- [Issue #162](https://github.com/ktmeaton/ncov-recombinant/issues/162): Upgrade `sc2rf/virus_properties.json`.
 - [Issue #163](https://github.com/ktmeaton/ncov-recombinant/issues/163): Use LAPIS `nextcladePangoLineage` instead of `pangoLineage`. Also disable default filter `max_breakpoint_len` for `XAN`.
-
-The optional `lapis` parameter for `sc2rf_recombinants` has been removed. Querying [LAPIS](https://lapis.cov-spectrum.org/) for parental lineages is no longer experimental and is now an essential component (cannot be disabled).
-
-The mandatory `mutation_threshold` parameter for `sc2rf` has been removed. Instead, `--mutation-threshold` can be set independently in each of the `scrf` modes.
+- [Issue #164](https://github.com/ktmeaton/ncov-recombinant/issues/164): Fix bug where false positives would appear in the filter `sc2rf` ansi output (`recombinants.ansi.txt`).
+- The optional `lapis` parameter for `sc2rf_recombinants` has been removed. Querying [LAPIS](https://lapis.cov-spectrum.org/) for parental lineages is no longer experimental and is now an essential component (cannot be disabled).
+- The mandatory `mutation_threshold` parameter for `sc2rf` has been removed. Instead, `--mutation-threshold` can be set independently in each of the `scrf` modes.
 
 ## Linelist
 
@@ -62,7 +61,7 @@ The mandatory `mutation_threshold` parameter for `sc2rf` has been removed. Inste
 
 - [Issue #17](https://github.com/ktmeaton/ncov-recombinant/issues/17]): Create script to plot lineage assignment changes between versions using a Sankey diagram.
 - [Issue #82](https://github.com/ktmeaton/ncov-recombinant/issues/82]): Change epiweek start from Monday to Sunday.
-- [Issue #111](https://github.com/ktmeaton/ncov-recombinant/issues/111]): Fix breakpoint distribution axis empty for clade.
+- [Issue #111](https://github.com/ktmeaton/ncov-recombinant/issues/111]): Fix breakpoint distribution axis that was empty for clade.
 - [Issue #152](https://github.com/ktmeaton/ncov-recombinant/issues/152): Fix file saving bug when largest lineage has `/` characters.
 
 ## Report
