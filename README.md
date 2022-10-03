@@ -85,9 +85,10 @@ After running the newly installed version, you can compare lineage assignment ch
 python3 scripts/compare_positives.py \
   --positives-1 old_pipeline_ver/results/controls/linelists/positives.tsv \
   --positives-2 new_pipeline_ver/results/controls/linelists/positives.tsv \
-  --ver-1 "v0.4.2" \
-  --ver-2 "v0.4.3" \
-  --outdir compare/controls
+  --ver-1 "old_ver" \
+  --ver-2 "new_ver" \
+  --outdir compare/controls \
+  --node-order alphabetical
 ```
 
 ## Tutorial
@@ -110,13 +111,12 @@ python3 scripts/compare_positives.py \
 
     - Slides | `results/tutorial/report/report.pptx`
     - Tables<sup>*</sup> | `results/tutorial/report/report.xlsx`
-    - Plots | `results/tutorial/plots`
-    - Breakpoints<sup>†</sup>
-        - Between clades (primary) | `results/tutorial/sc2rf/recombinants.ansi.primary.txt`
-        - Within Omicron (secondary) | `results/tutorial/sc2rf/recombinants.ansi.secondary.txt`
+    - Plots | `results/tutorial/plots_historical`
+    - Breakpoints | `results/tutorial/plots_historical/breakpoints_clade.png`
+    - Mutations <sup>†</sup> | `results/tutorial/sc2rf/recombinants.ansi.txt`
 
 <sup>*</sup> Individual tables are available as TSV linelists in `results/tutorial/linelists`.  
-<sup>†</sup> Visualize breakpoints with `less -S` or [Visual Studio ANSI Colors](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi).  
+<sup>†</sup> Visualize sc2rf mutations with `less -S` or [Visual Studio ANSI Colors](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi).  
 
 ## Output
 
@@ -150,7 +150,7 @@ Visualization of breakpoints by parental clade and parental lineage.
 |:--------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|
 | ![breakpoints_clade_v0.4.0](https://raw.githubusercontent.com/ktmeaton/ncov-recombinant/4fbde4b90/images/breakpoints_clade_v0.4.0.png) | ![breakpoints_lineage_v0.4.0](https://raw.githubusercontent.com/ktmeaton/ncov-recombinant/432b6b7/images/breakpoints_lineage_v0.4.0.png) |
 
-Visualization of parental alleles from [sc2rf](https://github.com/lenaschimmel/sc2rf).
+Visualization of parental alleles and mutations from [sc2rf](https://github.com/lenaschimmel/sc2rf).
 
 ![sc2rf_output](images/sc2rf_output.png)
 
@@ -182,8 +182,9 @@ Visualization of parental alleles from [sc2rf](https://github.com/lenaschimmel/s
 
 1. Copy over your <u>unaligned</u> `sequences.fasta` and `metadata.tsv` to `data/custom`.
 
-    > - **Note**: `metadata.tsv` MUST have at minimum the columns `strain`, `date`, `country`.  
-    > - **Note**: The first column MUST be `strain`.
+    > - **Note**: GISAID sequences and metadata can be downloaded using the "Input for the Augur pipeline" option on <https://gisaid.org/>.
+    > - `metadata.tsv` MUST have at minimum the columns `strain`, `date`, `country`.  
+    > - The first column MUST be `strain`.
 
 1. Create a profile for your custom build.
 
@@ -271,9 +272,17 @@ Visualization of parental alleles from [sc2rf](https://github.com/lenaschimmel/s
     2022-06-17 09:16:55     Adding `custom` as a build
     2022-06-17 09:16:55     Creating system configuration (my_profiles/custom-hpc/config.yaml)
     2022-06-17 09:16:55     Adding default HPC system resources
-    2022-06-17 09:16:56     Done! The custom-hpc profile is ready to be run with:
+    2022-06-17 09:16:55     System resources can be further configured in:
 
-                            snakemake --profile my_profiles/custom-hpc
+                            my_profiles/custom-hpc/config.yaml
+
+    2022-06-17 09:16:55     Builds can be configured in:
+
+                            my_profiles/custom-hpc/builds.yaml
+
+    2022-06-17 09:16:55     The custom-hpc profile is ready to be run with:
+
+                            scripts/slurm.sh --profile my_profiles/custom-hpc  
     ```
 
 2. Edit `my_profiles/custom-hpc/config.yaml` to specify the number of `jobs` and `default-resources` to use.

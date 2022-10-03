@@ -1,5 +1,252 @@
 # CHANGELOG
 
+## Development
+
+### Notes
+
+### Commits
+
+## v0.5.0
+
+### Notes
+
+> Please check out the `v0.5.0` [Testing Summary Package](https://ktmeaton.github.io/ncov-recombinant/docs/testing_summary_package/ncov-recombinant_v0.4.2_v0.5.0.html) for a comprehensive report.
+
+This is a minor release that includes the following changes:
+
+1. Detection of all recombinants in [Nextclade dataset 2022-09-27](https://github.com/nextstrain/nextclade_data/releases/tag/2022-09-28--16-01-10--UTC): `XA` to `XBC`.
+1. Create any number of custom `sc2rf` modes with CLI arguments.
+
+#### Resources
+
+- [Issue #96](https://github.com/ktmeaton/ncov-recombinant/issues/96): Create newick phylogeny of pango lineage parent child relationships, to get accurate sublineages including aliases.
+- [Issue #118](https://github.com/ktmeaton/ncov-recombinant/issues/118): Fix missing pango-designation issues for XAY and XBA.
+
+#### Datasets
+
+- [Issue #25](https://github.com/ktmeaton/ncov-recombinant/issues/25): Reduce positive controls to one sequence per clade. Add new positive controls `XAL`, `XAP`, `XAS`, `XAU`, and `XAZ`.
+- [Issue #92](https://github.com/ktmeaton/ncov-recombinant/issues/92): Reduce negative controls to one sequence per clade. Add negative control for `22D (Omicron) / BA.2.75`.
+- [Issue #155](https://github.com/ktmeaton/ncov-recombinant/issues/155): Add new profile and dataset `controls-gisaid`. Only a list of strains is provided, as GISAID policy prohibits public sharing of sequences and metadata.
+
+#### Profile Creation
+
+- [Issue #77](https://github.com/ktmeaton/ncov-recombinant/issues/77): Report slurm command for `--hpc` profiles in `scripts/create_profiles.sh`.
+- [Issue #153](https://github.com/ktmeaton/ncov-recombinant/issues/153): Fix bug where build parameters `metadata` and `sequences` were not implemented.
+
+#### Nextclade
+
+- [Issue #81](https://github.com/ktmeaton/ncov-recombinant/issues/81): Upgrade Nextclade datasets to 2022-09-27
+- [Issue #91](https://github.com/ktmeaton/ncov-recombinant/issues/91): Upgrade Nextclade to v2.5.0
+
+#### sc2rf
+
+- [Issue #78](https://github.com/ktmeaton/ncov-recombinant/issues/78): Add new parameter `max_breakpoint_len` to `sc2rf_recombinants` to mark samples with two much uncertainty in the breakpoint interval as false positives.
+- [Issue #79](https://github.com/ktmeaton/ncov-recombinant/issues/79): Add new parameter `min_consec_allele` to `sc2rf_recombinants` to ignore recombinant regions with less than this number of consecutive alleles (both diagnostic SNPs and diganostic reference alleles).
+- [Issue #80](https://github.com/ktmeaton/ncov-recombinant/issues/80): Migrate [sc2rf](https://github.com/lenaschimmel/sc2rf) froma submodule to a subdirectory (including LICENSE!). This is to simplify the updating process and avoid errors where submodules became out of sync with the main pipeline.
+- [Issue #83](https://github.com/ktmeaton/ncov-recombinant/issues/83): Improve error handling in `sc2rf_recombinants` when the input stats files are empty.
+- [Issue #89](https://github.com/ktmeaton/ncov-recombinant/issues/89): Reduce the default value of the parameter `min_len` in `sc2rf_recombinants` from `1000` to `500`.This is to handle `XAP` and `XAJ`.
+- [Issue #90](https://github.com/ktmeaton/ncov-recombinant/issues/90): Auto-pass select nextclade lineages through `sc2rf`: `XN`, `XP`, `XAR`, `XAS`, and `XAZ`. This requires differentiating the nextclade inputs as separate parameters `--nextclade` and `--nextclade-no-recom`.
+
+    `XN`,`XP`, and `XAR` have extremely small recombinant regions at the terminal ends of the genome. Depending on sequencing coverage, `sc2rf` may not reliably detect these lineages.
+
+    The newly designated `XAS` and `XAZ` pose a challenge for recombinant detection using diagnostic alleles. The first region of `XAS` could be either `BA.5` or `BA.4` based on subsitutions, but is mostly likely `BA.5` based on deletions. Since the region contains no diagnostic alleles to discriminate `BA.5` vs. `BA.4`, breakpoints cannot be detected by `sc2rf`.
+
+    Similarly for `XAZ`, the `BA.2` segments do not contain any `BA.2` diagnostic alleles, but instead are all reversion from `BA.5` alleles. The `BA.2` parent was discovered by deep, manual investigation in the corresponding pango-designation issue. Since the `BA.2` regions contain no diagnostic for `BA.2`, breakpoints cannot be detected by `sc2rf`.
+
+- [Issue #95](https://github.com/ktmeaton/ncov-recombinant/issues/95): Generalize `sc2rf_recombinants` to take any number of ansi and csv input files. This allows greater flexibility in command-line arguments to `sc2rf` and are not locked into the hardcoded `primary` and `secondary` parameter sets.
+- [Issue #96](https://github.com/ktmeaton/ncov-recombinant/issues/96): Include sub-lineage proportions in the `parents_lineage_confidence`. This reduces underestimating the confidence of a parental lineage.
+- [Issue #150](https://github.com/ktmeaton/ncov-recombinant/issues/150): Fix bug where `sc2rf` would write empty output csvfiles if no recombinants were found.
+- [Issue #151](https://github.com/ktmeaton/ncov-recombinant/issues/151): Fix bug where samples that failed to align were missing from the linelists.
+- [Issue #158](https://github.com/ktmeaton/ncov-recombinant/issues/158): Reduce `sc2rf` param `--max-intermission-length` from `3` to `2` to be consistent with [Issue #79](https://github.com/ktmeaton/ncov-recombinant/issues/79).
+- [Issue #161](https://github.com/ktmeaton/ncov-recombinant/issues/161): Implement selection method to pick best results from various `sc2rf` modes.
+- [Issue #162](https://github.com/ktmeaton/ncov-recombinant/issues/162): Upgrade `sc2rf/virus_properties.json`.
+- [Issue #163](https://github.com/ktmeaton/ncov-recombinant/issues/163): Use LAPIS `nextcladePangoLineage` instead of `pangoLineage`. Also disable default filter `max_breakpoint_len` for `XAN`.
+- [Issue #164](https://github.com/ktmeaton/ncov-recombinant/issues/164): Fix bug where false positives would appear in the filter `sc2rf` ansi output (`recombinants.ansi.txt`).
+- The optional `lapis` parameter for `sc2rf_recombinants` has been removed. Querying [LAPIS](https://lapis.cov-spectrum.org/) for parental lineages is no longer experimental and is now an essential component (cannot be disabled).
+- The mandatory `mutation_threshold` parameter for `sc2rf` has been removed. Instead, `--mutation-threshold` can be set independently in each of the `scrf` modes.
+
+#### Linelist
+
+- [Issue #157](https://github.com/ktmeaton/ncov-recombinant/issues/157]): Create new parameters `min_lineage_size` and `min_private_muts` to control lineage splitting into `X*-like`.
+
+#### Plot
+
+- [Issue #17](https://github.com/ktmeaton/ncov-recombinant/issues/17]): Create script to plot lineage assignment changes between versions using a Sankey diagram.
+- [Issue #82](https://github.com/ktmeaton/ncov-recombinant/issues/82]): Change epiweek start from Monday to Sunday.
+- [Issue #111](https://github.com/ktmeaton/ncov-recombinant/issues/111]): Fix breakpoint distribution axis that was empty for clade.
+- [Issue #152](https://github.com/ktmeaton/ncov-recombinant/issues/152): Fix file saving bug when largest lineage has `/` characters.
+
+#### Report
+
+- [Issue #88](https://github.com/ktmeaton/ncov-recombinant/issues/88): Add pipeline and nextclade versions to powerpoint slides as footer. This required adding `--summary` as param to `report`.
+
+#### Validate
+
+- [Issue #56](https://github.com/ktmeaton/ncov-recombinant/issues/56): Change rule `validate` from simply counting the number of positives to validating the fields `lineage`, `breakpoints`, `parents_clade`. This involves adding a new default parameter `expected` for rule `validate` in `defaults/parameters.yaml`.
+
+##### Designated Lineages
+
+- [Issue #149](https://github.com/ktmeaton/ncov-recombinant/issues/149): `XA`
+- [Issue #148](https://github.com/ktmeaton/ncov-recombinant/issues/148): `XB`
+- [Issue #147](https://github.com/ktmeaton/ncov-recombinant/issues/147): `XC`
+- [Issue #146](https://github.com/ktmeaton/ncov-recombinant/issues/146): `XD`
+- [Issue #145](https://github.com/ktmeaton/ncov-recombinant/issues/145): `XE`
+- [Issue #144](https://github.com/ktmeaton/ncov-recombinant/issues/144): `XF`
+- [Issue #143](https://github.com/ktmeaton/ncov-recombinant/issues/143): `XG`
+- [Issue #141](https://github.com/ktmeaton/ncov-recombinant/issues/141): `XH`
+- [Issue #142](https://github.com/ktmeaton/ncov-recombinant/issues/142): `XJ`
+- [Issue #140](https://github.com/ktmeaton/ncov-recombinant/issues/140): `XK`
+- [Issue #139](https://github.com/ktmeaton/ncov-recombinant/issues/139): `XL`
+- [Issue #138](https://github.com/ktmeaton/ncov-recombinant/issues/138): `XM`
+- [Issue #137](https://github.com/ktmeaton/ncov-recombinant/issues/137): `XN`
+- [Issue #136](https://github.com/ktmeaton/ncov-recombinant/issues/136): `XP`
+- [Issue #135](https://github.com/ktmeaton/ncov-recombinant/issues/135): `XQ`
+- [Issue #134](https://github.com/ktmeaton/ncov-recombinant/issues/134): `XR`
+- [Issue #133](https://github.com/ktmeaton/ncov-recombinant/issues/133): `XS`
+- [Issue #132](https://github.com/ktmeaton/ncov-recombinant/issues/132): `XT`
+- [Issue #131](https://github.com/ktmeaton/ncov-recombinant/issues/131): `XU`
+- [Issue #130](https://github.com/ktmeaton/ncov-recombinant/issues/130): `XV`
+- [Issue #129](https://github.com/ktmeaton/ncov-recombinant/issues/129): `XW`
+- [Issue #128](https://github.com/ktmeaton/ncov-recombinant/issues/128): `XY`
+- [Issue #127](https://github.com/ktmeaton/ncov-recombinant/issues/127): `XZ`
+- [Issue #126](https://github.com/ktmeaton/ncov-recombinant/issues/124): `XAA`
+- [Issue #125](https://github.com/ktmeaton/ncov-recombinant/issues/124): `XAB`
+- [Issue #124](https://github.com/ktmeaton/ncov-recombinant/issues/124): `XAC`
+- [Issue #123](https://github.com/ktmeaton/ncov-recombinant/issues/123): `XAD`
+- [Issue #122](https://github.com/ktmeaton/ncov-recombinant/issues/122): `XAE`
+- [Issue #120](https://github.com/ktmeaton/ncov-recombinant/issues/120): `XAF`
+- [Issue #121](https://github.com/ktmeaton/ncov-recombinant/issues/119): `XAG`
+- [Issue #119](https://github.com/ktmeaton/ncov-recombinant/issues/119): `XAH`
+- [Issue #117](https://github.com/ktmeaton/ncov-recombinant/issues/117): `XAJ`
+- [Issue #116](https://github.com/ktmeaton/ncov-recombinant/issues/116): `XAK`
+- [Issue #115](https://github.com/ktmeaton/ncov-recombinant/issues/115): `XAL`
+- [Issue #110](https://github.com/ktmeaton/ncov-recombinant/issues/110): `XAM`
+- [Issue #109](https://github.com/ktmeaton/ncov-recombinant/issues/109): `XAN`
+- [Issue #108](https://github.com/ktmeaton/ncov-recombinant/issues/108): `XAP`
+- [Issue #107](https://github.com/ktmeaton/ncov-recombinant/issues/107): `XAQ`
+- [Issue #87](https://github.com/ktmeaton/ncov-recombinant/issues/87): `XAS`
+- [Issue #105](https://github.com/ktmeaton/ncov-recombinant/issues/102): `XAT`
+- [Issue #103](https://github.com/ktmeaton/ncov-recombinant/issues/103): `XAU`
+- [Issue #104](https://github.com/ktmeaton/ncov-recombinant/issues/104): `XAV`
+- [Issue #105](https://github.com/ktmeaton/ncov-recombinant/issues/105): `XAW`
+- [Issue #85](https://github.com/ktmeaton/ncov-recombinant/issues/85): `XAY`
+- [Issue #87](https://github.com/ktmeaton/ncov-recombinant/issues/87): `XAZ`
+- [Issue #94](https://github.com/ktmeaton/ncov-recombinant/issues/94): `XBA`
+- [Issue #114](https://github.com/ktmeaton/ncov-recombinant/issues/14): `XBB`
+- [Issue #160](https://github.com/ktmeaton/ncov-recombinant/issues/160): `XBC`
+
+##### Proposed Lineages
+
+- [Issue #99](https://github.com/ktmeaton/ncov-recombinant/issues/99): `proposed808`
+
+### Pull Requests
+
+- [```pull/12```](https://github.com/ktmeaton/ncov-recombinant/pull/12) Tutorial dataset and map panel for Auspice subtrees
+- [```pull/11```](https://github.com/ktmeaton/ncov-recombinant/pull/11) Add a tutorial profile
+- [```pull/113```](https://github.com/ktmeaton/ncov-recombinant/pull/113) docs: add issues template for lineage validation
+- [```pull/8```](https://github.com/ktmeaton/ncov-recombinant/pull/8) Add XS and XQ to controls.
+
+### Commits
+
+- [```47da3bce```](https://github.com/ktmeaton/ncov-recombinant/commit/47da3bce) docs: add testing summary package for v0.4.2 to v0.5.0
+- [```e90f5ac1```](https://github.com/ktmeaton/ncov-recombinant/commit/e90f5ac1) resources: fix breakpoints for XAE #122
+- [```83cb848e```](https://github.com/ktmeaton/ncov-recombinant/commit/83cb848e) script: bugfix sc2rf ansi output for #164
+- [```dae218b7```](https://github.com/ktmeaton/ncov-recombinant/commit/dae218b7) docs: update issues and validation table order
+- [```a4ffd31b```](https://github.com/ktmeaton/ncov-recombinant/commit/a4ffd31b) script: implement lineage check in dups for #117 #161
+- [```3e16bd5e```](https://github.com/ktmeaton/ncov-recombinant/commit/3e16bd5e) sc2rf updates for #158 #161 #162 #163
+- [```11fd9f91```](https://github.com/ktmeaton/ncov-recombinant/commit/11fd9f91) dataset: update controls-gisaid strain list and validation
+- [```2a3a433e```](https://github.com/ktmeaton/ncov-recombinant/commit/2a3a433e) workflow: new param dup_method for #161
+- [```ae0821bb```](https://github.com/ktmeaton/ncov-recombinant/commit/ae0821bb) script: implement duplicate reconciliation for #161
+- [```77d12515```](https://github.com/ktmeaton/ncov-recombinant/commit/77d12515) param: upgrade nextclade dataset for #159
+- [```e14d516e```](https://github.com/ktmeaton/ncov-recombinant/commit/e14d516e) script: add more detail to validate table for failing samples
+- [```028ccc48```](https://github.com/ktmeaton/ncov-recombinant/commit/028ccc48) script: add param --min-link-size to compare_positives
+- [```43bce29c```](https://github.com/ktmeaton/ncov-recombinant/commit/43bce29c) workflow: added failed validate output to rule log
+- [```1d5bb911```](https://github.com/ktmeaton/ncov-recombinant/commit/1d5bb911) workflow: don't use metadata for sc2rf_recombinants when exclude_negatives is true
+- [```5dee5a0a```](https://github.com/ktmeaton/ncov-recombinant/commit/5dee5a0a) param: add new params min-lineage-size and min-private-muts for #157
+- [```680ea520```](https://github.com/ktmeaton/ncov-recombinant/commit/680ea520) workflow: update validation strains for #155
+- [```c9f08b3a```](https://github.com/ktmeaton/ncov-recombinant/commit/c9f08b3a) param: fix typo of missing --mutation-threshold
+- [```22585f4b```](https://github.com/ktmeaton/ncov-recombinant/commit/22585f4b) param: remove param mutation_threshold as universal param for sc2rf
+- [```dbd67523```](https://github.com/ktmeaton/ncov-recombinant/commit/dbd67523) dataset: remove false positive LC0797902 from negative controls
+- [```33a18292```](https://github.com/ktmeaton/ncov-recombinant/commit/33a18292) profile: change default hpc jobs from 2 to 10
+- [```1c8d3687```](https://github.com/ktmeaton/ncov-recombinant/commit/1c8d3687) workflow: update validation table
+- [```17606f3a```](https://github.com/ktmeaton/ncov-recombinant/commit/17606f3a) script: fix node ordering in compare_positives
+- [```f0da91d4```](https://github.com/ktmeaton/ncov-recombinant/commit/f0da91d4) ci: remove GISAID workflow for #154
+- [```982691cf```](https://github.com/ktmeaton/ncov-recombinant/commit/982691cf) ci: test storing csv files as secrets for #154
+- [```939b4da0```](https://github.com/ktmeaton/ncov-recombinant/commit/939b4da0) ci: experiment with secrets with test data for #154
+- [```b1f55738```](https://github.com/ktmeaton/ncov-recombinant/commit/b1f55738) script: generalize compare_positives to use other lineage columns
+- [```34eada3d```](https://github.com/ktmeaton/ncov-recombinant/commit/34eada3d) scripts: fix bug where metadata and sequences param were not implemented for #153
+- [```aa8270c7```](https://github.com/ktmeaton/ncov-recombinant/commit/aa8270c7) resources: special handling of proposed808 issues and breakpoints for #99
+- [```3d41c295```](https://github.com/ktmeaton/ncov-recombinant/commit/3d41c295) script: fix file saving bug in report for #152
+- [```be60d668```](https://github.com/ktmeaton/ncov-recombinant/commit/be60d668) script: fix file saving bug in plot for #152
+- [```3c1fd892```](https://github.com/ktmeaton/ncov-recombinant/commit/3c1fd892) script: fix missing samples in sc2rf output for #151
+- [```1bc6cfd1```](https://github.com/ktmeaton/ncov-recombinant/commit/1bc6cfd1) script: force sc2rf to always output csvfile headers for #150
+- [```99134681```](https://github.com/ktmeaton/ncov-recombinant/commit/99134681) resources: update breakpoints for proposed808 #99
+- [```d0cf7d2c```](https://github.com/ktmeaton/ncov-recombinant/commit/d0cf7d2c) resources: update breakpoints for XA - XAZ
+- [```7fc2a3a1```](https://github.com/ktmeaton/ncov-recombinant/commit/7fc2a3a1) resources: update breakpoints for XV #130
+- [```f267a1e9```](https://github.com/ktmeaton/ncov-recombinant/commit/f267a1e9) resources: add gauntlet samples (all XA*) to validation
+- [```fd160ee0```](https://github.com/ktmeaton/ncov-recombinant/commit/fd160ee0) param: add XAR to sc2rf auto-pass for 106
+- [```712dd7a7```](https://github.com/ktmeaton/ncov-recombinant/commit/712dd7a7) docs: change next ver from v0.4.3 to v0.5.0
+- [```b1bd79d6```](https://github.com/ktmeaton/ncov-recombinant/commit/b1bd79d6) workflow: fix bug in rule validate where path was hard-coded
+- [```b4f545d7```](https://github.com/ktmeaton/ncov-recombinant/commit/b4f545d7) resources: update breakpoints for XAA #126
+- [```f9e56759```](https://github.com/ktmeaton/ncov-recombinant/commit/f9e56759) resources: update breakpoints for XAG and XAH for #120 and #121
+- [```b1057a68```](https://github.com/ktmeaton/ncov-recombinant/commit/b1057a68) param: add new XAJ mode for sc2rf for #117
+- [```dbe5d23f```](https://github.com/ktmeaton/ncov-recombinant/commit/dbe5d23f) scripts: update rule validate for #56
+- [```cde02709```](https://github.com/ktmeaton/ncov-recombinant/commit/cde02709) docs: add issues template for lineage validation #113
+- [```28e5212c```](https://github.com/ktmeaton/ncov-recombinant/commit/28e5212c) script: fix bug of missing issues for #118
+- [```58062156```](https://github.com/ktmeaton/ncov-recombinant/commit/58062156) docs: update validation release notes
+- [```dc1eadae```](https://github.com/ktmeaton/ncov-recombinant/commit/dc1eadae) resources: update XAU breakpoints for #103
+- [```6b483224```](https://github.com/ktmeaton/ncov-recombinant/commit/6b483224) docs: add XAQ issue #107 to release notes
+- [```e3ebefa0```](https://github.com/ktmeaton/ncov-recombinant/commit/e3ebefa0) docs: add XAQ issue #107 to release notes
+- [```c038200f```](https://github.com/ktmeaton/ncov-recombinant/commit/c038200f) docs: add issue #111 to release notes
+- [```65dbcbf7```](https://github.com/ktmeaton/ncov-recombinant/commit/65dbcbf7) script: fix bug in plot_breakpoints when axis empty for #111
+- [```1955a5fd```](https://github.com/ktmeaton/ncov-recombinant/commit/1955a5fd) resources: update breakpoints for XAP #108
+- [```1471cc3b```](https://github.com/ktmeaton/ncov-recombinant/commit/1471cc3b) docs: fix typo in relesae notes
+- [```e39df74e```](https://github.com/ktmeaton/ncov-recombinant/commit/e39df74e) docs: add issues #86 and #87 to release notes
+- [```66f7aeba```](https://github.com/ktmeaton/ncov-recombinant/commit/66f7aeba) script: remove redundant --clades arg in sc2rf bash script
+- [```fe2e7c86```](https://github.com/ktmeaton/ncov-recombinant/commit/fe2e7c86) param: add new sc2rf modes XB and proposed808 for #98 and #99
+- [```74180a1c```](https://github.com/ktmeaton/ncov-recombinant/commit/74180a1c) docs: add issue #17 to release notes
+- [```eba0ff04```](https://github.com/ktmeaton/ncov-recombinant/commit/eba0ff04) env: add plotly to conda env and control all versions
+- [```f27a5655```](https://github.com/ktmeaton/ncov-recombinant/commit/f27a5655) script: improve directory creation in compare positives
+- [```398814c2```](https://github.com/ktmeaton/ncov-recombinant/commit/398814c2) script: add breakpoint axis label for #97
+- [```b16b5983```](https://github.com/ktmeaton/ncov-recombinant/commit/b16b5983) docs: add notes for v0.4.3
+- [```322556ac```](https://github.com/ktmeaton/ncov-recombinant/commit/322556ac) env: upgrade csvtk to v0.24.0
+- [```1b332054```](https://github.com/ktmeaton/ncov-recombinant/commit/1b332054) param: fix typo in mode omicron_omicron
+- [```c8755f3c```](https://github.com/ktmeaton/ncov-recombinant/commit/c8755f3c) param: revert XAS mode to default for #86
+- [```aed531e5```](https://github.com/ktmeaton/ncov-recombinant/commit/aed531e5) script: fix bug in postprocess where max_breakpoint_len was not checked
+- [```fbcf1e6e```](https://github.com/ktmeaton/ncov-recombinant/commit/fbcf1e6e) param: add new XAS mode to default sc2rf runs for #86
+- [```330deacc```](https://github.com/ktmeaton/ncov-recombinant/commit/330deacc) workflow: first draft of pango lineage tree for #96
+- [```ae4d039d```](https://github.com/ktmeaton/ncov-recombinant/commit/ae4d039d) workflow: add param fix for postprocess inputs
+- [```3f71310e```](https://github.com/ktmeaton/ncov-recombinant/commit/3f71310e) script: fix cli --clades arg parsing for scr2rf.sh
+- [```c637057b```](https://github.com/ktmeaton/ncov-recombinant/commit/c637057b) script: add new csv col alleles to sc2rf
+- [```edb71e57```](https://github.com/ktmeaton/ncov-recombinant/commit/edb71e57) workflow: generalize sc2rf_recombinants inputs for #95
+- [```e8e96996```](https://github.com/ktmeaton/ncov-recombinant/commit/e8e96996) docs: update development docs
+- [```ac0486c7```](https://github.com/ktmeaton/ncov-recombinant/commit/ac0486c7) resources: update breakpoints and issues
+- [```a9186176```](https://github.com/ktmeaton/ncov-recombinant/commit/a9186176) dataset: reduce controls to one sequence per clade for #25,92
+- [```cce21946```](https://github.com/ktmeaton/ncov-recombinant/commit/cce21946) workflow: update rules for #46, #88, #89, #90
+- [```a664f892```](https://github.com/ktmeaton/ncov-recombinant/commit/a664f892) script: add new param auto_pass for #90
+- [```888bc2d3```](https://github.com/ktmeaton/ncov-recombinant/commit/888bc2d3) params: update params for #46, #89, #90
+- [```d68e5db5```](https://github.com/ktmeaton/ncov-recombinant/commit/d68e5db5) script: add pipeline version to report for #88
+- [```1fcdef7e```](https://github.com/ktmeaton/ncov-recombinant/commit/1fcdef7e) script: remove sc2rf_ver col from summary for #80
+- [```418afa98```](https://github.com/ktmeaton/ncov-recombinant/commit/418afa98) env: upgrade nextclade to v2.5.0 for #91
+- [```bd4b0259```](https://github.com/ktmeaton/ncov-recombinant/commit/bd4b0259) workflow: autopass XAS through sc2rf for #86
+- [```abb93a06```](https://github.com/ktmeaton/ncov-recombinant/commit/abb93a06) resources: update breakpoints and mutations
+- [```44c16733```](https://github.com/ktmeaton/ncov-recombinant/commit/44c16733) workflow: upgrade nextclade dataset to 2022-08-23 for #81
+- [```c6204304```](https://github.com/ktmeaton/ncov-recombinant/commit/c6204304) resources: updated curated breakpoints
+- [```b0b88e9a```](https://github.com/ktmeaton/ncov-recombinant/commit/b0b88e9a) resources: update issues
+- [```1d64db97```](https://github.com/ktmeaton/ncov-recombinant/commit/1d64db97) script: change epiweek to start on Sundary (cdc) for #82
+- [```2fd2faaa```](https://github.com/ktmeaton/ncov-recombinant/commit/2fd2faaa) workflow: re-add sc2rf as subdirectory for #80
+- [```e3d4d940```](https://github.com/ktmeaton/ncov-recombinant/commit/e3d4d940) workflow: remove sc2rf submodule again
+- [```48776a6c```](https://github.com/ktmeaton/ncov-recombinant/commit/48776a6c) workflow: add sc2rf as subdirectory for #80
+- [```38f4d7a7```](https://github.com/ktmeaton/ncov-recombinant/commit/38f4d7a7) workflow: remove sc2rf as submodule
+- [```37f40480```](https://github.com/ktmeaton/ncov-recombinant/commit/37f40480) script: add tables to compare positives between versions for #17
+- [```8eef7548```](https://github.com/ktmeaton/ncov-recombinant/commit/8eef7548) script: create new script to compare positives between versions
+- [```ebf1e222```](https://github.com/ktmeaton/ncov-recombinant/commit/ebf1e222) script: compare linelists from different versions for #17
+- [```8401c353```](https://github.com/ktmeaton/ncov-recombinant/commit/8401c353) workflow: add new param max_breakpoint_len for #78
+- [```8bbcc041```](https://github.com/ktmeaton/ncov-recombinant/commit/8bbcc041) script: report slurm command for --hpc profiles for #77
+- [```c40a6791```](https://github.com/ktmeaton/ncov-recombinant/commit/c40a6791) workflow: restrict config rules to one thread
+- [```c2b1ea57```](https://github.com/ktmeaton/ncov-recombinant/commit/c2b1ea57) script: revert unpublished lineages for #76
+- [```dbe359c8```](https://github.com/ktmeaton/ncov-recombinant/commit/dbe359c8) resources: add 882 to breakpoints
+
 ## v0.4.2
 
 ### Notes
@@ -21,6 +268,7 @@ This is a minor bug fix and enhancement release with the following changes:
 
 ### Commits
 
+- [```8953ef03```](https://github.com/ktmeaton/ncov-recombinant/commit/8953ef03) docs: add CHANGELOG for v0.4.2
 - [```7ec5ccc6```](https://github.com/ktmeaton/ncov-recombinant/commit/7ec5ccc6) docs: add notes for v0.4.2
 - [```1b3b1f1d```](https://github.com/ktmeaton/ncov-recombinant/commit/1b3b1f1d) script: restore column name to recombinant_classifer_dataset
 - [```901caf98```](https://github.com/ktmeaton/ncov-recombinant/commit/901caf98) script: restore recombinant_lineage_curated of -like lineages
