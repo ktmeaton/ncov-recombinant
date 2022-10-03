@@ -139,13 +139,6 @@ This is a minor release that includes the following changes:
 
 - [Issue #99](https://github.com/ktmeaton/ncov-recombinant/issues/99): `proposed808`
 
-### Pull Requests
-
-- [```pull/12```](https://github.com/ktmeaton/ncov-recombinant/pull/12) Tutorial dataset and map panel for Auspice subtrees
-- [```pull/11```](https://github.com/ktmeaton/ncov-recombinant/pull/11) Add a tutorial profile
-- [```pull/113```](https://github.com/ktmeaton/ncov-recombinant/pull/113) docs: add issues template for lineage validation
-- [```pull/8```](https://github.com/ktmeaton/ncov-recombinant/pull/8) Add XS and XQ to controls.
-
 ### Commits
 
 - [```47da3bce```](https://github.com/ktmeaton/ncov-recombinant/commit/47da3bce) docs: add testing summary package for v0.4.2 to v0.5.0
