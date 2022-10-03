@@ -246,7 +246,7 @@ Visualization of parental alleles and mutations from [sc2rf](https://github.com/
     snakemake --profile my_profiles/custom
     ```
 
-## High Performance Computing (HPC)
+## High Performance Computing
 
 `ncov-recombinant` can alternatively be dispatched using the SLURM job submission system.
 
