@@ -1,5 +1,7 @@
 # v0.5.0
 
+> Please check out the `v0.5.0` [Testing Summary Package](https://ktmeaton.github.io/ncov-recombinant/docs/testing_summary_package/ncov-recombinant_v0.4.2_v0.5.0.html) for a comprehensive report.
+
 This is a minor release that includes the following changes:
 
 1. Detection of all recombinants in [Nextclade dataset 2022-09-27](https://github.com/nextstrain/nextclade_data/releases/tag/2022-09-28--16-01-10--UTC): `XA` to `XBC`.
