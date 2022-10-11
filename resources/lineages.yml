@@ -5307,6 +5307,7 @@ B:
   - BF.5
   - BF.6
   - BF.7
+  - BF.7.1
   - BF.8
   - BF.9
   - BF.10
@@ -5361,6 +5362,7 @@ B:
   - BQ.1.1
   - BQ.1.2
   - BQ.1.3
+  - BQ.1.4
   - BR.1
   - BR.2
   - BR.3
@@ -5429,6 +5431,7 @@ B:
   - CD.2
   - CE.1
   - CF.1
+  - CG.1
   - D.2
   - D.3
   - D.4
@@ -7465,6 +7468,7 @@ B.1:
   - BF.5
   - BF.6
   - BF.7
+  - BF.7.1
   - BF.8
   - BF.9
   - BF.10
@@ -7519,6 +7523,7 @@ B.1:
   - BQ.1.1
   - BQ.1.2
   - BQ.1.3
+  - BQ.1.4
   - BR.1
   - BR.2
   - BR.3
@@ -7587,6 +7592,7 @@ B.1:
   - CD.2
   - CE.1
   - CF.1
+  - CG.1
   - D.2
   - D.3
   - D.4
@@ -8503,6 +8509,7 @@ B.1.1:
   - BF.5
   - BF.6
   - BF.7
+  - BF.7.1
   - BF.8
   - BF.9
   - BF.10
@@ -8557,6 +8564,7 @@ B.1.1:
   - BQ.1.1
   - BQ.1.2
   - BQ.1.3
+  - BQ.1.4
   - BR.1
   - BR.2
   - BR.3
@@ -8625,6 +8633,7 @@ B.1.1:
   - CD.2
   - CE.1
   - CF.1
+  - CG.1
   - D.2
   - D.3
   - D.4
@@ -11283,6 +11292,7 @@ B.1.1.529:
   - BF.5
   - BF.6
   - BF.7
+  - BF.7.1
   - BF.8
   - BF.9
   - BF.10
@@ -11337,6 +11347,7 @@ B.1.1.529:
   - BQ.1.1
   - BQ.1.2
   - BQ.1.3
+  - BQ.1.4
   - BR.1
   - BR.2
   - BR.3
@@ -11357,6 +11368,7 @@ B.1.1.529:
   - CD.2
   - CE.1
   - CF.1
+  - CG.1
   name: B.1.1.529
   parent: B.1.1
 B.1.1.53:
@@ -12077,10 +12089,8 @@ B.1.160.5:
   name: B.1.160.5
   parent: B.1.160
 B.1.160.6:
-  children:
-  - B.1.160.6
+  children: null
   name: B.1.160.6
-  parent: B.1.160
 B.1.160.7:
   children:
   - B.1.160.7
@@ -12264,11 +12274,6 @@ B.1.177:
   - Z.1
   name: B.1.177
   parent: B.1
-B.1.177.1:
-  children:
-  - B.1.177.1
-  name: B.1.177.1
-  parent: B.1.177
 B.1.177.10:
   children:
   - B.1.177.10
@@ -12283,11 +12288,6 @@ B.1.177.12:
   children:
   - B.1.177.12
   name: B.1.177.12
-  parent: B.1.177
-B.1.177.13:
-  children:
-  - B.1.177.13
-  name: B.1.177.13
   parent: B.1.177
 B.1.177.14:
   children:
@@ -12341,11 +12341,6 @@ B.1.177.21:
   children:
   - B.1.177.21
   name: B.1.177.21
-  parent: B.1.177
-B.1.177.22:
-  children:
-  - B.1.177.22
-  name: B.1.177.22
   parent: B.1.177
 B.1.177.23:
   children:
@@ -12663,11 +12658,6 @@ B.1.177.78:
   - B.1.177.78
   name: B.1.177.78
   parent: B.1.177
-B.1.177.79:
-  children:
-  - B.1.177.79
-  name: B.1.177.79
-  parent: B.1.177
 B.1.177.8:
   children:
   - B.1.177.8
@@ -12753,25 +12743,10 @@ B.1.182:
   - B.1.182
   name: B.1.182
   parent: B.1
-B.1.183:
-  children:
-  - B.1.183
-  name: B.1.183
-  parent: B.1
 B.1.184:
   children:
   - B.1.184
   name: B.1.184
-  parent: B.1
-B.1.185:
-  children:
-  - B.1.185
-  name: B.1.185
-  parent: B.1
-B.1.186:
-  children:
-  - B.1.186
-  name: B.1.186
   parent: B.1
 B.1.187:
   children:
@@ -12798,18 +12773,11 @@ B.1.190:
   - B.1.190
   name: B.1.190
   parent: B.1
-B.1.191:
-  children:
-  - B.1.191
-  name: B.1.191
-  parent: B.1
 B.1.192:
   children:
   - B.1.192
   name: B.1.192
   parent: B.1
-B.1.193:
-  name: B.1.193
 B.1.194:
   children:
   - B.1.194
@@ -18758,8 +18726,14 @@ BF.6:
 BF.7:
   children:
   - BF.7
+  - BF.7.1
   name: BF.7
   parent: B.1.1.529.5.2.1
+BF.7.1:
+  children:
+  - BF.7.1
+  name: BF.7.1
+  parent: BF.7
 BF.8:
   children:
   - BF.8
@@ -18931,6 +18905,7 @@ BQ.1:
   - BQ.1.1
   - BQ.1.2
   - BQ.1.3
+  - BQ.1.4
   name: BQ.1
   parent: B.1.1.529.5.3.1.1.1.1
 BQ.1.1:
@@ -18947,6 +18922,11 @@ BQ.1.3:
   children:
   - BQ.1.3
   name: BQ.1.3
+  parent: BQ.1
+BQ.1.4:
+  children:
+  - BQ.1.4
+  name: BQ.1.4
   parent: BQ.1
 BR.1:
   children:
@@ -19294,6 +19274,11 @@ CF.1:
   - CF.1
   name: CF.1
   parent: B.1.1.529.5.2.27
+CG.1:
+  children:
+  - CG.1
+  name: CG.1
+  parent: B.1.1.529.5.2.26
 D.2:
   children:
   - D.2
@@ -19824,13 +19809,25 @@ XBA:
 XBB:
   children:
   - XBB
+  - XBB.1
   name: XBB
   parent: null
+XBB.1:
+  children:
+  - XBB.1
+  name: XBB.1
+  parent: XBB
 XBC:
   children:
   - XBC
+  - XBC.1
   name: XBC
   parent: null
+XBC.1:
+  children:
+  - XBC.1
+  name: XBC.1
+  parent: XBC
 XC:
   children:
   - XC

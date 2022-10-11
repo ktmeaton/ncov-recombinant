@@ -9,7 +9,8 @@ from functions import create_logger
 from Bio import Phylo
 from Bio.Phylo.BaseTree import Clade
 
-ALIAS_URL = "https://raw.githubusercontent.com/cov-lineages/pangolin-data/main/pangolin_data/data/alias_key.json"
+# ALIAS_URL = "https://raw.githubusercontent.com/cov-lineages/pangolin-data/main/pangolin_data/data/alias_key.json"
+ALIAS_URL = "https://raw.githubusercontent.com/cov-lineages/pango-designation/master/pango_designation/alias_key.json"
 PARENT_URL = "https://raw.githubusercontent.com/cov-lineages/lineages-website/master/_data/lineages.yml"
 
 
