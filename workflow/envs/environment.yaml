@@ -12,7 +12,7 @@ dependencies:
   - conda-forge::pandas=1.4.1
   # Workflow
   - bioconda::snakemake=7.3.6
-  - bioconda::tabulate=0.8.10
+  - conda-forge::tabulate=0.8.10
   # Metadata and Sequence Manipulation
   - bioconda::csvtk=0.24.0
   - bioconda::seqkit=2.2.0
