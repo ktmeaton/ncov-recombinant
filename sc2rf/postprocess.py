@@ -1138,11 +1138,13 @@ def main(
                     )
                 )
             else:
-                cmd = "cp -f {inpath} {outpath}".format(
+                cmd = "cat {inpath} {operator} {outpath}".format(
                     inpath=ansi_file,
+                    operator=">" if i == 0 else ">>",
                     outpath=outpath_ansi,
                 )
             logger.info("Writing filtered ansi: {}".format(outpath_ansi))
+            logger.info(cmd)
             os.system(cmd)
 
     # -------------------------------------------------------------------------
