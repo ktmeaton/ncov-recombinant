@@ -49,7 +49,7 @@ nextclade_ver=$(nextclade --version | cut -d " " -f 2)
 
 sort_col="Nextclade_pango"
 default_cols="strain,date,country"
-nextclade_cols="privateNucMutations.reversionSubstitutions,privateNucMutations.unlabeledSubstitutions,privateNucMutations.labeledSubstitutions"
+nextclade_cols="privateNucMutations.reversionSubstitutions,privateNucMutations.unlabeledSubstitutions,privateNucMutations.labeledSubstitutions,substitutions"
 
 # Hack to fix commas if extra_cols is empty
 cols="${default_cols},${nextclade_cols}"

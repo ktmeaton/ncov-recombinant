@@ -31,6 +31,7 @@ LINELIST_COLS = {
     "privateNucMutations.reversionSubstitutions": "subs_reversion",
     "privateNucMutations.unlabeledSubstitutions": "subs_unlabeled",
     "privateNucMutations.labeledSubstitutions": "subs_labeled",
+    "substitutions": "subs",
     "ncov-recombinant_version": "ncov-recombinant_version",
     "nextclade_version": "nextclade_version",
     "nextclade_dataset": "nextclade_dataset",
@@ -298,16 +299,22 @@ def main(
         breakpoints = rec[1]["breakpoints"]
         privates = rec[1]["privates"]
 
+        # in v0.5.1, we used the parents subs
         # Format substitutions into a tidy list
         # "C234T,A54354G|Omicron/BA.1/21K;A423T|Omicron/BA.2/21L"
-        parents_subs_raw = rec[1]["parents_subs"].split(";")
-        # ["C234T,A54354G|Omicron/BA.1/21K", "A423T|Omicron/BA.2/21L"]
-        parents_subs_csv = [sub.split("|")[0] for sub in parents_subs_raw]
-        # ["C234T,A54354G", "A423T"]
-        parents_subs_str = ",".join(parents_subs_csv)
-        # "C234T,A54354G,A423T"
-        parents_subs_list = parents_subs_str.split(",")
-        # ["C234T","A54354G","A423T"]
+        # parents_subs_raw = rec[1]["parents_subs"].split(";")
+        # # ["C234T,A54354G|Omicron/BA.1/21K", "A423T|Omicron/BA.2/21L"]
+        # parents_subs_csv = [sub.split("|")[0] for sub in parents_subs_raw]
+        # # ["C234T,A54354G", "A423T"]
+        # parents_subs_str = ",".join(parents_subs_csv)
+        # # "C234T,A54354G,A423T"
+        # parents_subs_list = parents_subs_str.split(",")
+        # # ["C234T","A54354G","A423T"]
+
+        # in v0.5.2, we use all subs
+        # "C241T,A385G,G407A,..."
+        subs_list = rec[1]["subs"].split(",")
+        # ["C241T","A385G","G407A", ...]
 
         match = None
 
@@ -329,9 +336,18 @@ def main(
             rec_seen[match]["strains"].append(strain)
 
             # Adjust the cov-spectrum subs /parents subs to include the new strain
-            lineage_parents_subs = rec_seen[match]["cov-spectrum_query"]
-            for sub in lineage_parents_subs:
-                if sub not in parents_subs_list:
+
+            # in v0.5.1, cov-spectrum_query was based only on parental subs (pre-recomb)
+            # See issue #180: https://github.com/ktmeaton/ncov-recombinant/issues/180
+            # lineage_parents_subs = rec_seen[match]["cov-spectrum_query"]
+            # for sub in lineage_parents_subs:
+            #    if sub not in parents_subs_list:
+            #        rec_seen[match]["cov-spectrum_query"].remove(sub)
+
+            # in v0.5.2, cov-spectrum_query is based on all subs
+            subs = rec_seen[match]["cov-spectrum_query"]
+            for sub in subs:
+                if sub not in subs_list:
                     rec_seen[match]["cov-spectrum_query"].remove(sub)
 
             # Adjust the private subs to include the new strain
@@ -340,7 +356,7 @@ def main(
                 if sub not in privates:
                     rec_seen[match]["privates"].remove(sub)
 
-        # This is the first appearance
+        # This is the first appearance, initialize values
         else:
             rec_seen[seen_i] = {
                 "lineage": lineage,
@@ -348,7 +364,7 @@ def main(
                 "parents_clade": parents_clade,
                 "parents_lineage": parents_lineage,
                 "strains": [strain],
-                "cov-spectrum_query": parents_subs_list,
+                "cov-spectrum_query": subs_list,
                 "privates": privates,
             }
             seen_i += 1
@@ -462,6 +478,7 @@ def main(
             "subs_reversion",
             "subs_labeled",
             "subs_unlabeled",
+            "subs",
         ],
         inplace=True,
     )
