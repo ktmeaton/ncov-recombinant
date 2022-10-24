@@ -14,7 +14,11 @@ params = "?state=all&per_page=100&page={page_num}"
 query_url = base_url + params
 
 # These issues have problems, and are manually curated in the breakpoints file
-EXCLUDE_ISSUES = [808]
+# Typically, they describe multiple lineages in a single issue
+EXCLUDE_ISSUES = [
+    808,  # Chronic B.1.438.1 recombinant with BA.1.1.16
+    844,  # XAY and XBA
+]
 
 
 @click.command()
