@@ -6,6 +6,7 @@ import copy
 from datetime import datetime
 import numpy as np
 from functions import create_logger
+from Bio import Phylo
 
 # Hard-coded constants
 
@@ -68,6 +69,11 @@ LINELIST_COLS = {
     required=False,
     default=3,
 )
+@click.option(
+    "--lineage-tree",
+    help="Newick tree of pangolin lineage hierarchies",
+    required=False,
+)
 @click.option("--log", help="Logfile", required=False)
 def main(
     input,
@@ -77,6 +83,7 @@ def main(
     log,
     min_lineage_size,
     min_private_muts,
+    lineage_tree,
 ):
     """Create a linelist and recombinant report"""
 
@@ -101,10 +108,15 @@ def main(
     issues_df = pd.read_csv(issues, sep="\t")
     issues_df.fillna(NO_DATA_CHAR, inplace=True)
 
-    # Extract columns from summary
+    # (Optional) Extract columns from summary
     if extra_cols:
         for col in extra_cols.split(","):
             LINELIST_COLS[col] = col
+
+    # (Optional) phylogenetic tree of pangolineage lineages
+    if lineage_tree:
+        logger.info("Parsing lineage tree: {}".format(lineage_tree))
+        tree = Phylo.read(lineage_tree, "newick")
 
     cols_list = list(LINELIST_COLS.keys())
 
@@ -146,24 +158,45 @@ def main(
         lineages_sc2rf = rec[1]["lineage_sc2rf"].split(",")
         status = rec[1]["status_sc2rf"]
 
+        # Save a flag to indicate whether nextclade is sublineage of sc2rf
+        nextclade_is_sublineage = False
+
         # Check if sc2rf confirmed its a recombinant
         if status == "positive":
             is_recombinant = True
 
-        # By default use nextclade
+        # Case #1: By default use nextclade
         lineage = lineage_nextclade
         classifier = "nextclade"
 
-        # unless sc2rf found a definitive match, that is not a "proposed"
+        # Case #2: unless sc2rf found a definitive match, that is not a "proposed"
         if (
             lineages_sc2rf[0] != NO_DATA_CHAR
             and len(lineages_sc2rf) == 1
             and not lineages_sc2rf[0].startswith("proposed")
         ):
-            lineage = lineages_sc2rf[0]
-            classifier = "sc2rf"
 
-        # Special Cases: XN, XP
+            # Case #2a. nextclade is a sublineage of sc2rf
+            if lineage_tree:
+                sc2rf_lineage_tree = [c for c in tree.find_clades(lineages_sc2rf[0])]
+                # Make sure we found this lineage in the tree
+                if len(sc2rf_lineage_tree) == 1:
+                    sc2rf_lineage_tree = sc2rf_lineage_tree[0]
+                    sc2rf_lineage_children = [
+                        c.name for c in sc2rf_lineage_tree.find_clades()
+                    ]
+                    # check if nextclade is sublineage of sc2rf
+                    if lineage_nextclade in sc2rf_lineage_children:
+                        nextclade_is_sublineage = True
+                        # We don't need to update the lineage, since we
+                        # use nextclade by default
+
+            # Case #2b. nextclade is not a sublineage of sc2rf
+            if not nextclade_is_sublineage:
+                lineage = lineages_sc2rf[0]
+                classifier = "sc2rf"
+
+        # Case #1: designated recombinants called as false_positive
         # As of v0.4.0, sometimes XN and XP will be detected by sc2rf, but then labeled
         # as a false positive, since all parental regions are collapsed
         parents_clade = rec[1]["parents_clade"]
@@ -175,21 +208,22 @@ def main(
             if breakpoints != NO_DATA_CHAR and lineages_sc2rf[0] == NO_DATA_CHAR:
                 lineage = lineage + "-like"
 
-        # Special Cases: XAS
+        # Case #2: designated recombinants that sc2rf cannot detect
         # As of v0.4.2, XAS cannot be detected by sc2rf
         elif parents_clade == NO_DATA_CHAR and (lineage == "XAS"):
             status = "positive"
             is_recombinant = True
 
-        # if nextclade thinks it's a recombinant but sc2rf doesn't
+        # Case #3: nextclade thinks it's a recombinant but sc2rf doesn't
         elif lineage.startswith("X") and breakpoints == NO_DATA_CHAR:
             status = "false_positive"
 
-        # if nextclade and sc2rf disagree, flag it as X*-like
+        # Case #4: nextclade and sc2rf disagree, flag it as X*-like
         elif (
             len(lineages_sc2rf) >= 1
             and lineage.startswith("X")
             and lineage not in lineages_sc2rf
+            and not nextclade_is_sublineage
         ):
             lineage = lineage + "-like"
 
