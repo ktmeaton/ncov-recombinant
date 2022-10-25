@@ -263,37 +263,6 @@ rule issues_download:
     """
 
 # -----------------------------------------------------------------------------
-rule_name = "pango_lineage_tree"
-rule pango_lineage_tree:
-  """Construct a tree of pangolin lineages."""
-
-  message: """Constructing a tree of pangolin lineages.\n
-  log:     {log}
-  tree:    {output.tree}
-  """
-
-  output:
-    tree   = "resources/lineages.nwk",
-    parent = "resources/lineages.yml",
-    alias  = "resources/alias_key.json",
-  params:
-    outdir = "resources",
-  threads: 1
-  resources:
-    cpus = 1,
-  benchmark:
-    "benchmarks/{rule}/{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{today}.log".format(today=today, rule=rule_name),
-  shell:
-    """
-    python3 scripts/pango_lineage_tree.py --log {log} --outdir {params.outdir};
-    """
-
-# ------------------------------------------------------------------------------
-#  STAGE 1: Nextclade QC
-# ------------------------------------------------------------------------------
-
 rule_name = "nextclade_dataset"
 rule nextclade_dataset:
   """Download Nextclade dataset."""
@@ -308,6 +277,7 @@ rule nextclade_dataset:
     tag         = "([0-9]){4}.*",
   output:
     dataset_dir = directory("data/{dataset}_{tag}"),
+    json        = "data/{dataset}_{tag}/tree.json",
   threads: 1
   resources:
     cpus = 1,
@@ -317,10 +287,44 @@ rule nextclade_dataset:
     "logs/{rule}/{{dataset}}_{{tag}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
+    # Download dataset
     nextclade dataset get --name {wildcards.dataset} --tag {wildcards.tag} --output-dir {output.dataset_dir} > {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------
+rule_name = "lineage_tree"
+rule lineage_tree:
+  """Construct a tree of Nextclade lineages."""
+
+  message: """Constructing a tree of Nextclade lineages.\n
+  log:     {log}
+  json:    {input.json}
+  tree:    {output.tree}
+  """
+
+  input:
+    json = lambda wildcards:  "data/{dataset}_{tag}/tree.json".format(
+                        dataset = config["builds"][wildcards.build]["nextclade_dataset"]["dataset"],
+                        tag     = config["builds"][wildcards.build]["nextclade_dataset"]["tag"],
+                      ),
+  output:
+    tree = "results/{build}/lineage_tree/tree.nwk",
+  threads: 1
+  resources:
+    cpus = 1,
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    python3 scripts/lineage_tree.py --tree-json {input.json} --output {output.tree} --log {log};
+    """
+
+# ------------------------------------------------------------------------------
+#  STAGE 1: Nextclade QC
+# ------------------------------------------------------------------------------
+
 rule_name = "nextclade"
 
 def _inputs_nextclade(build, prefix):
@@ -609,7 +613,6 @@ def _params_sc2rf_recombinants(build):
 
   return params
 
-
 # Snakemake rule
 rule sc2rf_recombinants:
   """Postprocessing the sc2rf output to identify recombinants."""
@@ -629,7 +632,7 @@ rule sc2rf_recombinants:
     issues          = rules.issues_download.output.issues,
     nextclade       = "results/{build}/nextclade/qc.tsv",
     nextclade_no_recomb = "results/{build}/nextclade_no-recomb/qc.tsv",
-    lineage_tree    = rules.pango_lineage_tree.output.tree,
+    lineage_tree    = rules.lineage_tree.output.tree,
     metadata        = lambda wildcards: _inputs(wildcards.build)["metadata"],
   output:
     stats           = "results/{build}/sc2rf/stats.tsv",
@@ -784,6 +787,7 @@ rule linelist:
   input:
     summary         = rules.summary.output.summary,
     issues          = rules.issues_download.output.issues,
+    lineage_tree    = rules.lineage_tree.output.tree,
   output:
     linelist        = "results/{build}/linelists/linelist.tsv",
     positives       = "results/{build}/linelists/positives.tsv",
@@ -810,6 +814,7 @@ rule linelist:
     python3 scripts/linelist.py \
       --input {input.summary} \
       --issues {input.issues} \
+      --lineage-tree {input.lineage_tree} \
       --outdir {params.outdir} \
       {params.extra_cols} \
       {params.min_lineage_size} \
