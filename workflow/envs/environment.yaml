@@ -6,9 +6,9 @@ channels:
   - defaults
 dependencies:
   # Python
-  - anaconda::python=3.9.10
-  - anaconda::pip=22.0.3
-  - anaconda::click=8.1.3
+  - conda-forge::python=3.9.10
+  - conda-forge::pip
+  - conda-forge::click=8.1.3
   - conda-forge::pandas=1.4.1
   # Workflow
   - bioconda::snakemake=7.3.6
