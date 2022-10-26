@@ -26,6 +26,7 @@ data/custom*
 data/X*
 data/proposed*
 data/*gisaid*
+data/v*
 
 # all-contributors and yarn
 yarn.lock
