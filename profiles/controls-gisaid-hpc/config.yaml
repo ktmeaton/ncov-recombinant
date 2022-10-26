@@ -21,7 +21,7 @@ printshellcmds: False
 #------------------------------------------------------------------------------#
 
 # Maximum number of jobs to run
-jobs : 2
+jobs : 20
 
 # Default resources for a SINGLE JOB
 default-resources:
