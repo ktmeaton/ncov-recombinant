@@ -28,8 +28,8 @@ Rather than creating the output tree in `resources/lineages.nwk`, the lineage tr
 ## Plot
 
 - [Issue #57](https://github.com/ktmeaton/ncov-recombinant/issues/57): Include substitutions within breakpoint intervals for breakpoint plots. This is a product of [Issue #180](https://github.com/ktmeaton/ncov-recombinant/issues/180) which provides access to _all_ substitutions.
-
-breakpoint plots Plot substitutions as ticks on breakpoints figure
+- [Issue #112](https://github.com/ktmeaton/ncov-recombinant/issues/112): Fix bug where breakpoints plot image was out of bounds.
+- [Issue #188](https://github.com/ktmeaton/ncov-recombinant/issues/188): Remove the breakpoints distribution axis (ex. `breakpoints_clade.png`) in favor of putting the legend at the top. This significant reduces plotting issues (ex. [Issue #112](https://github.com/ktmeaton/ncov-recombinant/issues/112)).
 
 ## Validate
 

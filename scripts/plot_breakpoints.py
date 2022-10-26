@@ -3,10 +3,10 @@
 import click
 import os
 import pandas as pd
-import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib import patches, colors, lines, collections
 from functions import categorical_palette
+import math
 
 NO_DATA_CHAR = "NA"
 # This is the aspect ratio/dpi for ppt embeds
@@ -21,6 +21,14 @@ X_BUFF = 1000
 BREAKPOINT_COLOR = "lightgrey"
 UNKNOWN_COLOR = "dimgrey"
 COORD_ITER = 5000
+
+# This is the number of characters than can fit width-wise across the legend
+LEGEND_FONTSIZE = 6
+LEGEND_CHAR_WIDTH = 100
+# The maximum columns in the legend is dictated by the char width, but more
+# importantly, in the categorical_palette function, we restrict it to the
+# first 5 colors of the tap10 palette, and make different shades within it
+LEGEND_MAX_COL = 5
 
 # Show the first N char of the label in the plot
 LEGEND_LABEL_MAX_LEN = 15
@@ -148,12 +156,6 @@ def main(
         "end": [],
     }
 
-    # Store data for plotting breakpoint distributions
-    breakpoints_dist_data = {
-        "coordinate": [],
-        "parent": [],
-    }
-
     parents_colors = {}
 
     # -------------------------------------------------------------------------
@@ -193,19 +195,11 @@ def main(
 
                 breakpoint_start_coord = int(breakpoint.split(":")[0])
                 breakpoint_end_coord = int(breakpoint.split(":")[1])
-                breakpoint_mean_coord = round(
-                    (breakpoint_start_coord + breakpoint_end_coord) / 2
-                )
 
                 # Give this coordinate to both parents
                 parent_next = parents_split[i + 1]
                 if parent_next == NO_DATA_CHAR:
                     parent_next = "Unknown"
-
-                breakpoints_dist_data["parent"].append(parent)
-                breakpoints_dist_data["parent"].append(parent_next)
-                breakpoints_dist_data["coordinate"].append(breakpoint_mean_coord)
-                breakpoints_dist_data["coordinate"].append(breakpoint_mean_coord)
 
                 start_coord = prev_start_coord
                 end_coord = int(breakpoint.split(":")[0]) - 1
@@ -230,7 +224,6 @@ def main(
 
     # Convert the dictionary to a dataframe
     breakpoints_df = pd.DataFrame(breakpoints_data)
-    breakpoints_dist_df = pd.DataFrame(breakpoints_dist_data)
 
     # Sort by coordinates
     breakpoints_df.sort_values(by=["parent", "start", "end"], inplace=True)
@@ -262,105 +255,33 @@ def main(
     # -------------------------------------------------------------------------
     # Plot Setup
 
-    # Number of axes will vary depending on how many clades there are
-    # Because on top, there will be a separate distribution for each clade
+    # When dynamically setting the aspect ratio, the height is
+    # multiplied by the number of lineages
+    num_lineages = len(set(list(breakpoints_df["lineage"])))
+    if autoscale:
+        # This is the minimum size it can be for 1 lineage with two parents
+        figsize = [figsize[0], 2]
+        # Adjusted for other sizes of lineages, mirrors fontsize detection later
+        if num_lineages >= 40:
+            figsize = [figsize[0], 0.1 * num_lineages]
+        elif num_lineages >= 30:
+            figsize = [figsize[0], 0.2 * num_lineages]
+        elif num_lineages >= 20:
+            figsize = [figsize[0], 0.3 * num_lineages]
+        elif num_lineages >= 10:
+            figsize = [figsize[0], 0.5 * num_lineages]
+        elif num_lineages > 1:
+            figsize = [figsize[0], 1 * num_lineages]
 
-    num_dist_plots = 0
-    for parent in parents_colors:
-        # Skip plotting breakpoints of unknown parents
-        if parent == "Unknown":
-            continue
-        match_df = breakpoints_dist_df[breakpoints_dist_df["parent"] == parent]
-
-        # If there are breakpoints for that parent, add it to the dist plots
-        if len(match_df) > 0:
-            num_dist_plots += 1
-
-    # I want the breakpoints subplot to be twice as big as the dist plots area
-    if num_dist_plots > 0:
-        height_ratios = [1] * num_dist_plots + [num_dist_plots * 2]
-    else:
-        height_ratios = [1]
-
-    if autoscale and num_dist_plots > 0:
-        figsize = [figsize[0], 1 * num_dist_plots]
-
-    fig, axes = plt.subplots(
-        num_dist_plots + 1,
+    fig, ax = plt.subplots(
+        1,
         1,
         dpi=DPI,
         figsize=figsize,
-        gridspec_kw={"height_ratios": height_ratios},
-        sharex=True,
     )
 
     # -------------------------------------------------------------------------
-    # Plot Breakpoint Distribution
-
-    parents_seen = []
-    i = 0
-
-    for parent in list(breakpoints_dist_df["parent"]):
-        if parent == "breakpoint" or parent == "Unknown":
-            continue
-        if parent in parents_seen:
-            continue
-        else:
-            parents_seen.append(parent)
-
-        ax = axes[i]
-        color = parents_colors[parent]
-        breakpoints_dist_parent_df = breakpoints_dist_df[
-            breakpoints_dist_df["parent"] == parent
-        ]
-        # Is there only one coordinate observation?
-        num_breakpoints_coord = len(set(breakpoints_dist_parent_df["coordinate"]))
-        if num_breakpoints_coord == 1:
-            # Double the dataframe to force plotting
-            breakpoints_dist_parent_df = pd.concat(
-                [
-                    breakpoints_dist_parent_df,
-                    breakpoints_dist_parent_df,
-                ],
-                ignore_index=True,
-            )
-            breakpoints_dist_parent_df.at[1, "coordinate"] = -9999
-
-        sns.kdeplot(
-            ax=ax,
-            data=breakpoints_dist_parent_df,
-            x="coordinate",
-            bw_adjust=0.1,
-            fill=True,
-            hue="parent",
-            palette=[color],
-            alpha=1,
-            edgecolor="black",
-            linewidth=0.5,
-        )
-
-        ax.set_yticks([])
-        ax.set_ylabel("")
-        ax.legend().remove()
-
-        ax.spines["left"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-        ax.spines["top"].set_visible(False)
-
-        i += 1
-
-    # Label the last axes
-    if num_dist_plots > 0:
-        # Put the label on the halfway axes
-        ax = axes[num_dist_plots // 2]
-        ax.set_ylabel("Breakpoint\nDistribution")
-
-    # -------------------------------------------------------------------------
     # Plot Breakpoint Regions
-    if num_dist_plots > 0:
-        ax = axes[-1]
-    else:
-        ax = axes
 
     rect_height = 1
     start_y = 0
@@ -509,25 +430,44 @@ def main(
     legend_handles.append(subs_handle)
     legend_labels.append("Substitution")
 
+    # Dynamically set the number of columns in the legend based on how
+    # how much space the labels will take up (in characters)
+    max_char_len = 0
+    for label in legend_labels:
+        if len(label) >= max_char_len:
+            max_char_len = len(label)
+
+    legend_ncol = math.floor(LEGEND_CHAR_WIDTH / max_char_len)
+    # we don't want too many columns
+    if legend_ncol > LEGEND_MAX_COL:
+        legend_ncol = LEGEND_MAX_COL
+    elif legend_ncol > len(parents_colors):
+        legend_ncol = len(parents_colors)
+
     legend = ax.legend(
         handles=legend_handles,
         labels=legend_labels,
         title=parent_type.title(),
-        bbox_to_anchor=[1.02, 1.01],
+        edgecolor="black",
+        fontsize=LEGEND_FONTSIZE,
+        ncol=legend_ncol,
+        loc="lower center",
+        mode="expand",
+        bbox_to_anchor=(0, 1.02, 1, 0.2),
+        borderaxespad=0,
+        borderpad=1,
     )
 
-    frame = legend.get_frame()
-    frame.set_linewidth(1)
-    frame.set_edgecolor("black")
-    frame.set_boxstyle("Square", pad=0.2)
+    legend.get_frame().set_linewidth(1)
+    legend.get_title().set_fontweight("bold")
+    # legend.get_frame().set_boxstyle("Square", pad=0.2)
 
     # -------------------------------------------------------------------------
     # Export
 
     # plt.suptitle("Recombination Breakpoints by Lineage")
-    if num_dist_plots > 0:
+    if num_lineages > 0:
         plt.tight_layout()
-        plt.subplots_adjust(hspace=0)
 
     outpath = os.path.join(outdir, "breakpoints_{}".format(parent_type))
     breakpoints_df.to_csv(outpath + ".tsv", sep="\t", index=False)

@@ -6,7 +6,7 @@ import numpy as np
 import epiweeks
 import matplotlib.pyplot as plt
 from matplotlib import patches, colors
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import sys
 import copy
 from functions import categorical_palette
@@ -101,9 +101,22 @@ def main(
     # -------------------------------------------------------------------------
     # Import dataframes
     df = pd.read_csv(input, sep="\t")
+    df.fillna(NO_DATA_CHAR, inplace=True)
 
-    # Add datetime columns
-    df["datetime"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
+    # Issue #168 NULL dates are allowed
+    # Set to today instead
+    # https://github.com/ktmeaton/ncov-recombinant/issues/168
+    seq_date = []
+    for d in list(df["date"]):
+        try:
+            d = datetime.strptime(d, "%Y-%m-%d").date()
+        except ValueError:
+            # Set NA dates to today
+            d = date.today()
+
+        seq_date.append(d)
+    df["datetime"] = seq_date
+
     df["year"] = [d.year for d in df["datetime"]]
     df["epiweek"] = [
         epiweeks.Week.fromdate(d, system="cdc").startdate() for d in df["datetime"]

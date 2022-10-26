@@ -2,6 +2,7 @@
 import click
 import os
 import pandas as pd
+from datetime import datetime, date
 
 # Hard-coded constants
 
@@ -41,7 +42,20 @@ def main(
 
     df = pd.read_csv(input, sep="\t")
     df.fillna(NO_DATA_CHAR, inplace=True)
-    df["datetime"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
+
+    # Issue #168 NULL dates are allowed
+    # Set to today instead
+    # https://github.com/ktmeaton/ncov-recombinant/issues/168
+    seq_date = []
+    for d in list(df["date"]):
+        try:
+            d = datetime.strptime(d, "%Y-%m-%d").date()
+        except ValueError:
+            # Set NA dates to today
+            d = date.today()
+
+        seq_date.append(d)
+    df["datetime"] = seq_date
 
     # -------------------------------------------------------------------------
     # Create the parents table (parents.tsv)
