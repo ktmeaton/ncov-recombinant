@@ -26,6 +26,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    --rbd-levels)
+      rbd_levels=$2
+      shift # past argument
+      shift # past value
+      ;;
     --extra-cols)
       extra_cols=$2
       shift # past argument
@@ -60,6 +65,7 @@ fi
 csvtk cut -t -f "${cols},clade,Nextclade_pango" ${nextclade} \
   | csvtk rename -t -f "clade" -n "Nextclade_clade" \
   | csvtk merge -t --na "NA" -f "strain" - ${sc2rf} \
+  | csvtk merge -t --na "NA" -f "strain" - ${rbd_levels} \
   | csvtk sort -t -k "$sort_col" \
   | csvtk mutate2 -t -n "ncov-recombinant_version" -e "\"$ncov_recombinant_ver\"" \
   | csvtk mutate2 -t -n "nextclade_version" -e "\"$nextclade_ver\"" \

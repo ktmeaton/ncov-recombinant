@@ -21,19 +21,12 @@ def create_logger(logfile=None):
     return logger
 
 
-def categorical_palette(num_cat=9, continuous=False):
+def categorical_palette(num_cat=9, continuous=False, cmap="tab10", cmap_num_cat=5):
     """
     Author: ImportanceOfBeingEarnest
     Link: https://stackoverflow.com/a/47232942
     """
 
-    cmap = "tab10"
-    # Exclude the last color of tab10 which is a light blue
-    # cmap_num_cat = 9
-    # num_sub_cat = 1
-
-    # Only use the first 5 colors of tab10
-    cmap_num_cat = 5
     num_sub_cat = 1
 
     # if there are more data categories than cmap categories

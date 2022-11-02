@@ -33,6 +33,10 @@ LINELIST_COLS = {
     "privateNucMutations.unlabeledSubstitutions": "subs_unlabeled",
     "privateNucMutations.labeledSubstitutions": "subs_labeled",
     "substitutions": "subs",
+    "rbd_level": "rbd_level",
+    "rbd_substitutions": "rbd_substitutions",
+    "immune_escape": "immune_escape",
+    "ace2_binding": "ace2_binding",
     "ncov-recombinant_version": "ncov-recombinant_version",
     "nextclade_version": "nextclade_version",
     "nextclade_dataset": "nextclade_dataset",
@@ -123,6 +127,10 @@ def main(
     # Setup the linelist dataframe
     linelist_df = copy.deepcopy(summary_df[cols_list])
     linelist_df.rename(columns=LINELIST_COLS, inplace=True)
+
+    # The nature of the rbd_level values (0, 1, ...) causes issues with dataframe
+    # issues later in this script. A bandaid solution is to convert to strings.
+    linelist_df["rbd_level"] = [str(l) for l in list(linelist_df["rbd_level"])]
 
     # Initialize columns
     linelist_df.insert(1, "status", [NO_DATA_CHAR] * len(linelist_df))
@@ -410,7 +418,7 @@ def main(
     logger.info("Assigning cluster IDs to lineages.")
 
     linelist_df["cluster_id"] = [NO_DATA_CHAR] * len(linelist_df)
-    linelist_df["cluster_privates"] = [NO_DATA_CHAR] * len(linelist_df)
+    linelist_df["cluster_privates"] = [[NO_DATA_CHAR]] * len(linelist_df)
 
     for i in rec_seen:
         earliest_datetime = datetime.today()
@@ -431,9 +439,10 @@ def main(
         # indices are preserved from the original linelist_df
         for strain in rec_strains:
             strain_i = rec_df[rec_df["strain"] == strain].index[0]
+
             linelist_df.loc[strain_i, "cluster_id"] = earliest_strain
-            linelist_df.loc[strain_i, "cluster_privates"] = rec_privates
             linelist_df.loc[strain_i, "cov-spectrum_query"] = subs_query
+            linelist_df.loc[strain_i, "cluster_privates"] = rec_privates
 
     # -------------------------------------------------------------------------
     # Mimics

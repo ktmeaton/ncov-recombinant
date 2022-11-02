@@ -3,6 +3,7 @@ import click
 import os
 import pandas as pd
 from datetime import datetime, date
+import statistics
 
 # Hard-coded constants
 
@@ -24,6 +25,9 @@ LINEAGE_COLS = [
     "growth_score",
     "earliest_date",
     "latest_date",
+    "rbd_level",
+    "immune_escape",
+    "ace2_binding",
     "cluster_privates",
     "cov-spectrum_query",
 ]
@@ -98,7 +102,26 @@ def main(
         latest_date = max(match_df["datetime"])
         sequences = len(match_df)
 
-        # TBD majority vote on disagreement
+        # Summaize rbd_level by the mode
+        rbd_level = statistics.mode(match_df["rbd_level"])
+        # Summarize immune escape by mean, Immune escape can be NA
+        immune_escape = [
+            val for val in match_df["immune_escape"].values if val != NO_DATA_CHAR
+        ]
+        if len(immune_escape) > 0:
+            immune_escape = statistics.mean(match_df["immune_escape"].values)
+        else:
+            immune_escape = NO_DATA_CHAR
+
+        # Summarize ace2_binding by mean, ace2_binding can be NA
+        ace2_binding = [
+            val for val in match_df["ace2_binding"].values if val != NO_DATA_CHAR
+        ]
+        if len(ace2_binding) > 0:
+            ace2_binding = statistics.mean(match_df["ace2_binding"].values)
+        else:
+            ace2_binding = NO_DATA_CHAR
+
         recombinants_data["cluster_id"].append(cluster_id)
         recombinants_data["status"].append(match_df["status"].values[0])
         recombinants_data["lineage"].append(match_df["lineage"].values[0])
@@ -123,6 +146,10 @@ def main(
         recombinants_data["cov-spectrum_query"].append(
             match_df["cov-spectrum_query"].values[0]
         )
+        # Immune stats
+        recombinants_data["rbd_level"].append(rbd_level)
+        recombinants_data["immune_escape"].append(immune_escape)
+        recombinants_data["ace2_binding"].append(ace2_binding)
 
         geo_list = list(set(match_df[geo]))
         geo_list.sort()

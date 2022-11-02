@@ -11,6 +11,9 @@ import sys
 import copy
 from functions import categorical_palette
 import math
+import warnings
+
+warnings.filterwarnings("error")
 
 NO_DATA_CHAR = "NA"
 ALPHA_LAG = 0.25
@@ -21,6 +24,9 @@ EPIWEEK_MAX_BUFF_FACTOR = 1.1
 # The dimensions are set in the powerpoint template (resources/template.pttx)
 DPI = 96 * 2
 FIGSIZE = [6.75, 5.33]
+# The maximum number of epiweeks we can comfortably plot, otherwise
+# the figsize needs to be upscaled
+FIGSIZE_MAX_WEEKS = 65
 
 UNKNOWN_COLOR = "dimgrey"
 UNKNOWN_RGB = colors.to_rgb(UNKNOWN_COLOR)
@@ -242,6 +248,10 @@ def main(
             "cols": ["parents_lineage"],
         },
         "cluster_id": {"legend_title": "Cluster ID", "cols": ["cluster_id"]},
+        "rbd_level": {
+            "legend_title": "Receptor Binding Domain Mutations",
+            "cols": ["rbd_level"],
+        },
     }
 
     for plot in plot_dict:
@@ -276,12 +286,21 @@ def main(
         # Convert counts from floats to integers
         plot_df[plot_df.columns] = plot_df[plot_df.columns].astype(int)
 
+        # Fill in missing levels for RBD
+        if plot == "rbd_level":
+            min_level = min(plot_df.columns)
+            max_level = max(plot_df.columns)
+
+            for level in range(min_level, max_level + 1, 1):
+                if level not in plot_df.columns:
+                    plot_df[level] = 0
+
         # Add epiweeks column
         plot_df.insert(0, "epiweek", plot_df.index)
 
         plot_dict[plot]["df"] = plot_df
 
-    # -------------------------------------------------------------------------
+    # ----------------------------------------------------------
     # Filter for Reporting Period
     # -------------------------------------------------------------------------
 
@@ -340,10 +359,13 @@ def main(
                 continue
             df_count_dict[col] = sum([c for c in plot_df[col] if not np.isnan(c)])
 
-        # Sort by counts
-        df_count_dict = dict(
-            sorted(df_count_dict.items(), key=lambda item: item[1], reverse=True)
-        )
+        # Sort by counts, except for RBD level, want sorted by value itself
+        if label == "rbd_level":
+            df_count_dict = dict(sorted(df_count_dict.items()))
+        else:
+            df_count_dict = dict(
+                sorted(df_count_dict.items(), key=lambda item: item[1], reverse=True)
+            )
         # Reorder the columns in the data frame
         cols = list(df_count_dict.keys())
 
@@ -361,7 +383,15 @@ def main(
 
         num_cat = len(plot_df.columns) - 1
 
-        plot_palette = categorical_palette(num_cat=num_cat)
+        if label == "rbd_level":
+            num_cat = len(range(min(cols), max(cols) + 1, 1))
+            plot_palette = categorical_palette(
+                num_cat=num_cat, cmap="RdYlGn_r", continuous=True, cmap_num_cat=999
+            )
+
+        # Otherwise use default form function
+        else:
+            plot_palette = categorical_palette(num_cat=num_cat)
 
         # Recolor unknown
         if "Unknown" in plot_df.columns:
@@ -468,8 +498,8 @@ def main(
         # how much space the labels will take up (in characters)
         max_char_len = 0
         for col in ordered_cols:
-            if len(col) >= max_char_len:
-                max_char_len = len(col)
+            if len(str(col)) >= max_char_len:
+                max_char_len = len(str(col))
 
         legend_ncol = math.floor(LEGEND_CHAR_WIDTH / max_char_len)
         # we don't want too many columns
@@ -527,6 +557,13 @@ def main(
         # ax.xaxis.set_label_coords(0.5, -0.30)
         ax.set_xticklabels(ax.get_xticklabels(), rotation=90, ha="center", fontsize=6)
 
+        # Upscale plot dimensions if there are too many weeks
+        if len(plot_df) > FIGSIZE_MAX_WEEKS:
+            upscale_factor = len(plot_df) / FIGSIZE_MAX_WEEKS
+            fig.set_size_inches(
+                FIGSIZE[0] * upscale_factor,
+                FIGSIZE[1] * upscale_factor,
+            )
         plt.tight_layout()
         plt.savefig(out_path + ".png")
         plt.savefig(out_path + ".svg")

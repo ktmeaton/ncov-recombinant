@@ -15,11 +15,15 @@ rule_params:
   # dataset: The nextclade dataset to use as the reference
   # dataset_no-recomb: The nextcldae dataset to use without recombinants
   # tag_no-recomb: datestamp of the dataset without recombinants
+  # dataset_immune-escape: The nextcldae dataset to use for immune escape calculations
+  # tag_immune-escape: datestamp of the dataset for immune escape calculations
   - name: nextclade_dataset
     dataset: sars-cov-2
-    dataset_no-recomb: sars-cov-2-no-recomb
     tag: "2022-10-27T12:00:00Z"
+    dataset_no-recomb: sars-cov-2-no-recomb
     tag_no-recomb: "2022-10-27T12:00:00Z"
+    dataset_immune-escape: sars-cov-2-21L
+    tag_immune-escape: "2022-10-27T12:00:00Z"
 
   # ---------------------------------------------------------------------------
   # exclude_clades    : (optional) Exclude strains that are recombinants of these clades
@@ -55,31 +59,31 @@ rule_params:
   #                   :   only set to true if there is at least 1 guaranteed recombinant sequence in your input!
   # max_name_length   : The maximum character length of strain names
   # sc2rf_args        : Additional arguments supplied to the program sc2rf
-  # primers           : Path to primers, relative to sc2rf directory.
-  # primers_name      : The name of the primer set to display in output.
   # mode              : List of named parameter sets to use for sc2rf. sc2rf will run multiple times independently
   #                   :   with the supplied command-line-args, and create intermediate ansi output as
   #                   :   ansi.<mode>.txt and stats.<mode>.csv and collated afterwards.
   #                   :   any number of modes can be supplied.
-  #                   : The order of modes is important! The results of modes further down in the list
-  #                   :   will override those higher up when results are collated in sc2rf_recombinants.
   - name: sc2rf
     exclude_negatives: false
     max_name_length: 50
     mode:
       # Lineage specific validation)
-      - XA:              "--clades 20I 20E                     --ansi --parents 2   --breakpoints 1-3  --unique 2 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
-      - XB:              "--clades B.1.631 B.1.634             --ansi --parents 2   --breakpoints 1-10 --unique 5 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 20 --ignore-shared --mutation-threshold 0.25"
-      - XC:              "--clades 20I 21J 21I                 --ansi --parents 2-3 --breakpoints 0-10 --unique 5 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
-      - proposed808:     "--clades 21K B.1.438.1               --ansi --parents 2   --breakpoints 1-10 --unique 3 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
-      - XAJ:             "--clades BA.4 BA.2.12                --ansi --parents 2   --breakpoints 2    --unique 2 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
-      - XAY:             "--clades 21I 21J BA.1 BA.2           --ansi --parents 2-4 --breakpoints 2-10 --unique 3 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 20 --ignore-shared --mutation-threshold 0.25"
-      - XBB:             "--clades BA.2.10 BA.2.75             --ansi --parents 2   --breakpoints 1-10 --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
-      - XBD:             "--clades BA.2.12 BA.2.75 BA.4 BA.5   --ansi --parents 2   --breakpoints 1-5  --unique 3 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
-      - XBE:             "--clades BA.5.1 BA.5.2 BA.5.3 BA.5.6 --ansi --parents 2   --breakpoints 1-5  --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
+      - XA:              "--clades 20I 20E 20F 20D             --ansi --parents 2   --breakpoints 1-3  --unique 2 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
+      - XB:              "--clades B.1.631 B.1.634 20C 20F     --ansi --parents 2   --breakpoints 1-3  --unique 5 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 20 --ignore-shared --mutation-threshold 0.25"
+      - XC:              "--clades 20I 21J 21I 20F 20D         --ansi --parents 2   --breakpoints 1-3  --unique 5 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
+      - proposed808:     "--clades BA.1 B.1.438.1 21J BA.2     --ansi --parents 2   --breakpoints 8-10 --unique 3 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
+      # XAJ has a high tendency for false positives, so use a very restrictive breakpoints=2
+      - XAJ:             "--clades BA.4 BA.2.12 BA.2 BA.1      --ansi --parents 2   --breakpoints 2    --unique 2 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
+      - XAY_XBA_XBC:     "--clades 21I 21J BA.2                --ansi --parents 2   --breakpoints 3-7  --unique 3 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 20 --ignore-shared --mutation-threshold 0.25"
+      - XBB:             "--clades BA.2.10 BA.2.75 BA.4 BA.5   --ansi --parents 2   --breakpoints 1-3  --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
+      - XBD:             "--clades BA.2.75 BA.5 BA.2 BA.4      --ansi --parents 2   --breakpoints 1-3  --unique 3 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
+      - XBE:             "--clades BA.5.2 BA.5.3 BA.5 BA.5.1   --ansi --parents 2   --breakpoints 1-3  --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
       # General (discovery and validation)
-      - delta_omicron:   "--clades 21I 21J BA.1 BA.2            --ansi --parents 2-4 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
-      - omicron_omicron: "--clades BA.1 BA.2 BA.4 BA.5          --ansi --parents 2-4 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
+      - delta_omicron:   "--clades 21I 21J BA.1 BA.2           --ansi --parents 2-4 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
+      - omicron_omicron: "--clades BA.1 BA.2 BA.4 BA.5         --ansi --parents 2-4 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
+      # Current Variants of Concern and Dominant Lineages
+      - voc:             "--clades BA.2.10 BA.2.3.20 BA.2.75 BA.4.6 BA.5.2 BA.5.3 BQ.1 XBB --ansi --parents 2-4 --breakpoints 1-5 --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
+
   # ---------------------------------------------------------------------------
   # min_len            : (optional) Ignore recombinant regions shorter than this
   # min_consec_allele  : (optional) Ignore recombinant regions with less than this number of consecutive alleles (both subs and ref)
@@ -88,10 +92,10 @@ rule_params:
   # max_parents        : (optional) Exlude samples with greater than this number of breakpoints
   # motifs             : (optional, experimental) Path to a breakpoints motif file
   # dup_method         : (optional, experimental) Method for resolving duplicate results when multiple sc2rf modes generated postives
+  #                    :  'min_uncertainty': Prioritize positive results with the smallest breakpoint intervals.
   #                    :  'first' : Retain positive results from first mode encountered (top in mode list)
   #                    :  'last'  : Retain positive results from last mode encountered (bottom in mode list)
   #                    :  'min_bp': Prioritize positive results with the fewest breakpoints.
-  #                    :  'min_uncertainty': Prioritize positive results with the smallest breakpoint intervals.
   # auto_pass          : (optional) Samples with these lineage assignments by nextclade will
   #                      automatically be classified as 'positive', regardless of sc2rf results.
   - name: sc2rf_recombinants

@@ -269,15 +269,24 @@ rule nextclade_dataset:
 
   message: """Downloading Nextclade dataset.\n
   log:     {log}
-  dataset: {output.dataset_dir}
+  dataset: {params.dataset_dir}
   """
 
   wildcard_constraints:
     # The tag will always begin with the year (ex. 2022)
     tag         = "([0-9]){4}.*",
   output:
-    dataset_dir = directory("data/{dataset}_{tag}"),
-    json        = "data/{dataset}_{tag}/tree.json",
+    #dataset_dir = directory("data/{dataset}_{tag}"),
+    genemap    = "data/{dataset}_{tag}/genemap.gff",
+    primers    = "data/{dataset}_{tag}/primers.csv",
+    qc         = "data/{dataset}_{tag}/qc.json",
+    reference  = "data/{dataset}_{tag}/reference.fasta",
+    sequences  = "data/{dataset}_{tag}/sequences.fasta",
+    tag        = "data/{dataset}_{tag}/tag.json",
+    tree       = "data/{dataset}_{tag}/tree.json",
+    properties = "data/{dataset}_{tag}/virus_properties.json",
+  params:
+    dataset_dir = "data/{dataset}_{tag}",
   threads: 1
   resources:
     cpus = 1,
@@ -288,7 +297,7 @@ rule nextclade_dataset:
   shell:
     """
     # Download dataset
-    nextclade dataset get --name {wildcards.dataset} --tag {wildcards.tag} --output-dir {output.dataset_dir} > {log} 2>&1;
+    nextclade dataset get --name {wildcards.dataset} --tag {wildcards.tag} --output-dir {params.dataset_dir} > {log} 2>&1;
     """
 
 # -----------------------------------------------------------------------------
@@ -298,27 +307,34 @@ rule lineage_tree:
 
   message: """Constructing a tree of Nextclade lineages.\n
   log:     {log}
-  json:    {input.json}
+  json:    {input.tree}
   tree:    {output.tree}
   """
 
+  wildcard_constraints:
+    # The tag will always begin with the year (ex. 2022)
+    tag         = "([0-9]){4}.*",
   input:
-    json = lambda wildcards:  "data/{dataset}_{tag}/tree.json".format(
-                        dataset = config["builds"][wildcards.build]["nextclade_dataset"]["dataset"],
-                        tag     = config["builds"][wildcards.build]["nextclade_dataset"]["tag"],
-                      ),
+    #json = lambda wildcards:  "data/{dataset}_{tag}/tree.json".format(
+    #                    dataset = config["builds"][wildcards.build]["nextclade_dataset"]["dataset"],
+    #                    tag     = config["builds"][wildcards.build]["nextclade_dataset"]["tag"],
+    #                  ),
+    tree = "data/{dataset}_{tag}/tree.json",
   output:
-    tree = "results/{build}/lineage_tree/tree.nwk",
+    # tree = "results/{build}/lineage_tree/tree.nwk",
+    tree = "data/{dataset}_{tag}/tree.nwk",
   threads: 1
   resources:
     cpus = 1,
   benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+    #"benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+    "benchmarks/{rule}/{{dataset}}_{{tag}}_{today}.tsv".format(today=today, rule=rule_name),
   log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+    #"logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+    "logs/{rule}/{{dataset}}_{{tag}}_{today}.log".format(today=today, rule=rule_name),
   shell:
     """
-    python3 scripts/lineage_tree.py --tree-json {input.json} --output {output.tree} --log {log};
+    python3 scripts/lineage_tree.py --tree-json {input.tree} --output {output.tree} --log {log};
     """
 
 # ------------------------------------------------------------------------------
@@ -333,6 +349,9 @@ def _inputs_nextclade(build, prefix):
   if prefix == "nextclade_no-recomb":
     dataset = config["builds"][build]["nextclade_dataset"]["dataset_no-recomb"]
     tag = config["builds"][build]["nextclade_dataset"]["tag_no-recomb"]
+  elif prefix == "nextclade_immune-escape":
+    dataset = config["builds"][build]["nextclade_dataset"]["dataset_immune-escape"]
+    tag = config["builds"][build]["nextclade_dataset"]["tag_immune-escape"]
   else:
     dataset = config["builds"][build]["nextclade_dataset"]["dataset"]
     tag = config["builds"][build]["nextclade_dataset"]["tag"]
@@ -354,9 +373,11 @@ rule nextclade:
   """
 
   wildcard_constraints:
-    nextclade_prefix = "nextclade|nextclade_no-recomb"
+    nextclade_prefix = "nextclade|nextclade_no-recomb|nextclade_immune-escape"
   input:
-    dataset       = lambda wildcards:  "data/{dataset}_{tag}".format(
+    # This is not ideal to just use one file (instead of the full dataset dir)
+    # But I'm avoiding using a full directory as I/O to support lineage_tree rule
+    properties    = lambda wildcards:  "data/{dataset}_{tag}/virus_properties.json".format(
                       dataset=_inputs_nextclade(wildcards.build, wildcards.nextclade_prefix)["dataset"],
                       tag=_inputs_nextclade(wildcards.build, wildcards.nextclade_prefix)["tag"],
                       ),
@@ -367,6 +388,10 @@ rule nextclade:
     qc            = "results/{build}/{nextclade_prefix}/qc.tsv",
     metadata      = "results/{build}/{nextclade_prefix}/metadata.tsv",
   params:
+    dataset       = lambda wildcards:  "data/{dataset}_{tag}".format(
+                      dataset=_inputs_nextclade(wildcards.build, wildcards.nextclade_prefix)["dataset"],
+                      tag=_inputs_nextclade(wildcards.build, wildcards.nextclade_prefix)["tag"],
+                      ),
     outdir        = "results/{build}/{nextclade_prefix}",
     basename      = "nextclade",
     selection     = "fasta,tsv"
@@ -379,7 +404,7 @@ rule nextclade:
     # Align sequences
     nextclade run \
       --jobs {resources.cpus} \
-      --input-dataset {input.dataset} \
+      --input-dataset {params.dataset} \
       --output-all {params.outdir} \
       --output-selection {params.selection} \
       --output-tsv {output.qc} \
@@ -453,6 +478,34 @@ rule nextclade_recombinants:
     # Extract non-recombinants qc
     csvtk grep -t -P {output.strains} -v {input.qc} 1> {output.non} 2>> {log};
     """
+
+# ------------------------------------------------------------------------------
+rule rbd_levels:
+  """Calculate the number of key RBD mutations."""
+
+  message: """Calculating the number of key RBD mutations.\n
+  build:     {wildcards.build}
+  log:       {log}
+  table:     {output.table}
+  """
+
+  input:
+    nextclade      = "results/{build}/nextclade_immune-escape/qc.tsv",
+    rbd_definition = "resources/rbd_levels.yaml",
+  output:
+    table      = "results/{build}/rbd_levels/rbd_levels.tsv",
+  threads: 1
+  resources:
+    cpus = 1,
+  benchmark:
+    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+  log:
+    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+  shell:
+    """
+    python3 scripts/rbd_levels.py --rbd-definition {input.rbd_definition} --nextclade {input.nextclade} --output {output.table} --log {log};
+    """
+
 
 # ------------------------------------------------------------------------------
 #  STAGE 3: sc2rf
@@ -632,7 +685,10 @@ rule sc2rf_recombinants:
     issues          = rules.issues_download.output.issues,
     nextclade       = "results/{build}/nextclade/qc.tsv",
     nextclade_no_recomb = "results/{build}/nextclade_no-recomb/qc.tsv",
-    lineage_tree    = rules.lineage_tree.output.tree,
+    lineage_tree    = lambda wildcards:  "data/{dataset}_{tag}/tree.nwk".format(
+                        dataset=_inputs_nextclade(wildcards.build, "nextclade")["dataset"],
+                        tag=_inputs_nextclade(wildcards.build, "nextclade")["tag"],
+                      ),
     metadata        = lambda wildcards: _inputs(wildcards.build)["metadata"],
   output:
     stats           = "results/{build}/sc2rf/stats.tsv",
@@ -721,7 +777,7 @@ rule summary:
   input:
     nextclade        = "results/{build}/nextclade/metadata.tsv",
     sc2rf            = rules.sc2rf_recombinants.output.stats,
-
+    rbd_levels       = rules.rbd_levels.output.table,
   output:
     summary = "results/{build}/linelists/summary.tsv",
   params:
@@ -741,6 +797,7 @@ rule summary:
       --output {output.summary} \
       --nextclade {input.nextclade} \
       --sc2rf {input.sc2rf} \
+      --rbd-levels {input.rbd_levels} \
       --nextclade-dataset {params.nextclade_dataset}_{params.nextclade_tag} \
       {params.extra_cols} \
       > {log} 2>&1;
@@ -787,7 +844,10 @@ rule linelist:
   input:
     summary         = rules.summary.output.summary,
     issues          = rules.issues_download.output.issues,
-    lineage_tree    = rules.lineage_tree.output.tree,
+    lineage_tree    = lambda wildcards:  "data/{dataset}_{tag}/tree.nwk".format(
+                      dataset=_inputs_nextclade(wildcards.build, "nextclade")["dataset"],
+                      tag=_inputs_nextclade(wildcards.build, "nextclade")["tag"],
+                    ),
   output:
     linelist        = "results/{build}/linelists/linelist.tsv",
     positives       = "results/{build}/linelists/positives.tsv",

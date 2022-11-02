@@ -156,7 +156,7 @@ XAY	Omicron/BA.2/21L	27638	29903
 XP	Omicron/BA.2/21L	29510	29903
 XAJ	Omicron/BA.4/22A	23018	23535
 XBE	Omicron/BA.5.2	0	16935
-XBE	Omicron/BA.5.3	27038	29903
+XBE	Omicron/BA.5.3	27012	29903
 XAS	Omicron/BA.5/22B	0	23040
 proposed1006	Omicron/BA.5/22B	0	26531
 proposed820	Omicron/BA.5/22B	0	29903
@@ -210,7 +210,7 @@ XV	breakpoint	13196	15239
 proposed467	breakpoint	15241	15713
 proposed808-1	breakpoint	15241	18162
 proposed559	breakpoint	15714	17410
-XBE	breakpoint	16936	27037
+XBE	breakpoint	16936	27011
 proposed498	breakpoint	17410	18163
 XK	breakpoint	17411	19954
 XM	breakpoint	17411	19954
