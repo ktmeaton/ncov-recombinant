@@ -287,7 +287,7 @@ def main(
         plot_df[plot_df.columns] = plot_df[plot_df.columns].astype(int)
 
         # Fill in missing levels for RBD
-        if plot == "rbd_level":
+        if plot == "rbd_level" and len(plot_df) > 0:
             min_level = min(plot_df.columns)
             max_level = max(plot_df.columns)
 
@@ -383,7 +383,7 @@ def main(
 
         num_cat = len(plot_df.columns) - 1
 
-        if label == "rbd_level":
+        if label == "rbd_level" and len(plot_df.columns) > 1:
             num_cat = len(range(min(cols), max(cols) + 1, 1))
             plot_palette = categorical_palette(
                 num_cat=num_cat, cmap="RdYlGn_r", continuous=True, cmap_num_cat=999
