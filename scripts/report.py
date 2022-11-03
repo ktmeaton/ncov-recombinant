@@ -364,6 +364,48 @@ def main(
             run.font.size = pptx.util.Pt(14)
 
     # ---------------------------------------------------------------------
+    # RBD Levels
+
+    plot_path = plot_dict["rbd_level"]["plot_path"]
+    rbd_df = plot_dict["rbd_level"]["df"]
+    rbd_levels = list(rbd_df.columns)
+    rbd_levels.remove("epiweek")
+    # Order columns
+    rbd_counts = {level: int(sum(rbd_df[level])) for level in rbd_levels}
+    rbd_levels = dict(sorted(rbd_counts.items()))
+
+    num_rbd_levels = len(rbd_levels)
+
+    graph_slide_layout = presentation.slide_layouts[8]
+    slide = presentation.slides.add_slide(graph_slide_layout)
+    title = slide.shapes.title
+
+    title.text_frame.text = "Receptor Binding Domain"
+    title.text_frame.paragraphs[0].font.bold = True
+
+    chart_placeholder = slide.placeholders[1]
+    chart_placeholder.insert_picture(plot_path)
+    body = slide.placeholders[2]
+
+    summary = "\n"
+    summary += "{num_rbd_levels} RBD levels are observed.\n".format(
+        num_rbd_levels=num_rbd_levels,
+    )
+
+    for level in rbd_levels:
+        seq_count = int(sum(rbd_df[level].dropna()))
+        summary += "  - Level {level} ({seq_count})\n".format(
+            level=level, seq_count=seq_count
+        )
+
+    body.text_frame.text = summary
+
+    # Adjust font size of body
+    for paragraph in body.text_frame.paragraphs:
+        for run in paragraph.runs:
+            run.font.size = pptx.util.Pt(14)
+
+    # ---------------------------------------------------------------------
     # Parents Summary (Clade)
 
     plot_path = plot_dict["parents_clade"]["plot_path"]
