@@ -2,11 +2,7 @@
 
 import click
 import os
-
-# import requests
 import json
-
-# import yaml
 from functions import create_logger
 from Bio import Phylo
 from Bio.Phylo.BaseTree import Clade
@@ -30,6 +26,10 @@ def build_tree(tree_data, tree=None, parent=None):
     # I'm not sure why, but the MRCA of Omicron is named 21M rather than B.1.1.529
     elif node_name == "21M":
         node_name = tree_data["node_attrs"]["Nextclade_pango"]["value"]
+
+    # Manual fixes
+    if node_name == "CK.2.1":
+        parent = "CK.2"
 
     # ----------------------------------------------------------------------
     # Clade construction

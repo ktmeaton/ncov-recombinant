@@ -2,12 +2,18 @@
 
 ## Dataset
 
+- [Issue #168](https://github.com/ktmeaton/ncov-recombinant/issues/168):
 - `controls` was updated to in include 1 strain from `XBB` for a total of 22 positive controls. The 28 negative controls were unchanged from `v0.5.1`.
 - `controls-gisaid` strain list was updated to include `XA` through to `XBE` for a total of 528 positive controls. This includes sublineages such as `XBB.1` and `XBB.1.2` which synchronizes with [Nextclade Dataset 2022-10-19](https://github.com/nextstrain/nextclade_data/releases/tag/2022-10-19). The 187 negatives controls were unchanged from `v0.5.1`.
 
 ## Nextclade
 
-- [Issue #176](https://github.com/ktmeaton/ncov-recombinant/issues/176): upgrade Nextclade dataset to tag `2022-10-19` and upgrade Nextclade to `v2.7.0`.
+- [Issue #176](https://github.com/ktmeaton/ncov-recombinant/issues/176): Upgrade Nextclade dataset to tag `2022-10-27` and upgrade Nextclade to `v2.8.0`.
+- [Issue #193](https://github.com/ktmeaton/ncov-recombinant/issues/193): Use the nextclade dataset `sars-cov-2-21L` to calculate `immune_escape` and `ace2_binding`.
+
+## RBD Levels
+
+- [Issue #193](https://github.com/ktmeaton/ncov-recombinant/issues/193): Create new rule `rbd_levels` to calculate the number of key receptor binding domain (RBD) mutations.
 
 ## Lineage Tree
 
@@ -20,16 +26,19 @@ Rather than creating the output tree in `resources/lineages.nwk`, the lineage tr
 - [Issue #179](https://github.com/ktmeaton/ncov-recombinant/issues/179): Fix bug where `sc2rf/recombinants.ansi.txt` is truncated.
 - [Issue #180](https://github.com/ktmeaton/ncov-recombinant/issues/180): Fix recombinant sublineages (ex. XAY.1) missing their derived mutations in the `cov-spectrum_query`. Previously, the `cov-spectrum_query` mutations were only based on the parental alleles (before recombination). This led to sublinaeges (ex. `XAY.1`, `XAY.2`) all having the exact same query. Now, the `cov-spectrum_query` will include _all_ substitutions shared between all sequences in the `cluster_id`.
 - [Issue #187](https://github.com/ktmeaton/ncov-recombinant/issues/187): Document bug that occurs if duplicate sequences are present, and the initial validation was skipped by not running `scripts/create_profile.sh`.
+- [Issue #191](https://github.com/ktmeaton/ncov-recombinant/issues/191) and [Issue #192](https://github.com/ktmeaton/ncov-recombinant/issues/192): Reduce false positives by ensuring that each mode of sc2rf has at least one additional parental population that serves as the alternative hypothesis.
 
 ## Linelist
 
 - [Issue #183](https://github.com/ktmeaton/ncov-recombinant/issues/183): Recombinant sublineages. When nextclade calls a lineage (ex. `XAY.1`) which is a sublineage of a sc2rf lineage (`XAY`), we prioritize the nextclade assignment.
+- [Issue #193](https://github.com/ktmeaton/ncov-recombinant/issues/193): Add immune-related statistics: `rbd_levels`, `rbd_substitutions`, `immune_escape`, and `ace2_binding`.
 
 ## Plot
 
 - [Issue #57](https://github.com/ktmeaton/ncov-recombinant/issues/57): Include substitutions within breakpoint intervals for breakpoint plots. This is a product of [Issue #180](https://github.com/ktmeaton/ncov-recombinant/issues/180) which provides access to _all_ substitutions.
 - [Issue #112](https://github.com/ktmeaton/ncov-recombinant/issues/112): Fix bug where breakpoints plot image was out of bounds.
 - [Issue #188](https://github.com/ktmeaton/ncov-recombinant/issues/188): Remove the breakpoints distribution axis (ex. `breakpoints_clade.png`) in favor of putting the legend at the top. This significant reduces plotting issues (ex. [Issue #112](https://github.com/ktmeaton/ncov-recombinant/issues/112)).
+- [Issue #193](https://github.com/ktmeaton/ncov-recombinant/issues/193): Create new plot `rbd_level`.
 
 ## Validate
 
