@@ -418,14 +418,14 @@ def main(
     logger.info("Assigning cluster IDs to lineages.")
 
     linelist_df["cluster_id"] = [NO_DATA_CHAR] * len(linelist_df)
-    linelist_df["cluster_privates"] = [[NO_DATA_CHAR]] * len(linelist_df)
+    linelist_df["cluster_privates"] = [NO_DATA_CHAR] * len(linelist_df)
 
     for i in rec_seen:
         earliest_datetime = datetime.today()
         earliest_strain = None
 
         rec_strains = rec_seen[i]["strains"]
-        rec_privates = rec_seen[i]["privates"]
+        rec_privates = ",".join(rec_seen[i]["privates"])
         rec_df = linelist_df[linelist_df["strain"].isin(rec_strains)]
 
         earliest_datetime = min(rec_df["date"])
@@ -528,9 +528,6 @@ def main(
 
     # Convert privates from list to csv
     linelist_df["privates"] = [",".join(p) for p in linelist_df["privates"]]
-    linelist_df["cluster_privates"] = [
-        ",".join(p) for p in linelist_df["cluster_privates"]
-    ]
 
     # Recode NA
     linelist_df.fillna(NO_DATA_CHAR, inplace=True)
