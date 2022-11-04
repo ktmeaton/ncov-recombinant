@@ -297,6 +297,7 @@ def main(
     df["sc2rf_breakpoints_motif"] = [NO_DATA_CHAR] * len(df)
     df["sc2rf_unique_subs_filter"] = [NO_DATA_CHAR] * len(df)
     df["sc2rf_alleles_filter"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_intermission_allele_ratio"] = [NO_DATA_CHAR] * len(df)
     df["cov-spectrum_parents"] = [NO_DATA_CHAR] * len(df)
     df["cov-spectrum_parents_confidence"] = [NO_DATA_CHAR] * len(df)
     df["cov-spectrum_parents_subs"] = [NO_DATA_CHAR] * len(df)
@@ -377,6 +378,10 @@ def main(
         unique_subs_filter = []
         alleles_filter = []
         breakpoints_filter = []
+
+        # Store alleles for filtering
+        intermission_alleles = []
+        alleles_by_parent = {}
 
         prev_clade = None
         prev_start_coord = 0
@@ -541,15 +546,6 @@ def main(
                     max_breakpoints,
                 )
 
-        # Check if postprocessing increased the number of breakpoints
-        # Why is this bad again? Should be fine as long as we're under the max?
-        # if (num_breakpoints > 0) and (num_breakpoints_filter > num_breakpoints):
-        #     false_positives[
-        #         strain
-        #     ] = "{} filtered breakpoints > {} raw breakpoints".format(
-        #         num_breakpoints_filter, num_breakpoints
-        #     )
-
         # Identify the new filtered clades
         clades_filter = [regions_filter[s]["clade"] for s in regions_filter]
         # clades_filter_csv = ",".join(clades_filter)
@@ -560,6 +556,54 @@ def main(
                     num_parents, max_parents
                 )
 
+        # ---------------------------------------------------------------------
+        # Intermission/Minor Parent Allele Ratio
+        # ie. alleles that conflict with the parental region
+
+        for start_coord in regions_filter:
+            end_coord = regions_filter[start_coord]["end"]
+            clade = regions_filter[start_coord]["clade"]
+
+            for allele in alleles_split:
+
+                allele_coord = int(allele.split("|")[0])
+                allele_clade = allele.split("|")[1]
+                allele_nuc = allele.split("|")[2]
+
+                # Skip if this allele is not found in the current region
+                if allele_coord < start_coord or allele_coord > end_coord:
+                    continue
+
+                # Skip missing data
+                if allele_nuc == "N":
+                    continue
+
+                # Check if this allele's origins conflicts with the parental region
+                if allele_clade != clade:
+                    intermission_alleles.append(allele)
+                else:
+                    if clade not in alleles_by_parent:
+                        alleles_by_parent[clade] = []
+                    alleles_by_parent[clade].append(allele)
+
+        # Identify the "minor" parent (least number of alleles)
+        # minor_parent = None
+        minor_num_alleles = len(alleles_split)
+
+        for parent in alleles_by_parent:
+            num_alleles = len(alleles_by_parent[parent])
+            if num_alleles <= minor_num_alleles:
+                # minor_parent = parent
+                minor_num_alleles = num_alleles
+
+        intermission_allele_ratio = len(intermission_alleles) / minor_num_alleles
+
+        # When the ratio is above 1, that means there are more intermission than
+        # minor parent alleles
+        if intermission_allele_ratio >= 1:
+            false_positives[rec[0]] = "intermission_allele_ratio >= 1"
+
+        # --------------------------------------------------------------------------
         # Extract the lengths of each region
         regions_length = [str(regions_filter[s]["end"] - s) for s in regions_filter]
 
@@ -569,6 +613,7 @@ def main(
             for s in regions_filter
         ]
 
+        # --------------------------------------------------------------------------
         # Identify lineage based on breakpoint and parents!
         # But only if we've suppled the issues.tsv for pango-designation
         if issues:
@@ -687,6 +732,7 @@ def main(
         df.at[strain, "sc2rf_num_breakpoints_filter"] = num_breakpoints_filter
         df.at[strain, "sc2rf_unique_subs_filter"] = ",".join(unique_subs_filter)
         df.at[strain, "sc2rf_alleles_filter"] = ",".join(alleles_filter)
+        df.at[strain, "sc2rf_intermission_allele_ratio"] = intermission_allele_ratio
         if strain in false_positives:
             df.at[strain, "sc2rf_status"] = "false_positive"
             df.at[strain, "sc2rf_details"] = false_positives[strain]
