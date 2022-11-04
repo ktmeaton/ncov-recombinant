@@ -23,11 +23,13 @@ def build_tree(tree_data, tree=None, parent=None):
     elif node_name == "rec_parent":
         node_name = "X"
 
-    # I'm not sure why, but the MRCA of Omicron is named 21M rather than B.1.1.529
-    elif node_name == "21M":
+    # Nodes with non-lineage names, we will use the pango lineage instead
+    incorrect_node_names = ["21M", "22612T", "BA2754"]
+
+    if node_name in incorrect_node_names:
         node_name = tree_data["node_attrs"]["Nextclade_pango"]["value"]
 
-    # Manual fixes
+    # Nodes with the wrong parent
     if node_name == "CK.2.1":
         parent = "CK.2"
 
