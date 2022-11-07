@@ -599,8 +599,9 @@ def main(
         intermission_allele_ratio = len(intermission_alleles) / minor_num_alleles
 
         # When the ratio is above 1, that means there are more intermission than
-        # minor parent alleles
-        if intermission_allele_ratio >= 1:
+        # minor parent alleles. But don't override the false_positive status
+        # if this strain was already flagged as a false_positive previously
+        if intermission_allele_ratio >= 1 and rec[0] not in false_positives:
             false_positives[rec[0]] = "intermission_allele_ratio >= 1"
 
         # --------------------------------------------------------------------------
