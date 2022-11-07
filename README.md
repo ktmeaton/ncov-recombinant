@@ -30,10 +30,10 @@ SARS-CoV-2 recombinant sequence detection inspired by [nextstrain/ncov](https://
 
 A recombinant lineage is defined as a group of sequences with a unique combination of:
 
-- lineage assignment (ex. `XM`)
-- parental clades (ex. `Omicron/21K,Omicron/21L`)
-- parental lineages (ex. `BA.1.1,BA.2.12.1`)
-- breakpoints (ex. `17411:21617`)
+- Lineage assignment (ex. `XM`)
+- Parental clades (ex. `Omicron/21K`,`Omicron/21L`)
+- Parental lineages (ex. `BA.1.1`,`BA.2.12.1`)
+- Breakpoint intervals (ex. `17411:21617`)
 
 ### Designated Recombinants
 
@@ -41,21 +41,11 @@ Designated recombinants from [pango-designation](https://github.com/cov-lineages
 
 ### Novel Recombinants
 
-Novel recombinants (i.e. undesignated) can be identified by a lineage assignment that _does not_ start with `X*` (ex. BA.1.1) _or_ with a lineage assignment that contains `-like` (ex. `XM-like`). A cluster of sequences may be flagged as `-like` if one of following criteria apply:
-
-1. The lineage assignment by [Nextclade](https://github.com/nextstrain/nextclade) conflicts with the published breakpoints for a designated lineage (`resources/breakpoints.tsv`).
-
-    - Ex. An `XE` assigned sample has breakpoint `11538:12879` which conflicts with the published `XE` breakpoint (`ex. 8394:12879`). This will be renamed `XE-like`.
-
-1. The cluster has 10 or more sequences, which share at least 3 private mutations in common.
-
-    - Ex. A large cluster of sequences (N=50) are assigned `XM`. However, these 50 samples share 5 private mutations `T2470C,C4586T,C9857T,C12085T,C26577G` which do not appear in true `XM` sequences. This will be renamed `XM-like`. Upon further review of the reported matching [pango-designation issues](https://github.com/cov-lineages/pango-designation/issues) (`460,757,781,472,798`), we find this cluster to be a match to `proposed798`.
+Novel recombinants (i.e. undesignated) can be identified by a lineage assignment that _does not_ start with `X*` (ex. BA.1.1) _or_ with a lineage assignment that contains `-like` (ex. `XM-like`).
 
 ## Install
 
 1. Clone the repository:
-
-    > Note: that the `--recursive` flag is no longer necessary as of `v0.4.3`.
 
     ```bash
     git clone https://github.com/ktmeaton/ncov-recombinant.git
@@ -73,7 +63,7 @@ Novel recombinants (i.e. undesignated) can be identified by a lineage assignment
 
 > **Tip**: It is recommended to do a [fresh install](https://github.com/ktmeaton/ncov-recombinant#install) in a separate directory to test a newer version.
 
-Don't forget to update your conda environment!
+After pulling a fresh copy of the git repository, don't forget to update your conda environment!
 
 ```bash
 mamba env update -f workflow/envs/environment.yaml
@@ -111,9 +101,13 @@ python3 scripts/compare_positives.py \
 
     - Slides | `results/tutorial/report/report.pptx`
     - Tables<sup>*</sup> | `results/tutorial/report/report.xlsx`
-    - Plots | `results/tutorial/plots_historical`
-    - Breakpoints | `results/tutorial/plots_historical/breakpoints_clade.png`
-    - Mutations <sup>†</sup> | `results/tutorial/sc2rf/recombinants.ansi.txt`
+    - Plots
+        - Reporting Period (default: last 16 weeks): `results/tutorial/plots`
+        - All sequences: `results/tutorial/plots_historical`
+    - Breakpoints
+        - By parental clade: `results/tutorial/plots_historical/breakpoints_clade.png`
+        - By parental lineage: `results/tutorial/plots_historical/breakpoints_lineage.png`
+    - Alleles <sup>†</sup> | `results/tutorial/sc2rf/recombinants.ansi.txt`
 
 <sup>*</sup> Individual tables are available as TSV linelists in `results/tutorial/linelists`.  
 <sup>†</sup> Visualize sc2rf mutations with `less -S` or [Visual Studio ANSI Colors](https://marketplace.visualstudio.com/items?itemName=iliazeus.vscode-ansi).  
@@ -156,20 +150,43 @@ Visualization of parental alleles and mutations from [sc2rf](https://github.com/
 
 ## Controls
 
+### Genbank
+
 - After completing the tutorial, a good next step is to run the `controls` build.
 - This build analyzes publicly available sequences in [`data/controls`](https://github.com/ktmeaton/ncov-recombinant/tree/master/data/controls), which include recombinant ("positive") and non-recombinant ("negative") sequences.
 - Instructions for how to include the `controls` in your custom build are in the [configuration](https://github.com/ktmeaton/ncov-recombinant#configuration) section.
-
-1. Preview the steps that are going to be run.
-
-    ```bash
-    snakemake --profile profiles/controls --dryrun
-    ```
 
 1. Run the workflow.
 
     ```bash
     snakemake --profile profiles/controls
+    ```
+
+### GISAID
+
+- For GISAID users, a [comprehensive strain list](https://github.com/ktmeaton/ncov-recombinant/blob/dev/data/controls-gisaid/strains.txt) is provided that includes all designated recombinants to date (`XA` - `XBE`). This dataset includes 600+ sequences, and can be used for in-depth validation and testing.
+- It is recommended to use the "Input for the Augur pipeline" option, to download a `tar` compressed archive of metadata and sequences to `data/controls-gisaid/`.
+    [![gisaid_download](images/gisaid_download.png)](https://www.epicov.org/)
+
+1. Prep the input metadata and sequences.
+
+    ```bash
+    cd data/controls-gisaid
+    tar -xvf gisaid_auspice_input_hcov-19_*.tar
+    mv *sequences.fasta sequences.fasta
+    # Retain minimal metadata columns, to avoid non-ascii characters
+     csvtk cut -t -l -f 'strain,date,country,gisaid_epi_isl,pangolin_lineage' *.metadata.tsv > metadata.tsv
+    cd ../..
+    ```
+
+1. Run the workflow.
+
+    ```bash
+    # Option 1: Local testing
+    snakemake --profile profiles/controls-gisaid
+
+    # Option 2: High Performance Computing with SLURM
+    scripts/slurm.sh --profile profiles/controls-gisaid
     ```
 
 ## Configuration
@@ -184,6 +201,7 @@ Visualization of parental alleles and mutations from [sc2rf](https://github.com/
 
     > - **Note**: GISAID sequences and metadata can be downloaded using the "Input for the Augur pipeline" option on <https://gisaid.org/>.
     > - `metadata.tsv` MUST have at minimum the columns `strain`, `date`, `country`.  
+    > If collection dates or country are unknown, these fields can be left empty or filled with "NA".
     > - The first column MUST be `strain`.
 
 1. Create a profile for your custom build.
@@ -224,17 +242,17 @@ Visualization of parental alleles and mutations from [sc2rf](https://github.com/
     # System config
     #------------------------------------------------------------------------------#
 
-    # Maximum number of jobs to run
-    jobs : 2
+    # Maximum number of jobs to run simultaneously
+    jobs : 1
 
     # Default resources for a SINGLE JOB
     default-resources:
-    - cpus=2
-    - mem_mb=8000
-    - time_min=120
+    - cpus=1
+    - mem_mb=4000
+    - time_min=60
     ```
 
-1. Do a dry run to confirm setup.
+1. Do a "dry run" to confirm setup.
 
     ```bash
     snakemake --profile my_profiles/custom --dry-run
@@ -288,7 +306,7 @@ Visualization of parental alleles and mutations from [sc2rf](https://github.com/
 2. Edit `my_profiles/custom-hpc/config.yaml` to specify the number of `jobs` and `default-resources` to use.
 
     ```yaml
-    # Maximum number of jobs to run
+    # Maximum number of jobs to run simultaneously
     jobs : 4
 
     # Default resources for a SINGLE JOB
@@ -350,6 +368,36 @@ Visualization of parental alleles and mutations from [sc2rf](https://github.com/
 
     > - **Tip**: Display log of most recent workflow: `cat $(ls -t logs/ncov-recombinant/*.log | head -n 1)`
 
+1. How do I cleanup all the output from a previous run?
+
+    ```bash
+    snakemake --profile profiles/tutorial --delete-all-output
+    ```
+
+1. Why are some lineages called `X*-like`?
+
+    A cluster of sequences may be flagged as `-like` if one of following criteria apply:
+
+    1. The lineage assignment by [Nextclade](https://github.com/nextstrain/nextclade) conflicts with the published breakpoints for a designated lineage (`resources/breakpoints.tsv`).
+
+        - Ex. An `XE` assigned sample has breakpoint `11538:12879` which conflicts with the published `XE` breakpoint (`ex. 8394:12879`). This will be renamed `XE-like`.
+
+    1. The cluster has 10 or more sequences, which share at least 3 private mutations in common.
+
+        - Ex. A large cluster of sequences (N=50) are assigned `XM`. However, these 50 samples share 5 private mutations `T2470C,C4586T,C9857T,C12085T,C26577G` which do not appear in true `XM` sequences. This will be renamed `XM-like`. Upon further review of the reported matching [pango-designation issues](https://github.com/cov-lineages/pango-designation/issues) (`460,757,781,472,798`), we find this cluster to be a match to `proposed798`.
+
+1. Why are some lineages classified as "positive" recombinants but have no information about their parents or breakpoints?
+
+    There are 5 recombinant lineages that _can_ be identified by `nextclade` but _cannot_ be verified by `sc2rf`. When sequences of these lineages are detected by `nextclade`, they will be automatically passed ("autopass") through `sc2rf` as positives. As a result, these sequences will have `NA` values under columns such as `parents_clade` and `breakpoints`.
+
+    1. `XN` | [Issue #137](https://github.com/ktmeaton/ncov-recombinant/issues/137) | Breakpoints lie at the extreme 5' end of the genome.
+    1. `XP` | [Issue #136](https://github.com/ktmeaton/ncov-recombinant/issues/137) | Breakpoints lie at the extreme 3' end of the genome.
+    1. `XAR` | [Issue #106](https://github.com/ktmeaton/ncov-recombinant/issues/106) | Breakpoints lie at the extreme 5' end of the genome.
+    1. `XAS` | [Issue #86](https://github.com/ktmeaton/ncov-recombinant/issues/86) | The first parent cannot be differentiated between `BA.5` and `BA.4` (without using deletions).
+    1. `XAZ` | [Issue #87](https://github.com/ktmeaton/ncov-recombinant/issues/87) | There are no "diagnostic" mutations from the second parent (`BA.2`).
+
+    The setting for auto-passing certain lineages is located in `defaults/parameters.yaml` under the section `sc2rf_recombinants` and `auto_pass`.
+
 1. How do I change the parameters for a rule?
 
     - Find the rule you are interested in customizing in `defaults/parameters.yaml`. For example, maybe you want recombinants visualized by `division` rather than `country`.
@@ -389,11 +437,13 @@ Visualization of parental alleles and mutations from [sc2rf](https://github.com/
           - division
     ```
 
-1. How do I cleanup all the output from a previous run?
+1. Where can I find the plotting data?
 
-    ```bash
-    snakemake --profile profiles/tutorial --delete-all-output
-    ```
+    - A data table is provided for each plot:
+
+        - Plot: `results/tutorial/plots/lineage.png`
+        - Table: `results/tutorial/plots/lineage.tsv`
+        - The rows are the epiweek, and the columns are the categories (ex. lineages)
 
 1. Why are "positive" sequences missing from the plots and slides?
 
@@ -411,14 +461,6 @@ Visualization of parental alleles and mutations from [sc2rf](https://github.com/
         min_date: "2022-01-10"
         max_date: "2022-04-25" # Optional, can be left blank to use current date
     ```
-
-1. Where can I find the plotting data?
-
-    - A data table is provided for each plot:
-
-        - Plot: `results/tutorial/plots/lineage.png`
-        - Table: `results/tutorial/plots/lineage.tsv`
-        - The rows are the epiweek, and the columns are the categories (ex. lineages)
 
 ## Credits
 
