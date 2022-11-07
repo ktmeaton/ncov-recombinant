@@ -79,6 +79,36 @@
         "ideas",
         "design"
       ]
+    },
+    {
+      "login": "jbloomlab",
+      "name": "Jesse Bloom Lab",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17679492?s=200&v=4",
+      "profile": "https://github.com/jbloomlab",
+      "contributions": [
+        "data",
+        "plugin"
+      ]
+    },
+    {
+      "login": "dfornika",
+      "name": "Dan Fornika",
+      "avatar_url": "https://avatars.githubusercontent.com/u/145659?v=4",
+      "profile": "https://github.com/dfornika",
+      "contributions": [
+        "ideas",
+        "test"
+      ]
+    },
+    {
+      "login": "TaraNewman",
+      "name": "Tara Newman",
+      "avatar_url": "https://ui-avatars.com/api/?name=Tara+Newman",
+      "profile": "",
+      "contributions": [
+        "ideas",
+        "test"
+      ]
     }
   ]
 }

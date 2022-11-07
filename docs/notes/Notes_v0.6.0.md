@@ -1,8 +1,21 @@
-# Development
+# v0.6.0
+
+This is a major release that includes the following changes:
+
+- Detection of all recombinants in [Nextclade dataset 2022-10-27](https://github.com/nextstrain/nextclade_data/releases/tag/2022-10-31--11-48-49--UTC): `XA` to `XBE`.
+- Implementation of recombinant sublineages (ex. `XBB.1`).
+- Implementation of immune-related statistics (`rbd_level`, `immune_escape`, `ace2_binding`) from `nextclade`, the `Nextstrain` team, and Jesse Bloom's group:
+
+  - https://github.com/nextstrain/ncov/blob/master/defaults/rbd_levels.yaml
+  - https://jbloomlab.github.io/SARS-CoV-2-RBD_DMS_Omicron/epistatic-shifts/
+  - https://jbloomlab.github.io/SARS2_RBD_Ab_escape_maps/escape-calc/
+  - https://doi.org/10.1093/ve/veac021
+  - https://doi.org/10.1101/2022.09.15.507787
+  - https://doi.org/10.1101/2022.09.20.508745
 
 ## Dataset
 
-- [Issue #168](https://github.com/ktmeaton/ncov-recombinant/issues/168):
+- [Issue #168](https://github.com/ktmeaton/ncov-recombinant/issues/168): NULL collection dates and NULL country is implemented.
 - `controls` was updated to in include 1 strain from `XBB` for a total of 22 positive controls. The 28 negative controls were unchanged from `v0.5.1`.
 - `controls-gisaid` strain list was updated to include `XA` through to `XBE` for a total of 528 positive controls. This includes sublineages such as `XBB.1` and `XBB.1.2` which synchronizes with [Nextclade Dataset 2022-10-19](https://github.com/nextstrain/nextclade_data/releases/tag/2022-10-19). The 187 negatives controls were unchanged from `v0.5.1`.
 
@@ -19,7 +32,7 @@
 
 - [Issue #185](https://github.com/ktmeaton/ncov-recombinant/issues/185): Use nextclade dataset Auspice tree for lineage hierarchy. Previously, the phylogeny of lineages was constructed from the [cov-lineages website YAML](https://github.com/cov-lineages/lineages-website/blob/master/_data/lineages.yml). Instead, we now use the tree provided with nextclade datasets, to better synchronize the lineage model with the output.
 
-Rather than creating the output tree in `resources/lineages.nwk`, the lineage tree will output to `results/BUILD/lineage_tree/tree.nwk`. This is because different builts might use different nextclade datasets, and so are build-specific results.
+Rather than creating the output tree in `resources/lineages.nwk`, the lineage tree will output to `data/sars-cov-2_<DATE>/tree.nwk`. This is because different builts might use different nextclade datasets, and so are dataset specific output.
 
 ## sc2rf
 
@@ -56,3 +69,9 @@ Rather than creating the output tree in `resources/lineages.nwk`, the lineage tr
 - [Issue #182](https://github.com/ktmeaton/ncov-recombinant/issues/182): `XBC.2`
 - [Issue #171](https://github.com/ktmeaton/ncov-recombinant/issues/171): `XBD`
 - [Issue #177](https://github.com/ktmeaton/ncov-recombinant/issues/177): `XBE`
+
+### Proposed Lineages
+
+- [Issue #198](https://github.com/ktmeaton/ncov-recombinant/issues/198): `proposed1229`
+- [Issue #199](https://github.com/ktmeaton/ncov-recombinant/issues/199): `proposed1268`
+- [Issue #197](https://github.com/ktmeaton/ncov-recombinant/issues/197): `proposed1296`
