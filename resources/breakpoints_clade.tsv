@@ -8,6 +8,7 @@ proposed808-1	B.1.438.1	18163	24503
 XB	B.1.631	23012	29903
 XB	B.1.634	0	22916
 XBB	BA.2.10	0	22331
+proposed1229	BA.2.3.17	0	15451
 XBC	Delta/21I	4184	22578
 XBC	Delta/21I	25584	29903
 XF	Delta/21J	0	5386
@@ -86,8 +87,10 @@ XAH	Omicron/BA.1/21K	26530	29903
 XAP	Omicron/BA.1/21K	26530	29903
 XAJ	Omicron/BA.2.12/22C	0	21570
 XAJ	Omicron/BA.2.12/22C	23673	29903
+proposed1296	Omicron/BA.2.75/22D	0	5183
 XBD	Omicron/BA.2.75/22D	0	23019
 XBF	Omicron/BA.2.75/22D	9866	29903
+proposed1229	Omicron/BA.2.75/22D	22001	29903
 XBB	Omicron/BA.2.75/22D	22577	29903
 XBA	Omicron/BA.2/21L	0	2790
 XBC	Omicron/BA.2/21L	0	2790
@@ -100,6 +103,7 @@ proposed1139	Omicron/BA.2/21L	0	12160
 XAK	Omicron/BA.2/21L	0	13194
 proposed498	Omicron/BA.2/21L	0	17409
 proposed896	Omicron/BA.2/21L	0	22600
+proposed1268	Omicron/BA.2/21L	0	23018
 XAC	Omicron/BA.2/21L	0	24503
 proposed608	Omicron/BA.2/21L	0	24503
 XAE	Omicron/BA.2/21L	0	24503
@@ -167,8 +171,10 @@ XAN	Omicron/BA.5/22B	22792	29903
 XAV	Omicron/BA.5/22B	22792	29903
 proposed1139	Omicron/BA.5/22B	22792	29903
 proposed896	Omicron/BA.5/22B	22916	29903
+proposed1268	Omicron/BA.5/22B	25171	29903
 XBD	Omicron/BA.5/22B	25416	29903
 proposed1006	Omicron/BA.5/22B	29666	29903
+proposed1296	Omicron/XBB/22F	12444	29903
 proposed1138	Unknown	0	29903
 XBA	breakpoint	2791	4180
 XBC	breakpoint	2791	4183
@@ -180,6 +186,7 @@ XAZ	breakpoint	3359	9865
 XQ	breakpoint	4322	5385
 XR	breakpoint	4322	5385
 XBF	breakpoint	5184	9865
+proposed1296	breakpoint	5184	12443
 XF	breakpoint	5387	6401
 XG	breakpoint	5387	8382
 XL	breakpoint	5387	8392
@@ -212,6 +219,7 @@ XJ	breakpoint	13196	15239
 XV	breakpoint	13196	15239
 proposed467	breakpoint	15241	15713
 proposed808-1	breakpoint	15241	18162
+proposed1229	breakpoint	15452	22000
 proposed559	breakpoint	15714	17410
 XBE	breakpoint	16936	27011
 proposed498	breakpoint	17410	18163
@@ -238,6 +246,7 @@ XBB	breakpoint	22332	22576
 XBC	breakpoint	22579	22673
 proposed896	breakpoint	22601	22915
 XB	breakpoint	22917	23011
+proposed1268	breakpoint	23019	25170
 XBD	breakpoint	23020	25415
 XAS	breakpoint	23041	26528
 XAJ	breakpoint	23536	23672

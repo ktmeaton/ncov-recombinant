@@ -1,4 +1,5 @@
-[pango-designation issue XXX](https://github.com/cov-lineages/pango-designation/issues/XXX)
+- pango-designation issue: [# XXX](https://github.com/cov-lineages/pango-designation/issues/XXX)
+- covSPECTRUM query:
 
 ## Parents
 
