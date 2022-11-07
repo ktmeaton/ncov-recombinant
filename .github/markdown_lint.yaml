@@ -8,3 +8,4 @@ no-trailing-spaces:
   br_spaces: 2
 no-inline-html: false
 no-bare-urls: false
+first-line-h1: false
