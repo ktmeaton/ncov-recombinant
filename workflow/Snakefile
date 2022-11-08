@@ -480,6 +480,7 @@ rule nextclade_recombinants:
     """
 
 # ------------------------------------------------------------------------------
+rule_name = "rbd_levels"
 rule rbd_levels:
   """Calculate the number of key RBD mutations."""
 
