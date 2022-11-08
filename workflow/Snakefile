@@ -658,6 +658,10 @@ def _params_sc2rf_recombinants(build):
   if auto_pass: params["auto_pass"] = "--nextclade-auto-pass {}".format(",".join(auto_pass))
   else: params["auto_pass"] = ""
 
+  lapis = config["builds"][build]["sc2rf_recombinants"]["lapis"]
+  if lapis: params["lapis"] = "--lapis"
+  else: params["lapis"] = ""
+
   # The metadata param will not be used if we are excluding negatives
   metadata = _inputs(build)["metadata"]
   exclude_negatives = config["builds"][build]["sc2rf"]["exclude_negatives"]
@@ -707,6 +711,7 @@ rule sc2rf_recombinants:
     motifs          = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["motifs"],
     dup_method      = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["dup_method"],
     auto_pass       = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["auto_pass"],
+    lapis           = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["lapis"],
     metadata        = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["metadata"],
     # Join inputs together with commas
     ansi            = lambda wildcards: ",".join(_inputs_sc2rf_recombinants(wildcards.build)["ansi"]),
@@ -739,6 +744,7 @@ rule sc2rf_recombinants:
       {params.max_parents} \
       {params.max_breakpoints} \
       {params.dup_method} \
+      {params.lapis} \
       --log {log} \
       >> {log} 2>&1;
 

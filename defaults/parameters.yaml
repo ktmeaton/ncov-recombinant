@@ -85,6 +85,8 @@ rule_params:
       - voc:             "--clades BA.2.10 BA.2.3.17 BA.2.3.20 BA.2.75 BA.4.6 BA.5.2 BA.5.3 XBB --ansi --parents 2-4 --breakpoints 1-5 --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
 
   # ---------------------------------------------------------------------------
+  # lapis              : true if the LAPIS API should be used to query covSPECTRUM to identify the parental lineages.
+  #                    :  if experiencing network issues in this rule, set to false
   # min_len            : (optional) Ignore recombinant regions shorter than this
   # min_consec_allele  : (optional) Ignore recombinant regions with less than this number of consecutive alleles (both subs and ref)
   # max_breakpoint_len : (optional) Ignore recombinant breakpoints longer than this
@@ -99,6 +101,7 @@ rule_params:
   # auto_pass          : (optional) Samples with these lineage assignments by nextclade will
   #                      automatically be classified as 'positive', regardless of sc2rf results.
   - name: sc2rf_recombinants
+    lapis: true
     min_len: 500
     min_consec_allele: 3
     max_breakpoint_len:

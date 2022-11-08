@@ -154,6 +154,13 @@ def reverse_iter_collapse(
     default=-1,
 )
 @click.option(
+    "--lapis",
+    help="Enable the LAPIS API to identify parental lineages from covSPECTRUM.",
+    is_flag=True,
+    required=False,
+    default=False,
+)
+@click.option(
     "--issues",
     help="Issues TSV metadata from pango-designation",
     required=False,
@@ -205,6 +212,7 @@ def main(
     lineage_tree,
     metadata,
     dup_method,
+    lapis,
 ):
     """Detect recombinant seqences from sc2rf. Dependencies: pandas, click"""
 
@@ -887,8 +895,9 @@ def main(
     # We can only do this if:
     # 1. A nextclade no-recomb tsv file was specified with mutations
     # 2. Multiple regions were detected (not collapsed down to one parent region)
+    # 3. The lapis API was enabled (--lapis)
 
-    if nextclade_no_recomb:
+    if nextclade_no_recomb and lapis:
 
         logger.info(
             "Identifying parent lineages based on nextclade no-recomb substitutions"
