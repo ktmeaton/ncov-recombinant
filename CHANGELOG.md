@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## v0.6.1
+
+### Notes
+
+This is a minor bugfix release aimed towards resolving network connectivity errors and catching false positives.
+
+#### sc2rf
+
+- [Issue #195](https://github.com/ktmeaton/ncov-recombinant/issues/195): Consider alleles outside of parental regions as intermissions (conflicts) to catch false positives.
+- [Issue #201](https://github.com/ktmeaton/ncov-recombinant/issues/201): Make LAPIS query of covSPECTRUM optional, to help with users with network connectivity issues. This can be set with the flag `lapis: false` in builds under the rule `sc2rf_recombinants`.
+- [Issue #202](https://github.com/ktmeaton/ncov-recombinant/issues/202): Document connection errors related to LAPIS and provide options for solutions.
+
+### Commits
+
+- [```00fe2fc8```](https://github.com/ktmeaton/ncov-recombinant/commit/00fe2fc8) docs: update notes for v0.6.1
+- [```fa03ea96```](https://github.com/ktmeaton/ncov-recombinant/commit/fa03ea96) workflow: fix bug where rbd_levels log was incorrectly named
+- [```a281b75c```](https://github.com/ktmeaton/ncov-recombinant/commit/a281b75c) workflow: make lapis optional param for #201 #202
+- [```75684b55```](https://github.com/ktmeaton/ncov-recombinant/commit/75684b55) docs: update docs
+- [```1085ce0e```](https://github.com/ktmeaton/ncov-recombinant/commit/1085ce0e) script: postprocess count alleles outside regions as intermissions for #195
+- [```c11770c1```](https://github.com/ktmeaton/ncov-recombinant/commit/c11770c1) param: add XAV to auto-pass for #104 #195
+
 ## v0.6.0
 
 ### Notes
@@ -82,6 +103,7 @@ Rather than creating the output tree in `resources/lineages.nwk`, the lineage tr
 
 ### Commits
 
+- [```2506e907```](https://github.com/ktmeaton/ncov-recombinant/commit/2506e907) docs: update changelog and add v0.6.0 testing summary package
 - [```0cc421e0```](https://github.com/ktmeaton/ncov-recombinant/commit/0cc421e0) docs: update all contributors
 - [```cd9b6cbb```](https://github.com/ktmeaton/ncov-recombinant/commit/cd9b6cbb) resources: update issues
 - [```0fa2e3c1```](https://github.com/ktmeaton/ncov-recombinant/commit/0fa2e3c1) docs: update readme
