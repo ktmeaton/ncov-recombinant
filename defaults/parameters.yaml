@@ -107,11 +107,12 @@ rule_params:
     motifs:
     dup_method: min_uncertainty
     auto_pass:
-      - XN
-      - XP
-      - XAR
-      - XAS
-      - XAZ
+      - XN # Issue #137 | Breakpoints lie at the extreme 5' end of the genome.
+      - XP # Issue #136 | Breakpoints lie at the extreme 3' end of the genome.
+      - XAR # Issue #106 | Breakpoints lie at the extreme 5' end of the genome.
+      - XAS # Issue #86 | The first parent cannot be differentiated between BA.5 and BA.4 (without using deletions).
+      - XAV # Issue #104, #195 | Excessive noise/intermissions from conflicting reversions.
+      - XAZ # Issue #87 | There are no "diagnostic" mutations from the second parent (BA.2).
 
   # ---------------------------------------------------------------------------
   # extra_cols : (Optional) list of metadata columns to output going forwards (aside from defaults of strain,date,country)
