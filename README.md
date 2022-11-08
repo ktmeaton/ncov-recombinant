@@ -373,6 +373,10 @@ Visualization of parental alleles and mutations from [sc2rf](https://github.com/
 
     > - **Tip**: Display log of most recent workflow: `cat $(ls -t logs/ncov-recombinant/*.log | head -n 1)`
 
+1. Why is the pipeline exiting with `ConnectionError` or `HTTPSError`?
+
+    Network connection issues can occur in the rule `sc2rf_recombinants`, where the [LAPIS API](https://lapis-docs.readthedocs.io/en/latest/) is used to query [covSPECTRUM](https://cov-spectrum.org/explore/World) in order to identify the most likely parental lineages. For troubleshooting and solutions, please see [Issue #202](https://github.com/ktmeaton/ncov-recombinant/issues/202) and [Issue #201](https://github.com/ktmeaton/ncov-recombinant/issues/201).
+
 1. How do I cleanup all the output from a previous run?
 
     ```bash
