@@ -586,6 +586,24 @@ def main(
                         alleles_by_parent[clade] = []
                     alleles_by_parent[clade].append(allele)
 
+        # Add in alleles that were not assigned to any region
+        for allele in alleles_split:
+            allele_nuc = allele.split("|")[2]
+            # Skip missing data
+            if allele_nuc == "N":
+                continue
+
+            allele_coord = int(allele.split("|")[0])
+            allele_in_region = False
+            for start_coord in regions_filter:
+                end_coord = regions_filter[start_coord]["end"]
+                if allele_coord >= start_coord and allele_coord <= end_coord:
+                    allele_in_region = True
+
+            # Alleles not assigned to any region are counted as intermissions
+            if not allele_in_region:
+                intermission_alleles.append(allele)
+
         # Identify the "minor" parent (least number of alleles)
         # minor_parent = None
         minor_num_alleles = len(alleles_split)
