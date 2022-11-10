@@ -14,6 +14,9 @@ NO_DATA_CHAR = "NA"
 
 PIPELINE = "ncov-recombinant"
 
+# There are alternative breakpoints for ARTIC
+SC2RF_LINEAGE_ALT = {"XBB_ARTICv4.1": "XBB"}
+
 # Select and rename columns from summary
 LINELIST_COLS = {
     "strain": "strain",
@@ -165,6 +168,11 @@ def main(
         # sc2rf can be multiple lineages, same breakpoint, multiple possible lineages
         lineages_sc2rf = rec[1]["lineage_sc2rf"].split(",")
         status = rec[1]["status_sc2rf"]
+
+        # Rename sc2rf lineages for alts (ex. ARTIC XBB)
+        for i, l_sc2rf in enumerate(lineages_sc2rf):
+            if l_sc2rf in SC2RF_LINEAGE_ALT:
+                lineages_sc2rf[i] = SC2RF_LINEAGE_ALT[l_sc2rf]
 
         # Save a flag to indicate whether nextclade is sublineage of sc2rf
         nextclade_is_sublineage = False
