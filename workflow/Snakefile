@@ -296,7 +296,7 @@ rule nextclade_dataset:
 
   message: """Downloading Nextclade dataset.\n
   log:     {log}
-  dataset: {params.dataset_dir}
+  dataset: {output.dataset_dir}
   """
 
   wildcard_constraints:
