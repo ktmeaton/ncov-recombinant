@@ -224,94 +224,10 @@ def main(
     logger = create_logger(logfile=log)
 
     # -----------------------------------------------------------------------------
-    # Import Dataframes
+    # Import Optional Data Files
 
-    # sc2rf csv output (required)
-    df = pd.DataFrame()
-    csv_split = csv.split(",")
-    # Store a dict of duplicate strains
-    duplicate_strains = {}
-
-    for csv_file in csv_split:
-        logger.info("Parsing csv: {}".format(csv_file))
-
-        try:
-            temp_df = pd.read_csv(csv_file, sep=",", index_col=0)
-        except pd.errors.EmptyDataError:
-            logger.warning("No records in csv: {}".format(csv_file))
-            temp_df = pd.DataFrame()
-
-        # Add column to indicate which csv file results come from (debugging)
-        temp_df.insert(
-            loc=len(temp_df.columns),
-            column="csv_file",
-            value=os.path.basename(csv_file),
-        )
-
-        # Add column to hold original strain name before marking duplicates
-        temp_df.insert(
-            loc=len(temp_df.columns),
-            column="strain",
-            value=temp_df.index,
-        )
-
-        # If the df has no records, this is the first csv
-        if len(df) == 0:
-            df = temp_df
-        else:
-            # -----------------------------------------------------------------
-            # Option 1: Override
-            # Identify new strains in to override previous csv
-            # override_strains = []
-            # for strain in temp_df.index:
-            #     if strain in df.index:
-            #         override_strains.append(strain)
-
-            # # Remove the override strains from the previous dataframe
-            # df = df[~df.index.isin(override_strains)]
-
-            # Option 2: Keep all dups for now, only retain best results at end
-            for strain in temp_df.index:
-                if strain in list(df["strain"]):
-                    if strain not in duplicate_strains:
-                        duplicate_strains[strain] = 1
-
-                    # add suffix "_dup<i>", remove at the end of scripts
-                    dup_1 = strain + "_dup{}".format(duplicate_strains[strain])
-                    df.rename(index={strain: dup_1}, inplace=True)
-
-                    duplicate_strains[strain] += 1
-
-                    dup_2 = strain + "_dup{}".format(duplicate_strains[strain])
-                    temp_df.rename(index={strain: dup_2}, inplace=True)
-
-            # Combine primary and secondary data frames
-            df = pd.concat([df, temp_df])
-
-    # Remove temporary strain column
-    df.drop(columns="strain", inplace=True)
-
-    df.fillna("", inplace=True)
-
-    # Initialize dataframe columns to NA
-    df["sc2rf_status"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_details"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_lineage"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_clades_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_regions_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_regions_length"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_breakpoints_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_num_breakpoints_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_breakpoints_motif"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_unique_subs_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_alleles_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_intermission_allele_ratio"] = [NO_DATA_CHAR] * len(df)
-    df["cov-spectrum_parents"] = [NO_DATA_CHAR] * len(df)
-    df["cov-spectrum_parents_confidence"] = [NO_DATA_CHAR] * len(df)
-    df["cov-spectrum_parents_subs"] = [NO_DATA_CHAR] * len(df)
-
-    # if using issues.tsv of pango-designation issues (optional)
-    # does lineage assignment by parent+breakpoint matching
+    # (Optional) issues.tsv of pango-designation issues
+    #            lineage assignment by parent+breakpoint matching
     if issues:
 
         logger.info("Parsing issues: {}".format(issues))
@@ -337,24 +253,36 @@ def main(
     # (Optional) nextclade tsv dataframe
     if nextclade:
         logger.info("Parsing nextclade: {}".format(nextclade))
-        nextclade_df = pd.read_csv(nextclade, sep="\t", index_col=0)
+        nextclade_df = pd.read_csv(nextclade, sep="\t")
+        nextclade_df["seqName"] = [str(s) for s in nextclade_df["seqName"]]
+        nextclade_df.set_index("seqName", inplace=True)
         nextclade_df.fillna(NO_DATA_CHAR, inplace=True)
 
         if nextclade_auto_pass:
             nextclade_auto_pass_lineages = nextclade_auto_pass.split(",")
+            # Identify samples to autopass
+            auto_pass_df = nextclade_df[
+                (nextclade_df["Nextclade_pango"] != NO_DATA_CHAR)
+                & (nextclade_df["Nextclade_pango"].isin(nextclade_auto_pass_lineages))
+            ]
 
     # (Optional) nextclade tsv dataframe no-recomb dataset
     if nextclade_no_recomb:
         logger.info(
             "Parsing nextclade no-recomb output: {}".format(nextclade_no_recomb)
         )
-        nextclade_no_recomb_df = pd.read_csv(nextclade_no_recomb, sep="\t", index_col=0)
+        nextclade_no_recomb_df = pd.read_csv(nextclade_no_recomb, sep="\t")
+        nextclade_no_recomb_df["seqName"] = [
+            str(s) for s in nextclade_no_recomb_df["seqName"]
+        ]
+        nextclade_no_recomb_df.set_index("seqName", inplace=True)
         nextclade_no_recomb_df.fillna(NO_DATA_CHAR, inplace=True)
 
     # (Optional) metadata tsv dataframe to find negatives missing from sc2rf
     if metadata:
         logger.info("Parsing metadata tsv: {}".format(metadata))
         metadata_df = pd.read_csv(metadata, sep="\t")
+        metadata_df["strain"] = [str(s) for s in metadata_df["strain"]]
         metadata_df.fillna(NO_DATA_CHAR, inplace=True)
 
     # (Optional) phylogenetic tree of pangolineage lineages
@@ -362,15 +290,144 @@ def main(
         logger.info("Parsing lineage tree: {}".format(lineage_tree))
         tree = Phylo.read(lineage_tree, "newick")
 
-    # Initialize a dictionary of false_positive strains
-    # key: strain, value: reason
-    false_positives = {}
+    # -----------------------------------------------------------------------------
+    # Import Dataframes of Potential Positive Recombinants
 
+    # sc2rf csv output (required)
+    df = pd.DataFrame()
+    csv_split = csv.split(",")
+    # Store a dict of duplicate strains
+    duplicate_strains = {}
+
+    for csv_file in csv_split:
+        logger.info("Parsing csv: {}".format(csv_file))
+
+        try:
+            temp_df = pd.read_csv(csv_file, sep=",")
+        except pd.errors.EmptyDataError:
+            logger.warning("No records in csv: {}".format(csv_file))
+            temp_df = pd.DataFrame()
+
+        # Add column to indicate which csv file results come from (debugging)
+        temp_df.insert(
+            loc=len(temp_df.columns),
+            column="csv_file",
+            value=os.path.basename(csv_file),
+        )
+
+        # Convert to str type
+        temp_df["sample"] = [str(s) for s in temp_df["sample"]]
+        temp_df.set_index("sample", inplace=True)
+
+        # Add column to hold original strain name before marking duplicates
+        temp_df.insert(
+            loc=len(temp_df.columns),
+            column="strain",
+            value=temp_df.index,
+        )
+
+        # If the df has no records, this is the first csv
+        if len(df) == 0:
+            df = temp_df
+        else:
+            # Keep all dups for now, only retain best results at end
+            for strain in temp_df.index:
+                if strain in list(df["strain"]):
+                    if strain not in duplicate_strains:
+                        duplicate_strains[strain] = 1
+
+                    # add suffix "_dup<i>", remove at the end of scripts
+                    dup_1 = strain + "_dup{}".format(duplicate_strains[strain])
+                    df.rename(index={strain: dup_1}, inplace=True)
+
+                    duplicate_strains[strain] += 1
+
+                    dup_2 = strain + "_dup{}".format(duplicate_strains[strain])
+                    temp_df.rename(index={strain: dup_2}, inplace=True)
+
+            # Combine primary and secondary data frames
+            df = pd.concat([df, temp_df])
+
+    df.fillna("", inplace=True)
+
+    # Initialize dataframe columns to NA
+    df["sc2rf_status"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_details"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_lineage"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_clades_filter"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_regions_filter"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_regions_length"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_breakpoints_filter"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_num_breakpoints_filter"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_breakpoints_motif"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_unique_subs_filter"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_alleles_filter"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_intermission_allele_ratio"] = [NO_DATA_CHAR] * len(df)
+    df["cov-spectrum_parents"] = [NO_DATA_CHAR] * len(df)
+    df["cov-spectrum_parents_confidence"] = [NO_DATA_CHAR] * len(df)
+    df["cov-spectrum_parents_subs"] = [NO_DATA_CHAR] * len(df)
+    df["sc2rf_parents_conflict"] = [NO_DATA_CHAR] * len(df)
+
+    # Initialize a dictionary of sc2rf details and false positives
+    # key: strain, value: list of reasons
+    false_positives_dict = {}
+    sc2rf_details_dict = {strain: [] for strain in df.index}
+
+    # -------------------------------------------------------------------------
+    # Add in the Negatives (if alignment was specified)
+    # Avoiding the Bio module, I just need names not sequences
+
+    if metadata:
+
+        logger.info("Reporting non-recombinants in metadata as negatives")
+        for strain in list(metadata_df["strain"]):
+            # Ignore this strain if it's already in dataframe (it's a recombinant)
+            if strain in list(df["strain"]):
+                continue
+            # Otherwise add it, with no data as default
+            df.loc[strain] = NO_DATA_CHAR
+            df.at[strain, "sc2rf_status"] = "negative"
+            sc2rf_details_dict[strain] = ["no recombination detected"]
+
+    # Remove temporary strain column
+    df.drop(columns="strain", inplace=True)
+
+    # ---------------------------------------------------------------------
+    # Auto-pass lineages from nextclade assignment
+
+    if nextclade and nextclade_auto_pass:
+
+        logger.info(
+            "Auto-passing lineages: {}".format(",".join(nextclade_auto_pass_lineages))
+        )
+
+        # If already in the df, set the status to positive, update details
+        for rec in df[df.index.isin(auto_pass_df.index)].iterrows():
+            strain = rec[0]
+            lineage = auto_pass_df.loc[strain]["Nextclade_pango"]
+            details = "nextclade-auto-pass {}".format(lineage)
+            sc2rf_details_dict[strain].append(details)
+            df.at[strain, "sc2rf_status"] = "positive"
+            df.at[strain, "sc2rf_details"] = ";".join(sc2rf_details_dict[strain])
+
+    # -------------------------------------------------------------------------
+    # Begin Post-Processing
     logger.info("Post-processing table")
 
+    # Iterate through all positive and negative recombinantions
     for rec in df.iterrows():
 
+        # Skip over negative recombinants
+        if rec[1]["sc2rf_status"] == "negative":
+            continue
+
         strain = rec[0]
+
+        # Check if this strain was auto-passed
+        strain_auto_pass = False
+        for detail in sc2rf_details_dict[strain]:
+            if "auto-pass" in detail:
+                strain_auto_pass = True
 
         regions_str = rec[1]["regions"]
         regions_split = regions_str.split(",")
@@ -519,7 +576,10 @@ def main(
         # -----------------------------------------------------------------
         # Check if all the regions were collapsed
         if len(regions_filter) < 2:
-            false_positives[rec[0]] = "single parent"
+            sc2rf_details_dict[strain].append("single parent")
+            # if this is an auto-pass lineage, don't add to false positives
+            if not strain_auto_pass:
+                false_positives_dict[strain] = ""
 
         # -----------------------------------------------------------------
         # FOURTH PASS: BREAKPOINT DETECTION
@@ -549,10 +609,14 @@ def main(
         # Check for too many breakpoints
         if max_breakpoints != -1:
             if num_breakpoints_filter > max_breakpoints:
-                false_positives[strain] = "{} breakpoints > {} max breakpoints".format(
+                details = "{} breakpoints > {} max breakpoints".format(
                     num_breakpoints_filter,
                     max_breakpoints,
                 )
+                sc2rf_details_dict[strain].append(details)
+                # if this is an auto-pass lineage, don't add to false positives
+                if not strain_auto_pass:
+                    false_positives_dict[strain] = ""
 
         # Identify the new filtered clades
         clades_filter = [regions_filter[s]["clade"] for s in regions_filter]
@@ -560,9 +624,11 @@ def main(
         num_parents = len(set(clades_filter))
         if max_parents != -1:
             if num_parents > max_parents:
-                false_positives[strain] = "{} parents > {}".format(
-                    num_parents, max_parents
-                )
+                details = "{} parents > {}".format(num_parents, max_parents)
+                sc2rf_details_dict[strain].append(details)
+                # if this is an auto-pass lineage, don't add to false positives
+                if not strain_auto_pass:
+                    false_positives_dict[strain] = ""
 
         # ---------------------------------------------------------------------
         # Intermission/Minor Parent Allele Ratio
@@ -627,8 +693,11 @@ def main(
         # When the ratio is above 1, that means there are more intermission than
         # minor parent alleles. But don't override the false_positive status
         # if this strain was already flagged as a false_positive previously
-        if intermission_allele_ratio >= 1 and rec[0] not in false_positives:
-            false_positives[rec[0]] = "intermission_allele_ratio >= 1"
+        if intermission_allele_ratio >= 1:
+            sc2rf_details_dict[strain].append("intermission_allele_ratio >= 1")
+            # if this is an auto-pass lineage, don't add to false positives
+            if not strain_auto_pass:
+                false_positives_dict[strain] = ""
 
         # --------------------------------------------------------------------------
         # Extract the lengths of each region
@@ -748,9 +817,10 @@ def main(
 
             # Override the linaege call if one breakpoint had no motif
             if False in breakpoints_motifs:
-                df.at[strain, "sc2rf_lineage"] = "false_positive"
-                df.at[strain, "sc2rf_status"] = "false_positive"
-                false_positives[strain] = "missing breakpoint motif"
+                sc2rf_details_dict[strain].append("missing breakpoint motif")
+                # if this is an auto-pass lineage, don't add to false positives
+                if not strain_auto_pass:
+                    false_positives_dict[strain] = ""
 
         df.at[strain, "sc2rf_clades_filter"] = ",".join(clades_filter)
         df.at[strain, "sc2rf_regions_filter"] = ",".join(regions_filter)
@@ -760,13 +830,16 @@ def main(
         df.at[strain, "sc2rf_unique_subs_filter"] = ",".join(unique_subs_filter)
         df.at[strain, "sc2rf_alleles_filter"] = ",".join(alleles_filter)
         df.at[strain, "sc2rf_intermission_allele_ratio"] = intermission_allele_ratio
-        if strain in false_positives:
-            df.at[strain, "sc2rf_status"] = "false_positive"
-            df.at[strain, "sc2rf_details"] = false_positives[strain]
-            df.at[strain, "sc2rf_breakpoints_filter"] = NO_DATA_CHAR
-        else:
+        # df.at[strain, "sc2rf_details"] = sc2rf_details_dict[strain]
+
+        if strain not in false_positives_dict:
             df.at[strain, "sc2rf_status"] = "positive"
-            df.at[strain, "sc2rf_details"] = "recombination detected"
+            if not strain_auto_pass:
+                sc2rf_details_dict[strain].append("recombination detected")
+        else:
+            df.at[strain, "sc2rf_status"] = "false_positive"
+
+        df.at[strain, "sc2rf_details"] = ";".join(sc2rf_details_dict[strain])
 
     # ---------------------------------------------------------------------
     # Resolve strains with duplicate results
@@ -879,15 +952,15 @@ def main(
 
     # Fix up duplicate strain names in false_positives
     false_positives_filter = {}
-    for strain in false_positives:
+    for strain in false_positives_dict:
         strain_orig = strain.split("_dup")[0]
         status = df["sc2rf_status"][strain_orig]
         # If the original strain isn't positive
         # All duplicates were false positives and should be removed
         if status != "positive":
-            false_positives_filter[strain_orig] = false_positives[strain]
+            false_positives_filter[strain_orig] = false_positives_dict[strain]
 
-    false_positives = false_positives_filter
+    false_positives_dict = false_positives_filter
 
     # ---------------------------------------------------------------------
     # Identify parent lineages by querying cov-spectrum mutations
@@ -1058,89 +1131,79 @@ def main(
             df.at[strain, "cov-spectrum_parents_subs"] = ";".join(parent_lineages_subs)
 
     # ---------------------------------------------------------------------
-    # Auto-pass lineages from nextclade assignment
+    # Identify parent conflict
 
-    if nextclade and nextclade_auto_pass:
+    if nextclade_no_recomb and lapis and lineage_tree:
 
-        logger.info(
-            "Auto-passing lineages through sc2rf: {}".format(
-                ",".join(nextclade_auto_pass_lineages)
-            )
-        )
+        logger.info("Identifying parental conflict between lineage and clade.")
 
-        # Identify negative samples to auto-pass
-        auto_pass_df = nextclade_df[
-            (nextclade_df["Nextclade_pango"] != NO_DATA_CHAR)
-            & (nextclade_df["Nextclade_pango"].isin(nextclade_auto_pass_lineages))
-        ]
+        positive_df = df[df["sc2rf_status"] == "positive"]
 
-        # If already in the df, set the status to positive, update details
-        for rec in df[df.index.isin(auto_pass_df.index)].iterrows():
+        for rec in positive_df.iterrows():
+
             strain = rec[0]
-            lineage = auto_pass_df.loc[strain]["Nextclade_pango"]
-            sc2rf_details = rec[1]["sc2rf_details"].split(";")
-            sc2rf_details.append("nextclade-auto-pass {}".format(lineage))
+            parent_clades = rec[1]["sc2rf_clades_filter"].split(",")
+            parent_lineages = rec[1]["cov-spectrum_parents"].split(",")
+            conflict = False
+            lineage_is_descendant = False
+            lineage_is_ancestor = False
 
-            df.at[strain, "sc2rf_status"] = "positive"
-            df.at[strain, "sc2rf_details"] = ";".join(sc2rf_details)
+            # Clade format can be:
+            #   Lineage (BA.2.3.20)
+            #   WHO_LABEL/Nextstrain clade (Delta/21J)
+            #   WHO_LABEL/Lineage/Nextstrain clade (Omicron/BA.1/21K)
+            #   Lineage/Nextstrain clade (B.1.177/20E)
 
-            # Remove this strain from the list of false positives
-            if strain in false_positives:
-                del false_positives[strain]
+            for i, labels in enumerate(parent_clades):
+                parent = NO_DATA_CHAR
+                labels_split = labels.split("/")
+                for label in labels_split:
+                    # Need to find the lineage which contains "."
+                    if "." in label:
+                        parent = label
+                parent_clades[i] = parent
 
-        # Filter the auto pass df to remove the samples already in the df
-        auto_pass_df = auto_pass_df[~auto_pass_df.index.isin(df.index)]
+            for c, l in zip(parent_clades, parent_lineages):
 
-        # Construct a sc2rf df with blank cols except status and details blank
-        auto_pass_dict = {col: [NO_DATA_CHAR] * len(auto_pass_df) for col in df.columns}
-        auto_pass_dict["sample"] = []
+                # We can't compare to NA
+                if c == NO_DATA_CHAR or l == NO_DATA_CHAR:
+                    continue
+                # Remove the asterisk indicating all descendants
+                l = l.replace("*", "")
+                # If they are the same, there is no conflict, continue
+                if c == l:
+                    continue
 
-        for i, rec in enumerate(auto_pass_df.iterrows()):
-            strain = rec[0]
-            lineage = rec[1]["Nextclade_pango"]
-            # Additionally note that this was negative first
-            sc2rf_details = [
-                "no recombination detected",
-                "nextclade-auto-pass {}".format(lineage),
-            ]
+                # Check if parents_lineage is descendant of parents_clade
+                c_node = [c for c in tree.find_clades(c)][0]
+                l_node = [c for c in c_node.find_clades(l)]
+                if len(l_node) != 1:
+                    lineage_is_descendant = True
 
-            auto_pass_dict["sample"].append(strain)
-            auto_pass_dict["sc2rf_status"][i] = "positive"
-            auto_pass_dict["sc2rf_details"][i] = ";".join(sc2rf_details)
+                # Check if parents_lineage is ancestor of parents_clade
+                l_node = [c for c in tree.find_clades(l)][0]
+                c_node = [c for c in l_node.find_clades(c)]
+                if len(c_node) != 1:
+                    lineage_is_ancestor = True
 
-        auto_pass_df = pd.DataFrame(auto_pass_dict).set_index("sample")
+                if not lineage_is_descendant and not lineage_is_ancestor:
+                    conflict = True
 
-        # Append the auto pass df to the main results df
-        df = pd.concat([df, auto_pass_df])
+            df.at[strain, "sc2rf_parents_conflict"] = conflict
 
     # ---------------------------------------------------------------------
     # Write exclude strains (false positives)
 
     outpath_exclude = os.path.join(outdir, prefix + ".exclude.tsv")
     logger.info("Writing strains to exclude: {}".format(outpath_exclude))
-    if len(false_positives) > 0:
+    if len(false_positives_dict) > 0:
         with open(outpath_exclude, "w") as outfile:
-            for strain, reason in false_positives.items():
-                outfile.write(strain + "\t" + reason + "\n")
+            for strain in false_positives_dict:
+                reasons = ";".join(sc2rf_details_dict[strain])
+                outfile.write(strain + "\t" + reasons + "\n")
     else:
         cmd = "touch {outpath}".format(outpath=outpath_exclude)
         os.system(cmd)
-
-    # -------------------------------------------------------------------------
-    # Add in the Negatives (if alignment was specified)
-    # Avoiding the Bio module, I just need names not sequence
-
-    if metadata:
-
-        logger.info("Reporting non-recombinants in metadata as negatives")
-        for strain in list(metadata_df["strain"]):
-            # Ignore this strain if it's already in dataframe (it's a recombinant)
-            if strain in df.index:
-                continue
-            # Otherwise add it, with no data as default
-            df.loc[strain] = NO_DATA_CHAR
-            df.at[strain, "sc2rf_status"] = "negative"
-            df.at[strain, "sc2rf_details"] = "no recombination detected"
 
     # -------------------------------------------------------------------------
     # write output table
@@ -1201,7 +1264,7 @@ def main(
 
         for i, ansi_file in enumerate(ansi_split):
             logger.info("Parsing ansi: {}".format(ansi_file))
-            if len(false_positives) > 0:
+            if len(false_positives_dict) > 0:
                 cmd = (
                     "cut -f 1 "
                     + "{exclude} | grep -v -f - {inpath} {operator} {outpath}".format(
