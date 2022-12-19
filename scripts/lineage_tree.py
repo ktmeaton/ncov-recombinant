@@ -16,7 +16,7 @@ LINEAGES_URL = (
 @click.command()
 @click.option("--output", help="Output newick phylogeny.", required=True)
 def main(output):
-    """Create a newick tree out of the nextclade dataset Auspice JSON"""
+    """Create a nomenclature tree of pango lineages."""
 
     # Create output directory if it doesn't exist
     outdir = os.path.dirname(output)
@@ -51,6 +51,9 @@ def main(output):
 
     # Create a tree with a root node "MRCA"
     tree = Clade(name="MRCA", clades=[], branch_length=1)
+    # Add an "X" parent for recombinants
+    clade = Clade(name="X", clades=[], branch_length=1)
+    tree.clades.append(clade)
 
     for lineage in lineages:
 
