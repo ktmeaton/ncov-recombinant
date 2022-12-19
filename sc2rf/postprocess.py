@@ -1199,6 +1199,7 @@ def main(
     if len(false_positives_dict) > 0:
         with open(outpath_exclude, "w") as outfile:
             for strain in false_positives_dict:
+                print(sc2rf_details_dict)
                 reasons = ";".join(sc2rf_details_dict[strain])
                 outfile.write(strain + "\t" + reasons + "\n")
     else:

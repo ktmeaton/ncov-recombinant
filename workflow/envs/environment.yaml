@@ -17,7 +17,7 @@ dependencies:
   - bioconda::csvtk=0.24.0
   - bioconda::seqkit=2.2.0
   # Alignmnent and Clade QC
-  - bioconda::nextclade=2.8.0
+  - bioconda::nextclade=2.9.1
   # Phylogeny
   - conda-forge::biopython=1.79
   # Visualization
