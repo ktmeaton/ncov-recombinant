@@ -26,6 +26,7 @@ LINELIST_COLS = {
     "Nextclade_clade": "clade_nextclade",
     "sc2rf_parents": "parents_clade",
     "cov-spectrum_parents": "parents_lineage",
+    "sc2rf_parents_conflict": "parents_conflict",
     "cov-spectrum_parents_confidence": "parents_lineage_confidence",
     "cov-spectrum_parents_subs": "parents_subs",
     "sc2rf_breakpoints": "breakpoints",

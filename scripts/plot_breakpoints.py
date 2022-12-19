@@ -116,6 +116,7 @@ def main(
     # Import dataframes
     lineages_df = pd.read_csv(lineages, sep="\t")
     lineages_df.fillna(NO_DATA_CHAR, inplace=True)
+    lineages_df["cluster_id"] = [str(c) for c in lineages_df["cluster_id"]]
 
     if cluster_col:
 
@@ -138,6 +139,9 @@ def main(
 
     if positives:
         positives_df = pd.read_csv(positives, sep="\t")
+        positives_df["strain"] = [str(s) for s in positives_df["strain"]]
+        if cluster_col:
+            positives_df[cluster_col] = [str(s) for s in positives_df[cluster_col]]
         positives_df.fillna(NO_DATA_CHAR, inplace=True)
 
     # Figsize format back to list
