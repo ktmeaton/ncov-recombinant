@@ -116,10 +116,10 @@ def main(
     # Import dataframes
     lineages_df = pd.read_csv(lineages, sep="\t")
     lineages_df.fillna(NO_DATA_CHAR, inplace=True)
-    lineages_df["cluster_id"] = [str(c) for c in lineages_df["cluster_id"]]
 
     if cluster_col:
 
+        lineages_df[cluster_col] = [str(c) for c in lineages_df[cluster_col]]
         # Filter dataframe on cluster IDs
         if clusters:
             clusters_list = clusters.split(",")
