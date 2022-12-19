@@ -1,6 +1,6 @@
 strain	lineage	breakpoints	parents_clade	dataset
 USA/CA-CDC-QDX37910441/2022	XAN	12161:22791	Omicron/BA.2/21L,Omicron/BA.5/22B	tutorial
-Switzerland/BE-ETHZ-37580626/2022	XAN	NA	Omicron/BA.2/21L,Omicron/BA.5/22B	tutorial
+Switzerland/BE-ETHZ-37580626/2022	XAN	12161:22791	Omicron/BA.2/21L,Omicron/BA.5/22B	tutorial
 FRA/IHUCOVID-64762/2022	XD	21988:22672,25470:25583	Delta/21J,Omicron/BA.1/21K,Delta/21J	tutorial
 FRA/IHUMI-6070VR/2022	XD	21988:22672,25470:25583	Delta/21J,Omicron/BA.1/21K,Delta/21J	tutorial
 England/MILK-385C31A/2022	XH	10448:11536	Omicron/BA.1/21K,Omicron/BA.2/21L	tutorial
