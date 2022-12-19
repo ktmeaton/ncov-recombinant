@@ -27,6 +27,7 @@ data/custom*
 data/X*
 data/proposed*
 data/*gisaid*
+data/tutorial-*
 data/v*
 data/full
 data/misc
