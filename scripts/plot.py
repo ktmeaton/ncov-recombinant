@@ -42,6 +42,9 @@ LEGEND_MAX_COL = 5
 # Show the first N char of the label in the plot
 LEGEND_LABEL_MAX_LEN = 15
 
+# This is the maximum number of key RBD mutations.
+MAX_RBD_LEVEL = 12
+
 # Select and rename columns from linelist
 LINEAGES_COLS = [
     "cluster_id",
@@ -288,8 +291,10 @@ def main(
 
         # Fill in missing levels for RBD
         if plot == "rbd_level" and len(plot_df) > 0:
-            min_level = min(plot_df.columns)
-            max_level = max(plot_df.columns)
+            # min_level = min(plot_df.columns)
+            # max_level = max(plot_df.columns)
+            min_level = 0
+            max_level = MAX_RBD_LEVEL
 
             for level in range(min_level, max_level + 1, 1):
                 if level not in plot_df.columns:
