@@ -112,9 +112,10 @@ rule_params:
     auto_pass:
       - XN # Issue #137 | Breakpoints lie at the extreme 5' end of the genome.
       - XP # Issue #136 | Breakpoints lie at the extreme 3' end of the genome.
+      - XAN # Issue 109 | Excessive noise/intermissions from conflicting reversions, fails intermission-allele ratio.
       - XAR # Issue #106 | Breakpoints lie at the extreme 5' end of the genome.
       - XAS # Issue #86 | The first parent cannot be differentiated between BA.5 and BA.4 (without using deletions).
-      - XAV # Issue #104, #195 | Excessive noise/intermissions from conflicting reversions.
+      - XAV # Issue #104, #195 | Excessive noise/intermissions from conflicting reversions, fails intermission-allele ratio.
       - XAZ # Issue #87 | There are no "diagnostic" mutations from the second parent (BA.2).
 
   # ---------------------------------------------------------------------------
