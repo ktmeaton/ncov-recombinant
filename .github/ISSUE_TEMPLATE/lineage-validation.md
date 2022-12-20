@@ -10,7 +10,7 @@
 ## Immunity
 
 **RBD Level**:
-**RBD Substitutions**
+**RBD Substitutions**:
 **Immune Escape**:
 **ACE2 Binding**:
 
