@@ -29661,6 +29661,843 @@
                 }
             ],
             "name": "Omicron / BA.2.76"
+        },
+        {
+            "NextstrainClade": "",
+            "PangoLineage": "CJ.1",
+            "Letter": "\u03bf",
+            "WhoLabel": "Omicron",
+            "Other": "",
+            "WhoClass": "VOC",
+            "Query": "",
+            "mutations": [
+                {
+                    "mutation": "T29758-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "G29759-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "C241T",
+                    "proportion": 1.0,
+                    "count": 22
+                },
+                {
+                    "mutation": "C3037T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C10029T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C10449A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C14408T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A18163G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G22599C",
+                    "proportion": 1.0,
+                    "count": 23
+                },
+                {
+                    "mutation": "G22578A",
+                    "proportion": 1.0,
+                    "count": 23
+                },
+                {
+                    "mutation": "C1627T",
+                    "proportion": 0.06060606060606061,
+                    "count": 2
+                },
+                {
+                    "mutation": "C22674T",
+                    "proportion": 1.0,
+                    "count": 23
+                },
+                {
+                    "mutation": "C8090T",
+                    "proportion": 0.7878787878787878,
+                    "count": 26
+                },
+                {
+                    "mutation": "T22679C",
+                    "proportion": 1.0,
+                    "count": 23
+                },
+                {
+                    "mutation": "G22813T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G22992A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C22995A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G336A",
+                    "proportion": 0.3181818181818182,
+                    "count": 7
+                },
+                {
+                    "mutation": "A23013C",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A23055G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A23063T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T23075C",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C15720T",
+                    "proportion": 0.12121212121212122,
+                    "count": 4
+                },
+                {
+                    "mutation": "T3488C",
+                    "proportion": 0.06060606060606061,
+                    "count": 2
+                },
+                {
+                    "mutation": "A23403G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C3927T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C23525T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T23599G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C23604A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C23854A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G23948T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A24424T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T24469A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C25000T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C25584T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C22033A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C26270T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T22016C",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C26577G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G26709A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A27259C",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T232C",
+                    "proportion": 0.09523809523809523,
+                    "count": 2
+                },
+                {
+                    "mutation": "C27807T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A28271T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C28311T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G28881A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G28882A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C9866T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G28883C",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C26858T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T11288-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C11289-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T11290-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T12574C",
+                    "proportion": 0.06060606060606061,
+                    "count": 2
+                },
+                {
+                    "mutation": "G11291-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G11292-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T11293-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G261A",
+                    "proportion": 0.9047619047619048,
+                    "count": 19
+                },
+                {
+                    "mutation": "T23018C",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G3212A",
+                    "proportion": 0.09090909090909091,
+                    "count": 3
+                },
+                {
+                    "mutation": "T23019C",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G28362-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A28363-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G28364-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A28365-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A28366-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C28367-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T20430C",
+                    "proportion": 0.12121212121212122,
+                    "count": 4
+                },
+                {
+                    "mutation": "G28368-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C28369-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A12444G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A28370-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A22001G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A19722G",
+                    "proportion": 0.12121212121212122,
+                    "count": 4
+                },
+                {
+                    "mutation": "A7036T",
+                    "proportion": 0.09375,
+                    "count": 3
+                },
+                {
+                    "mutation": "G22577C",
+                    "proportion": 1.0,
+                    "count": 23
+                },
+                {
+                    "mutation": "T22942G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C3987T",
+                    "proportion": 0.06060606060606061,
+                    "count": 2
+                },
+                {
+                    "mutation": "A26275G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G1820A",
+                    "proportion": 0.06060606060606061,
+                    "count": 2
+                },
+                {
+                    "mutation": "G15451A",
+                    "proportion": 1.0,
+                    "count": 29
+                },
+                {
+                    "mutation": "G21987A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C2401T",
+                    "proportion": 0.06060606060606061,
+                    "count": 2
+                },
+                {
+                    "mutation": "C25416T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A27578-",
+                    "proportion": 0.36363636363636365,
+                    "count": 12
+                },
+                {
+                    "mutation": "A27579-",
+                    "proportion": 0.36363636363636365,
+                    "count": 12
+                },
+                {
+                    "mutation": "G20670A",
+                    "proportion": 0.12121212121212122,
+                    "count": 4
+                },
+                {
+                    "mutation": "G18583A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C22686T",
+                    "proportion": 1.0,
+                    "count": 23
+                },
+                {
+                    "mutation": "T22882G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G22898A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G1940A",
+                    "proportion": 0.06060606060606061,
+                    "count": 2
+                },
+                {
+                    "mutation": "G27382C",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A27383T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T27384C",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C44T",
+                    "proportion": 0.6,
+                    "count": 3
+                },
+                {
+                    "mutation": "T670G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C2790T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G4184A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C4321T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C9344T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A9424G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C9534T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C3796T",
+                    "proportion": 1.0,
+                    "count": 32
+                },
+                {
+                    "mutation": "C10198T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G10447A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C12880T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A10323G",
+                    "proportion": 0.12121212121212122,
+                    "count": 4
+                },
+                {
+                    "mutation": "C15714T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C17410T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G22331A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C19955T",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "A20055G",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "C21618T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T22200G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C5183T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A22688G",
+                    "proportion": 1.0,
+                    "count": 23
+                },
+                {
+                    "mutation": "G22775A",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A22786C",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C26060T",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A23254G",
+                    "proportion": 0.06060606060606061,
+                    "count": 2
+                },
+                {
+                    "mutation": "A29510C",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T11294-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T11295-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T11296-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T21633-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T25356C",
+                    "proportion": 0.09090909090909091,
+                    "count": 3
+                },
+                {
+                    "mutation": "A21634-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C21635-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C21636-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T23031C",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C21637-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "A5006G",
+                    "proportion": 0.9354838709677419,
+                    "count": 29
+                },
+                {
+                    "mutation": "C21638-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "C21639-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "T21640-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G21641-",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G29734-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "A29735-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "G29736-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "G29737-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "C29738-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "C29739-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "C4586T",
+                    "proportion": 1.0,
+                    "count": 21
+                },
+                {
+                    "mutation": "A29740-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "C29741-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "G29742-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "C29743-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "G29744-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "G29745-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "A29746-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "G29747-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "T29748-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "A29749-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "C29750-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "A22190G",
+                    "proportion": 1.0,
+                    "count": 33
+                },
+                {
+                    "mutation": "G8911T",
+                    "proportion": 0.12121212121212122,
+                    "count": 4
+                },
+                {
+                    "mutation": "G29751-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "A26554G",
+                    "proportion": 0.12121212121212122,
+                    "count": 4
+                },
+                {
+                    "mutation": "A29752-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "T29753-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "C29754-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "G29755-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "A29756-",
+                    "proportion": 1.0,
+                    "count": 30
+                },
+                {
+                    "mutation": "G29757-",
+                    "proportion": 1.0,
+                    "count": 30
+                }
+            ],
+            "name": "Omicron / CJ.1"
         }
     ]
 }

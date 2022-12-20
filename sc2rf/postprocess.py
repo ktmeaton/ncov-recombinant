@@ -959,6 +959,7 @@ def main(
         # All duplicates were false positives and should be removed
         if status != "positive":
             false_positives_filter[strain_orig] = false_positives_dict[strain]
+            sc2rf_details_dict[strain_orig] = sc2rf_details_dict[strain]
 
     false_positives_dict = false_positives_filter
 
@@ -1199,9 +1200,8 @@ def main(
     if len(false_positives_dict) > 0:
         with open(outpath_exclude, "w") as outfile:
             for strain in false_positives_dict:
-                print(sc2rf_details_dict)
-                reasons = ";".join(sc2rf_details_dict[strain])
-                outfile.write(strain + "\t" + reasons + "\n")
+                details = ";".join(sc2rf_details_dict[strain])
+                outfile.write(strain + "\t" + details + "\n")
     else:
         cmd = "touch {outpath}".format(outpath=outpath_exclude)
         os.system(cmd)
