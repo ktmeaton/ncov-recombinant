@@ -82,7 +82,7 @@ rule_params:
       - delta_omicron:   "--clades 21I 21J BA.1 BA.2           --ansi --parents 2-4 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
       - omicron_omicron: "--clades BA.1 BA.2 BA.4 BA.5         --ansi --parents 2-4 --breakpoints 0-10 --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
       # Current Variants of Concern and Dominant Lineages
-      - voc:             "--clades BA.2.10 BA.2.3.17 BA.2.3.20 BA.2.75 BA.2.76 BA.4.6 BA.5.2 BA.5.3 XBB --ansi --parents 2-4 --breakpoints 1-5 --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
+      - voc:             "--clades BA.2.10 BA.2.3.17 BA.2.3.20 BA.2.75 BA.2.76 BA.4.6 BA.5.2 BA.5.3 XBB CJ.1 --ansi --parents 2-4 --breakpoints 1-5 --unique 1 --max-ambiguous 20 --max-intermission-length 2 --max-intermission-count 3  --ignore-shared --mutation-threshold 0.25"
 
   # ---------------------------------------------------------------------------
   # lapis              : true if the LAPIS API should be used to query covSPECTRUM to identify the parental lineages.
@@ -117,6 +117,7 @@ rule_params:
       - XAS # Issue #86 | The first parent cannot be differentiated between BA.5 and BA.4 (without using deletions).
       - XAV # Issue #104, #195 | Excessive noise/intermissions from conflicting reversions, fails intermission-allele ratio.
       - XAZ # Issue #87 | There are no "diagnostic" mutations from the second parent (BA.2).
+      - XBK # Issue #106 | Breakpoints lie at the extreme 5' end of the genome.
 
   # ---------------------------------------------------------------------------
   # extra_cols : (Optional) list of metadata columns to output going forwards (aside from defaults of strain,date,country)
