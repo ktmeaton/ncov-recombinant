@@ -386,11 +386,9 @@ def main(
                 continue
             # Otherwise add it, with no data as default
             df.loc[strain] = NO_DATA_CHAR
+            df.at[strain, "strain"] = strain
             df.at[strain, "sc2rf_status"] = "negative"
-            sc2rf_details_dict[strain] = ["no recombination detected"]
-
-    # Remove temporary strain column
-    df.drop(columns="strain", inplace=True)
+            sc2rf_details_dict[strain] = []
 
     # ---------------------------------------------------------------------
     # Auto-pass lineages from nextclade assignment
@@ -402,9 +400,10 @@ def main(
         )
 
         # If already in the df, set the status to positive, update details
-        for rec in df[df.index.isin(auto_pass_df.index)].iterrows():
+        for rec in df[df["strain"].isin(auto_pass_df.index)].iterrows():
             strain = rec[0]
-            lineage = auto_pass_df.loc[strain]["Nextclade_pango"]
+            strain_orig = rec[1]["strain"]
+            lineage = auto_pass_df.loc[strain_orig]["Nextclade_pango"]
             details = "nextclade-auto-pass {}".format(lineage)
             sc2rf_details_dict[strain].append(details)
             df.at[strain, "sc2rf_status"] = "positive"
@@ -455,7 +454,14 @@ def main(
         # ---------------------------------------------------------------------
         # FIRST PASS
 
+        # If the region is NA, this is an auto-passed recombinant
+        # and sc2rf couldn't find any breakpoints, skip the rest of processing
+        # and continue on to next strain
+        if regions_split == [NO_DATA_CHAR]:
+            continue
+
         for region in regions_split:
+
             coords = region.split("|")[0]
             clade = region.split("|")[1]
             start_coord = int(coords.split(":")[0])
@@ -830,22 +836,29 @@ def main(
         df.at[strain, "sc2rf_unique_subs_filter"] = ",".join(unique_subs_filter)
         df.at[strain, "sc2rf_alleles_filter"] = ",".join(alleles_filter)
         df.at[strain, "sc2rf_intermission_allele_ratio"] = intermission_allele_ratio
-        # df.at[strain, "sc2rf_details"] = sc2rf_details_dict[strain]
 
         if strain not in false_positives_dict:
             df.at[strain, "sc2rf_status"] = "positive"
-            if not strain_auto_pass:
-                sc2rf_details_dict[strain].append("recombination detected")
+            # A sample can be positive with no breakpoints, if auto-pass
+            if len(breakpoints_filter) != 0:
+                sc2rf_details_dict[strain] = ["recombination detected"]
+            # For auto-pass negatives, update the csv_file
+            else:
+                df.at[strain, "csv_file"] = NO_DATA_CHAR
         else:
             df.at[strain, "sc2rf_status"] = "false_positive"
 
         df.at[strain, "sc2rf_details"] = ";".join(sc2rf_details_dict[strain])
-
     # ---------------------------------------------------------------------
     # Resolve strains with duplicate results
 
     logger.info("Reconciling duplicate results with method: {}".format(dup_method))
     for strain in duplicate_strains:
+
+        # Check if this strain was auto-passed
+        strain_auto_pass = True if strain in auto_pass_df.index else False
+        strain_df = df[df["strain"] == strain]
+        strain_bp = list(set(strain_df["sc2rf_breakpoints_filter"]))
 
         num_dups = duplicate_strains[strain]
         # Which duplicates should we keep (1), which should we remove (many)
@@ -867,7 +880,13 @@ def main(
             keep_dups.append(keep_strain)
             remove_dups.remove(keep_strain)
 
-        # Case 2. Multiple keeps found, use dup_method
+        # Case 2. Multiple keeps found, but it's an auto-pass and they're all negative
+        # Just take the first csv
+        elif strain_auto_pass and strain_bp == [""]:
+            remove_dups += keep_dups[1:]
+            keep_dups = [keep_dups[0]]
+
+        # Case 3. Multiple keeps found, use dup_method
         elif len(keep_dups) > 1:
 
             # First try to match to a published lineage
@@ -921,6 +940,9 @@ def main(
                     # '8394:12879,13758:22000'
                     bp = df["sc2rf_breakpoints_filter"][dup_strain]
                     # ['8394:12879','13758:22000']
+                    # Skip if this is an auto-pass lineage with no breakpoints
+                    if bp == "":
+                        continue
                     bp = bp.split(",")
                     # [4485, 8242]
                     bp = [int(c.split(":")[1]) - int(c.split(":")[0]) for c in bp]
@@ -939,7 +961,11 @@ def main(
                 remove_dups.remove(min_uncertainty_strain)
                 keep_dups = [min_uncertainty_strain]
 
-        keep_csv_file = df["csv_file"][keep_dups[0]]
+        # If this is an auto-pass negative, indicate no csvfile was used
+        if strain_bp == [""]:
+            keep_csv_file = NO_DATA_CHAR
+        else:
+            keep_csv_file = df["csv_file"][keep_dups[0]]
         logger.info(
             "Reconciling duplicate results for {}, retaining output from: {}".format(
                 strain, keep_csv_file
@@ -987,6 +1013,12 @@ def main(
         for rec in positive_df.iterrows():
 
             strain = rec[0]
+            strain_bp = rec[1]["sc2rf_breakpoints_filter"]
+
+            # If this was an auto-pass negative strain, no regions for us to query
+            if strain_bp == NO_DATA_CHAR:
+                continue
+
             progress_i += 1
             logger.info("{} / {}: {}".format(progress_i, total_positives, strain))
 
@@ -1225,6 +1257,8 @@ def main(
             inplace=True,
         )
 
+    # Move the strain column to the beginning
+    df.drop(columns="strain", inplace=True)
     df.insert(loc=0, column="strain", value=df.index)
     df.rename(
         {
@@ -1282,7 +1316,7 @@ def main(
                     outpath=outpath_ansi,
                 )
             logger.info("Writing filtered ansi: {}".format(outpath_ansi))
-            logger.info(cmd)
+            # logger.info(cmd)
             os.system(cmd)
 
     # -------------------------------------------------------------------------
