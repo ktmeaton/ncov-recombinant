@@ -1019,6 +1019,8 @@ def main(
             if strain_bp == NO_DATA_CHAR:
                 continue
 
+            parent_clades = rec[1]["sc2rf_clades_filter"].split(",")
+
             progress_i += 1
             logger.info("{} / {}: {}".format(progress_i, total_positives, strain))
 
@@ -1046,7 +1048,15 @@ def main(
                     substitutions.remove(private)
 
             # Split mutations by region
-            for region in regions_filter:
+            for region, parent_clade in zip(regions_filter, parent_clades):
+
+                # If the parental clade is a recombinant, we'll allow the covlineages
+                # to be recombinants
+                parent_clade_is_recombinant = False
+                for label in parent_clade.split("/"):
+                    if label.startswith("X"):
+                        parent_clade_is_recombinant = True
+
                 region_coords = region.split("|")[0]
                 region_start = int(region_coords.split(":")[0])
                 region_end = int(region_coords.split(":")[1])
@@ -1100,8 +1110,13 @@ def main(
                     max_prop = max_count / total_count
                     max_lineage = lineage_dict[max_count]
 
-                    # Don't want to report recombinants as parents yet
+                    # Don't want to report recombinants as parents
+                    # UNLESS, the parental clade is a recombinant (ex. XBB)
                     while max_lineage.startswith("X") or max_lineage == "Unassigned":
+
+                        # Allow the max_lineage to be recombinant if clade is also
+                        if max_lineage.startswith("X") and parent_clade_is_recombinant:
+                            break
                         lineage_dict = {
                             count: lineage
                             for count, lineage in lineage_dict.items()
@@ -1185,6 +1200,7 @@ def main(
             #   Lineage (BA.2.3.20)
             #   WHO_LABEL/Nextstrain clade (Delta/21J)
             #   WHO_LABEL/Lineage/Nextstrain clade (Omicron/BA.1/21K)
+            #   WHO_LABEL/Lineage/Nextstrain clade (Omicron/XBB/22F)
             #   Lineage/Nextstrain clade (B.1.177/20E)
 
             for i, labels in enumerate(parent_clades):
@@ -1193,6 +1209,9 @@ def main(
                 for label in labels_split:
                     # Need to find the lineage which contains "."
                     if "." in label:
+                        parent = label
+                    # Or a recombinant, which doesn't have a "."
+                    elif label.startswith("X"):
                         parent = label
                 parent_clades[i] = parent
 

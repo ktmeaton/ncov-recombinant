@@ -36,3 +36,4 @@ This is a minor bugfix release aimed towards...
 ### Proposed Lineages
 
 - [Issue #203](https://github.com/ktmeaton/ncov-recombinant/issues/203): `proposed1305`
+- [Issue #208](https://github.com/ktmeaton/ncov-recombinant/issues/208): `proposed1340`
