@@ -890,20 +890,22 @@ def main(
         elif len(keep_dups) > 1:
 
             # First try to match to a published lineage
-            lineage_strain = None
+            # Key = dup_strain, value = csv of lineages
+            lineage_strains = {}
 
             for dup_strain in keep_dups:
+                lineage_strains[dup_strain] = []
                 dup_lineage = df["sc2rf_lineage"][dup_strain]
 
                 if dup_lineage != NO_DATA_CHAR:
-                    lineage_strain = dup_strain
+                    lineage_strains[dup_strain].append(dup_lineage)
 
-            # Check if a match was found
-            if lineage_strain:
+            # Check if a match was found, but not more than 1 candidate lineage
+            if len(lineage_strains) > 0 and len(lineage_strains.values()) < 2:
                 # Remove all strains except the min one
                 remove_dups = keep_dups + remove_dups
-                remove_dups.remove(lineage_strain)
-                keep_dups = [lineage_strain]
+                remove_dups.remove(list(lineage_strains))
+                keep_dups = list(lineage_strains)
 
             # Otherwise, use a duplicate resolving method
             elif dup_method == "first":
