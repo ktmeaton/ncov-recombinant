@@ -22,3 +22,9 @@ builds:
 
     linelist:
       min_private_muts: 999
+
+    plot:
+      min_cluster_size: 2
+
+    plot_historical:
+      min_cluster_size: 2

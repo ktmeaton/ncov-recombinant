@@ -876,28 +876,35 @@ rule linelist:
 rule_name = "plot"
 
 # Parameters Function
-def _params_plot(build):
+def _params_plot(build, plot_type):
   """Parse parameters from wildcards for rule plot."""
 
   params = {}
 
-  weeks = config["builds"][build]["plot"]["weeks"]
+  if plot_type == "plots":
+    plot_rule = "plot"
+    params["autoscale"] = ""
+  elif plot_type == "plots_historical":
+    plot_rule = "plot_historical"
+    params["autoscale"] = "--autoscale"
+
+  weeks = config["builds"][build][plot_rule]["weeks"]
   if weeks: params["weeks"] = "--weeks {}".format(weeks)
   else: params["weeks"] = ""
 
-  min_date = config["builds"][build]["plot"]["min_date"]
+  min_date = config["builds"][build][plot_rule]["min_date"]
   if min_date: params["min_date"] = "--min-date {}".format(min_date)
   else: params["min_date"] = ""
 
-  max_date = config["builds"][build]["plot"]["max_date"]
+  max_date = config["builds"][build][plot_rule]["max_date"]
   if max_date: params["max_date"] = "--max-date {}".format(max_date)
   else: params["max_date"] = ""
 
-  min_cluster_size = config["builds"][build]["plot"]["min_cluster_size"]
+  min_cluster_size = config["builds"][build][plot_rule]["min_cluster_size"]
   if min_cluster_size: params["min_cluster_size"] = "--min-cluster-size {}".format(min_cluster_size)
   else: params["min_cluster_size"] = ""
 
-  lag = config["builds"][build]["plot"]["lag"]
+  lag = config["builds"][build][plot_rule]["lag"]
   if lag: params["lag"] = "--lag {}".format(lag)
   else: params["lag"] = ""
 
@@ -913,31 +920,33 @@ rule plot:
   plots:   {output.plots}
   """
 
+  wildcard_constraints:
+    plot_type  = "plots|plots_historical",
   input:
-    positives  = rules.linelist.output.positives,
-    lineages   = rules.linelist.output.lineages,
+    positives        = rules.linelist.output.positives,
+    lineages         = rules.linelist.output.lineages,
   output:
-    plots      = directory("results/{build}/plots"),
+    plots            = directory("results/{build}/{plot_type}"),
   params:
-    outdir     = "results/{build}/plots",
-    geo        = lambda wildcards: _params_linelist(wildcards.build)["geo"],
-    weeks      = lambda wildcards: _params_plot(wildcards.build)["weeks"],
-    min_date   = lambda wildcards: _params_plot(wildcards.build)["min_date"],
-    max_date   = lambda wildcards: _params_plot(wildcards.build)["max_date"],
-    lag        = lambda wildcards: _params_plot(wildcards.build)["lag"],
-    min_cluster_size = lambda wildcards: _params_plot(wildcards.build)["min_cluster_size"],
+    geo              = lambda wildcards: _params_linelist(wildcards.build)["geo"],
+    weeks            = lambda wildcards: _params_plot(wildcards.build, wildcards.plot_type)["weeks"],
+    min_date         = lambda wildcards: _params_plot(wildcards.build, wildcards.plot_type)["min_date"],
+    max_date         = lambda wildcards: _params_plot(wildcards.build, wildcards.plot_type)["max_date"],
+    lag              = lambda wildcards: _params_plot(wildcards.build, wildcards.plot_type)["lag"],
+    min_cluster_size = lambda wildcards: _params_plot(wildcards.build, wildcards.plot_type)["min_cluster_size"],
+    autoscale        = lambda wildcards: _params_plot(wildcards.build, wildcards.plot_type)["autoscale"],
   threads: 1
   resources:
     cpus = 1,
   benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+    "benchmarks/{{plot_type}}/{{build}}_{today}.tsv".format(today=today),
   log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+    "logs/{{plot_type}}/{{build}}_{today}.log".format(today=today),
   shell:
     """
     python3 scripts/plot.py \
       --input {input.positives} \
-      --outdir {params.outdir} \
+      --outdir {output.plots} \
       {params.lag} \
       {params.geo} \
       {params.weeks} \
@@ -954,11 +963,12 @@ rule plot:
       --lineages {input.lineages} \
       --lineage-col recombinant_lineage_curated \
       --positives {input.positives} \
-      --outdir {params.outdir} \
+      --outdir {output.plots} \
       --parent-col parents_clade \
       --parent-type clade \
       --cluster-col cluster_id \
       --clusters "${{cluster_ids}}" \
+      {params.autoscale} \
       >> {log} 2>&1;
 
     # Plot breakpoints by lineage
@@ -966,105 +976,16 @@ rule plot:
       --lineages {input.lineages} \
       --lineage-col recombinant_lineage_curated \
       --positives {input.positives} \
-      --outdir {params.outdir} \
+      --outdir {output.plots} \
       --parent-col parents_lineage \
       --parent-type lineage \
       --cluster-col cluster_id \
       --clusters "${{cluster_ids}}" \
+      {params.autoscale} \
       >> {log} 2>&1;
     """
 
-# ------------------------------------------------------------------------------
-rule_name = "plot_historical"
-
-# Parameters Function
-def _params_plot_historical(build):
-  """Parse parameters from wildcards for rule plot_historical."""
-
-  params = {}
-
-  weeks = config["builds"][build]["plot_historical"]["weeks"]
-  if weeks: params["weeks"] = "--weeks {}".format(weeks)
-  else: params["weeks"] = ""
-
-  min_date = config["builds"][build]["plot_historical"]["min_date"]
-  if min_date: params["min_date"] = "--min-date {}".format(min_date)
-  else: params["min_date"] = ""
-
-  max_date = config["builds"][build]["plot_historical"]["max_date"]
-  if max_date: params["max_date"] = "--max-date {}".format(max_date)
-  else: params["max_date"] = ""
-
-  min_cluster_size = config["builds"][build]["plot_historical"]["min_cluster_size"]
-  if min_cluster_size: params["min_cluster_size"] = "--min-cluster-size {}".format(min_cluster_size)
-  else: params["min_cluster_size"] = ""
-
-  lag = config["builds"][build]["plot_historical"]["lag"]
-  if lag: params["lag"] = "--lag {}".format(lag)
-  else: params["lag"] = ""
-
-  return params
-
-rule plot_historical:
-  """Plot results as a historical timeline."""
-
-  message: """Plot results as a historical timeline.\n
-  build:   {wildcards.build}
-  log:     {log}
-  plots:   {output.plots}
-  """
-
-  input:
-    positives  = rules.linelist.output.positives,
-    lineages   = rules.linelist.output.lineages,
-  output:
-    plots      = directory("results/{build}/plots_historical"),
-  params:
-    outdir     = "results/{build}/plots_historical",
-    geo        = lambda wildcards: _params_linelist(wildcards.build)["geo"],
-    lag        = lambda wildcards: _params_plot(wildcards.build)["lag"],
-    min_cluster_size = lambda wildcards: _params_plot(wildcards.build)["min_cluster_size"],
-  threads: 1
-  resources:
-    cpus = 1,
-  benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
-  shell:
-    """
-    python3 scripts/plot.py \
-      --input {input.positives} \
-      --outdir {params.outdir} \
-      {params.lag} \
-      {params.geo} \
-      {params.min_cluster_size} \
-      > {log} 2>&1;
-
-    # Plot breakpoints by clade
-    python3 scripts/plot_breakpoints.py \
-      --lineages {input.lineages} \
-      --lineage-col recombinant_lineage_curated \
-      --positives {input.positives} \
-      --outdir {params.outdir} \
-      --parent-col parents_clade \
-      --parent-type clade \
-      --cluster-col cluster_id \
-      --autoscale \
-      >> {log} 2>&1;
-
-    # Plot breakpoints by lineage
-    python3 scripts/plot_breakpoints.py \
-      --lineages {input.lineages} \
-      --lineage-col recombinant_lineage_curated \
-      --positives {input.positives} \
-      --outdir {params.outdir} \
-      --parent-col parents_lineage \
-      --parent-type lineage \
-      --cluster-col cluster_id \
-      --autoscale \
-      >> {log} 2>&1;
-    """
+  # --autoscale for x clusters
 
 # ------------------------------------------------------------------------------
 # Report
@@ -1097,6 +1018,8 @@ rule report:
   slides:  {output.pptx}
   """
 
+  wildcard_constraints:
+    report_type = "report|report_historical",
   input:
     plots           = rules.plot.output.plots,
     linelist        = rules.linelist.output.linelist,
@@ -1111,8 +1034,8 @@ rule report:
                       rules.issues_download.output.issues,
                       ],
   output:
-    pptx            = "results/{build}/report/report.pptx",
-    xlsx            = "results/{build}/report/report.xlsx",
+    pptx            = "results/{build}/{report_type}/report.pptx",
+    xlsx            = "results/{build}/{report_type}/report.xlsx",
   params:
     geo       = lambda wildcards: _params_report(wildcards.build)["geo"],
     template  = lambda wildcards: _params_report(wildcards.build)["template"],
@@ -1122,9 +1045,9 @@ rule report:
   resources:
     cpus = 1,
   benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
+    "benchmarks/{{report_type}}/{{build}}_{today}.tsv".format(today=today),
   log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
+    "logs/{{report_type}}/{{build}}_{today}.log".format(today=today),
   shell:
     """
     # Create the excel report
@@ -1132,38 +1055,6 @@ rule report:
 
     # Create the powerpoint slides
     python3 scripts/report.py --linelist {input.linelist} --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.template} {params.min_cluster_size} >> {log} 2>&1;
-    """
-
-rule report_historical:
-  """Summarize results into a historical report."""
-
-  message: """Summarize results into a historical report.\n
-  build:   {wildcards.build}
-  log:     {log}
-  slides:  {output.pptx}
-  """
-
-  input:
-    plots           = rules.plot_historical.output.plots,
-    linelist        = rules.linelist.output.linelist,
-  output:
-    pptx            = "results/{build}/report_historical/report.pptx",
-  params:
-    geo       = lambda wildcards: _params_report(wildcards.build)["geo"],
-    template  = lambda wildcards: _params_report(wildcards.build)["template"],
-    min_cluster_size = lambda wildcards: _params_plot(wildcards.build)["min_cluster_size"],
-
-  threads: 1
-  resources:
-    cpus = 1,
-  benchmark:
-    "benchmarks/{rule}/{{build}}_{today}.tsv".format(today=today, rule=rule_name),
-  log:
-    "logs/{rule}/{{build}}_{today}.log".format(today=today, rule=rule_name),
-  shell:
-    """
-    # Create the powerpoint slides
-    python3 scripts/report.py --linelist {input.linelist} --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.template} {params.min_cluster_size} > {log} 2>&1;
     """
 
 # ------------------------------------------------------------------------------
