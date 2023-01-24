@@ -30,7 +30,7 @@ dependencies:
   - conda-forge::zip=3.0
   # For dev users
   - conda-forge::pre_commit=2.17.0
-  - anaconda::git=2.35.0
+  - conda-forge::git=2.35.0
   # Documentation
   - conda-forge::yarn
   - conda-forge::sphinx
