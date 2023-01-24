@@ -14,8 +14,11 @@ NO_DATA_CHAR = "NA"
 
 PIPELINE = "ncov-recombinant"
 
-# There are alternative breakpoints for ARTIC
-SC2RF_LINEAGE_ALT = {"XBB_ARTICv4.1": "XBB"}
+# There are alternative lineage names for sequencing dropouts
+SC2RF_LINEAGE_ALT = {
+    "XBB_ARTICv4.1": "XBB",
+    "XAY_dropout": "XAY",
+}
 
 # Select and rename columns from summary
 LINELIST_COLS = {

@@ -154,7 +154,7 @@ rule_params:
     min_cluster_size: 1
 
   - name: plot_historical
-    weeks: 52
+    weeks:
     lag: 4
     min_date:
     max_date:
