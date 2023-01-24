@@ -24,7 +24,7 @@ COORD_ITER = 5000
 
 # This is the number of characters than can fit width-wise across the legend
 LEGEND_FONTSIZE = 6
-LEGEND_CHAR_WIDTH = 100
+LEGEND_CHAR_WIDTH = 90
 # The maximum columns in the legend is dictated by the char width, but more
 # importantly, in the categorical_palette function, we restrict it to the
 # first 5 colors of the tap10 palette, and make different shades within it

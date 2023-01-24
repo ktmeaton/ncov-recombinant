@@ -12,6 +12,10 @@ import copy
 from functions import categorical_palette
 import math
 import warnings
+from functions import create_logger
+import logging
+
+logging.getLogger("matplotlib.font_manager").disabled = True
 
 warnings.filterwarnings("error")
 
@@ -33,7 +37,7 @@ UNKNOWN_RGB = colors.to_rgb(UNKNOWN_COLOR)
 
 # This is the number of characters than can fit width-wise across the legend
 LEGEND_FONTSIZE = 6
-LEGEND_CHAR_WIDTH = 100
+LEGEND_CHAR_WIDTH = 90
 # The maximum columns in the legend is dictated by the char width, but more
 # importantly, in the categorical_palette function, we restrict it to the
 # first 5 colors of the tap10 palette, and make different shades within it
@@ -91,6 +95,7 @@ plt.rcParams["svg.fonttype"] = "none"
     help="Only plot clusters/lineages with at least this many sequences.",
     default=1,
 )
+@click.option("--log", help="Output log file.", required=False)
 def main(
     input,
     outdir,
@@ -100,8 +105,12 @@ def main(
     min_date,
     max_date,
     min_cluster_size,
+    log,
 ):
     """Plot recombinant lineages"""
+
+    # create logger
+    logger = create_logger(logfile=log)
 
     # Creat output directory if it doesn't exist
     if not os.path.exists(outdir):
@@ -109,6 +118,7 @@ def main(
 
     # -------------------------------------------------------------------------
     # Import dataframes
+    logger.info("Importing linelist: {}".format(input))
     df = pd.read_csv(input, sep="\t")
     df.fillna(NO_DATA_CHAR, inplace=True)
 
@@ -132,6 +142,7 @@ def main(
     ]
 
     # Filter on weeks reporting
+    logger.info("Filtering on data")
     if max_date:
         max_datetime = datetime.strptime(max_date, "%Y-%m-%d")
         max_epiweek = epiweeks.Week.fromdate(max_datetime, system="cdc").startdate()
@@ -191,6 +202,7 @@ def main(
     # Pivot Tables
     # -------------------------------------------------------------------------
 
+    logger.info("Creating pivot tables")
     # -------------------------------------------------------------------------
     # All
     all_df = pd.pivot_table(
@@ -256,6 +268,8 @@ def main(
     }
 
     for plot in plot_dict:
+
+        logger.info("Creating plot data: {}".format(plot))
         columns = plot_dict[plot]["cols"]
 
         # Several plots need special filtering
@@ -335,6 +349,8 @@ def main(
     # -------------------------------------------------------------------------
 
     for plot in plot_dict:
+
+        logger.info("Creating plot figure: {}".format(plot))
 
         plot_df = plot_dict[plot]["df"]
 
@@ -510,6 +526,8 @@ def main(
             legend_ncol = LEGEND_MAX_COL
         elif legend_ncol > num_cat:
             legend_ncol = num_cat
+        else:
+            legend_ncol = 1
 
         legend = ax.legend(
             title=legend_title.title(),
@@ -567,9 +585,14 @@ def main(
                 FIGSIZE[0] * upscale_factor,
                 FIGSIZE[1] * upscale_factor,
             )
-        plt.tight_layout()
-        plt.savefig(out_path + ".png")
-        plt.savefig(out_path + ".svg")
+
+        # Attempt to see whether we can apply a tight layout
+        try:
+            plt.tight_layout()
+            plt.savefig(out_path + ".png")
+            plt.savefig(out_path + ".svg")
+        except UserWarning:
+            logger.info("Unable to apply tight_layout, plot will not be saved.")
 
 
 if __name__ == "__main__":
