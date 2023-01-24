@@ -656,71 +656,79 @@ def main(
         # ---------------------------------------------------------------------
         # Intermission/Minor Parent Allele Ratio
         # ie. alleles that conflict with the parental region
+        #   be lenient if there were more parents initially reported by sc2rf (ex. >2)
+        #   because this wil lead to large numbers of unresolved intermissions
 
-        for start_coord in regions_filter:
-            end_coord = regions_filter[start_coord]["end"]
-            clade = regions_filter[start_coord]["clade"]
+        original_parents = rec[1]["examples"]
+        num_original_parents = len(original_parents.split(","))
 
+        if num_original_parents > num_parents:
+            intermission_allele_ratio = "NA"
+        else:
+            for start_coord in regions_filter:
+                end_coord = regions_filter[start_coord]["end"]
+                clade = regions_filter[start_coord]["clade"]
+
+                for allele in alleles_split:
+
+                    allele_coord = int(allele.split("|")[0])
+                    allele_clade = allele.split("|")[1]
+                    allele_nuc = allele.split("|")[2]
+
+                    # Skip if this allele is not found in the current region
+                    if allele_coord < start_coord or allele_coord > end_coord:
+                        continue
+
+                    # Skip missing data
+                    if allele_nuc == "N":
+                        continue
+
+                    # Check if this allele's origins conflicts with the parental region
+                    if allele_clade != clade:
+                        intermission_alleles.append(allele)
+                    else:
+                        if clade not in alleles_by_parent:
+                            alleles_by_parent[clade] = []
+                        alleles_by_parent[clade].append(allele)
+
+            # Add in alleles that were not assigned to any region
             for allele in alleles_split:
-
-                allele_coord = int(allele.split("|")[0])
-                allele_clade = allele.split("|")[1]
                 allele_nuc = allele.split("|")[2]
-
-                # Skip if this allele is not found in the current region
-                if allele_coord < start_coord or allele_coord > end_coord:
-                    continue
-
                 # Skip missing data
                 if allele_nuc == "N":
                     continue
 
-                # Check if this allele's origins conflicts with the parental region
-                if allele_clade != clade:
+                allele_coord = int(allele.split("|")[0])
+                allele_in_region = False
+                for start_coord in regions_filter:
+                    end_coord = regions_filter[start_coord]["end"]
+                    if allele_coord >= start_coord and allele_coord <= end_coord:
+                        allele_in_region = True
+
+                # Alleles not assigned to any region are counted as intermissions
+                if not allele_in_region:
                     intermission_alleles.append(allele)
-                else:
-                    if clade not in alleles_by_parent:
-                        alleles_by_parent[clade] = []
-                    alleles_by_parent[clade].append(allele)
 
-        # Add in alleles that were not assigned to any region
-        for allele in alleles_split:
-            allele_nuc = allele.split("|")[2]
-            # Skip missing data
-            if allele_nuc == "N":
-                continue
+            # Identify the "minor" parent (least number of alleles)
+            # minor_parent = None
+            minor_num_alleles = len(alleles_split)
 
-            allele_coord = int(allele.split("|")[0])
-            allele_in_region = False
-            for start_coord in regions_filter:
-                end_coord = regions_filter[start_coord]["end"]
-                if allele_coord >= start_coord and allele_coord <= end_coord:
-                    allele_in_region = True
+            for parent in alleles_by_parent:
+                num_alleles = len(alleles_by_parent[parent])
+                if num_alleles <= minor_num_alleles:
+                    # minor_parent = parent
+                    minor_num_alleles = num_alleles
 
-            # Alleles not assigned to any region are counted as intermissions
-            if not allele_in_region:
-                intermission_alleles.append(allele)
+            intermission_allele_ratio = len(intermission_alleles) / minor_num_alleles
 
-        # Identify the "minor" parent (least number of alleles)
-        # minor_parent = None
-        minor_num_alleles = len(alleles_split)
-
-        for parent in alleles_by_parent:
-            num_alleles = len(alleles_by_parent[parent])
-            if num_alleles <= minor_num_alleles:
-                # minor_parent = parent
-                minor_num_alleles = num_alleles
-
-        intermission_allele_ratio = len(intermission_alleles) / minor_num_alleles
-
-        # When the ratio is above 1, that means there are more intermission than
-        # minor parent alleles. But don't override the false_positive status
-        # if this strain was already flagged as a false_positive previously
-        if intermission_allele_ratio >= 1:
-            sc2rf_details_dict[strain].append("intermission_allele_ratio >= 1")
-            # if this is an auto-pass lineage, don't add to false positives
-            if not strain_auto_pass:
-                false_positives_dict[strain] = ""
+            # When the ratio is above 1, that means there are more intermission than
+            # minor parent alleles. But don't override the false_positive status
+            # if this strain was already flagged as a false_positive previously
+            if intermission_allele_ratio >= 1:
+                sc2rf_details_dict[strain].append("intermission_allele_ratio >= 1")
+                # if this is an auto-pass lineage, don't add to false positives
+                if not strain_auto_pass:
+                    false_positives_dict[strain] = ""
 
         # --------------------------------------------------------------------------
         # Extract the lengths of each region
@@ -866,6 +874,7 @@ def main(
             df.at[strain, "sc2rf_status"] = "false_positive"
 
         df.at[strain, "sc2rf_details"] = ";".join(sc2rf_details_dict[strain])
+
     # ---------------------------------------------------------------------
     # Resolve strains with duplicate results
 
