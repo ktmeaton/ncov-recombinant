@@ -46,5 +46,5 @@ This is a minor release aimed towards...
 - [Issue #211](https://github.com/ktmeaton/ncov-recombinant/issues/211): `proposed1393`
 - [Issue #212](https://github.com/ktmeaton/ncov-recombinant/issues/212): `proposed1425`
 - [Issue #214](https://github.com/ktmeaton/ncov-recombinant/issues/214): `proposed1440`
-- proposed1444
+- [Issue #216](https://github.com/ktmeaton/ncov-recombinant/issues/216): `proposed1444`
 - proposed1576
