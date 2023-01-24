@@ -37,9 +37,9 @@ RECOMBINANT_STATUS = [
     "--geo", help="Geography column to summarize", required=False, default="country"
 )
 @click.option(
-    "--singletons",
-    help="Whether singletons were included in plots",
-    is_flag=True,
+    "--min-cluster-size",
+    help="The minimum size of clusters included in the plots",
+    default=1,
 )
 @click.option(
     "--template",
@@ -53,7 +53,7 @@ def main(
     template,
     geo,
     output,
-    singletons,
+    min_cluster_size,
 ):
     """Create a report of powerpoint slides"""
 
@@ -162,11 +162,8 @@ def main(
     summary += "There are {total_lineages} recombinant lineages".format(
         total_lineages=total_lineages
     )
-    # Whether we need a footnote for singletons
-    if singletons:
-        summary += ".\n"
-    else:
-        summary += "*.\n"
+    # Add a footnote to indicate cluster size
+    summary += "*.\n"
 
     for status in RECOMBINANT_STATUS:
         if status in status_counts:
@@ -182,11 +179,8 @@ def main(
         total_sequences=total_sequences
     )
 
-    # Whether we need a footnote for singletons
-    if singletons:
-        summary += ".\n"
-    else:
-        summary += "*.\n"
+    # Add a footnote to indicate cluster size
+    summary += "*.\n"
 
     for status in RECOMBINANT_STATUS:
         if status in status_counts:
@@ -196,9 +190,8 @@ def main(
         summary += "  - {sequences} sequences are {status}.\n".format(
             sequences=count, status=status
         )
-    if not singletons:
-        summary += "\n"
-        summary += "*Excluding singleton lineages (N=1)"
+
+    summary += "*Excluding small lineages (N<{})".format(min_cluster_size)
 
     body.text_frame.text = summary
 

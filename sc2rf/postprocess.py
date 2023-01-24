@@ -10,10 +10,21 @@ import time
 from Bio import Phylo
 
 NO_DATA_CHAR = "NA"
-LAPIS_URL_BASE = (
+
+LAPIS_LINEAGE_COL = "pangoLineage"
+LAPIS_OPEN_BASE = (
     "https://lapis.cov-spectrum.org/open/v1/sample/aggregated"
-    + "?fields=pangoLineage&nucMutations="
+    + "?fields={lineage_col}".format(lineage_col=LAPIS_LINEAGE_COL)
+    + "&nucMutations={mutations}"
 )
+
+LAPIS_GISAID_BASE = (
+    "https://lapis.cov-spectrum.org/gisaid/v1/sample/aggregated"
+    + "?accessKey={access_key}"
+    + "&fields={lineage_col}".format(lineage_col=LAPIS_LINEAGE_COL)
+    + "&nucMutations={mutations}"
+)
+
 LINEAGE_PROP_THRESHOLD = 0.01
 LAPIS_SLEEP_TIME = 0
 # Consider a breakpoint match if within 50 base pairs
@@ -161,6 +172,11 @@ def reverse_iter_collapse(
     default=False,
 )
 @click.option(
+    "--gisaid-access-key",
+    help="The accessKey to query GISAID data with LAPIS",
+    required=False,
+)
+@click.option(
     "--issues",
     help="Issues TSV metadata from pango-designation",
     required=False,
@@ -213,6 +229,7 @@ def main(
     metadata,
     dup_method,
     lapis,
+    gisaid_access_key,
 ):
     """Detect recombinant seqences from sc2rf. Dependencies: pandas, click"""
 
@@ -1007,6 +1024,14 @@ def main(
             "Identifying parent lineages based on nextclade no-recomb substitutions"
         )
 
+        # Check if we're using open data or GISAID
+        if gisaid_access_key:
+            lapis_url_base = LAPIS_GISAID_BASE.format(
+                access_key=gisaid_access_key, mutations="{mutations}"
+            )
+        else:
+            lapis_url_base = LAPIS_OPEN_BASE
+
         positive_df = df[df["sc2rf_status"] == "positive"]
         total_positives = len(positive_df)
         progress_i = 0
@@ -1080,7 +1105,7 @@ def main(
                 # Otherwise, query cov-spectrum for these subs
                 else:
                     query_subs_dict[region_subs_csv] = ""
-                    url = LAPIS_URL_BASE + region_subs_csv
+                    url = lapis_url_base.format(mutations=region_subs_csv)
                     logger.info(
                         "Querying cov-spectrum for region {}".format(region_coords)
                     )
@@ -1093,8 +1118,19 @@ def main(
 
                 # Have keys be counts
                 lineage_dict = {}
+
                 for rec in lineage_data:
-                    lineage = rec["pangoLineage"]
+                    lineage = rec[LAPIS_LINEAGE_COL]
+
+                    # Ignore None lineages
+                    if not lineage:
+                        continue
+
+                    # If parent clade is not a recombinant, don't include
+                    # recombinant lineages in final dict and count
+                    if lineage.startswith("X") and not parent_clade_is_recombinant:
+                        continue
+
                     count = rec["count"]
                     lineage_dict[count] = lineage
 

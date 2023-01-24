@@ -19,11 +19,11 @@ rule_params:
   # tag_immune-escape: datestamp of the dataset for immune escape calculations
   - name: nextclade_dataset
     dataset: sars-cov-2
-    tag: "2022-12-14T12:00:00Z"
+    tag: "2023-01-09T12:00:00Z"
     dataset_no-recomb: sars-cov-2-no-recomb
-    tag_no-recomb: "2022-12-14T12:00:00Z"
+    tag_no-recomb: "2023-01-09T12:00:00Z"
     dataset_immune-escape: sars-cov-2-21L
-    tag_immune-escape: "2022-12-14T12:00:00Z"
+    tag_immune-escape: "2023-01-09T12:00:00Z"
 
   # ---------------------------------------------------------------------------
   # exclude_clades    : (optional) Exclude strains that are recombinants of these clades
@@ -87,6 +87,7 @@ rule_params:
   # ---------------------------------------------------------------------------
   # lapis              : true if the LAPIS API should be used to query covSPECTRUM to identify the parental lineages.
   #                    :  if experiencing network issues in this rule, set to false
+  # gisaid_access_key  : (optional) provider to query covSPECTRUM GISAID data instead of the default Genbank
   # min_len            : (optional) Ignore recombinant regions shorter than this
   # min_consec_allele  : (optional) Ignore recombinant regions with less than this number of consecutive alleles (both subs and ref)
   # max_breakpoint_len : (optional) Ignore recombinant breakpoints longer than this
@@ -102,6 +103,7 @@ rule_params:
   #                      automatically be classified as 'positive', regardless of sc2rf results.
   - name: sc2rf_recombinants
     lapis: true
+    gisaid_access_key:
     min_len: 500
     min_consec_allele: 3
     max_breakpoint_len:
@@ -142,14 +144,21 @@ rule_params:
   # weeks         : The number of weeks to plot in retrospect (ex. 16)
   # min_date      : (Optional) The date to start plots at (ex. "2022-01-03"). Overrides the `weeks` parameter.
   # max_date      : (Optional) The date to end plots at (ex. "2022-04-25").
-  # singletons    : "true" if singelton lineages (N=1) should be plotted and reported.
+  # min_cluster_size : only plot clusters/lineages that have at least this number of sequences
   # Note: the rule `plot` is also going to use the `geo` param of rule `linelist`, to plot recombinants by geographic location
   - name: plot
     weeks: 16
     lag: 4
     min_date:
     max_date:
-    singletons: true
+    min_cluster_size: 1
+
+  - name: plot_historical
+    weeks: 52
+    lag: 4
+    min_date:
+    max_date:
+    min_cluster_size: 1
 
   # ---------------------------------------------------------------------------
   # template    : (Optional) path to a powerpoint template

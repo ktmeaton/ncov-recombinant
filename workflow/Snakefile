@@ -515,6 +515,7 @@ def _params_sc2rf(build):
 
   # Add the arguments for each mode
   params["sc2rf_args"] = {}
+
   for mode_args in config["builds"][build]["sc2rf"]["mode"]:
 
       mode = list(mode_args.keys())[0]
@@ -637,6 +638,10 @@ def _params_sc2rf_recombinants(build):
   if lapis: params["lapis"] = "--lapis"
   else: params["lapis"] = ""
 
+  gisaid_access_key = config["builds"][build]["sc2rf_recombinants"]["gisaid_access_key"]
+  if gisaid_access_key: params["gisaid_access_key"] = "--gisaid-access-key {}".format(gisaid_access_key)
+  else: params["gisaid_access_key"] = ""
+
   # The metadata param will not be used if we are excluding negatives
   metadata = _inputs(build)["metadata"]
   exclude_negatives = config["builds"][build]["sc2rf"]["exclude_negatives"]
@@ -684,6 +689,7 @@ rule sc2rf_recombinants:
     dup_method      = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["dup_method"],
     auto_pass       = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["auto_pass"],
     lapis           = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["lapis"],
+    gisaid_access_key = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["gisaid_access_key"],
     metadata        = lambda wildcards: _params_sc2rf_recombinants(wildcards.build)["metadata"],
     # Join inputs together with commas
     ansi            = lambda wildcards: ",".join(_inputs_sc2rf_recombinants(wildcards.build)["ansi"]),
@@ -717,6 +723,7 @@ rule sc2rf_recombinants:
       {params.max_breakpoints} \
       {params.dup_method} \
       {params.lapis} \
+      {params.gisaid_access_key} \
       --log {log} \
       >> {log} 2>&1;
 
@@ -886,9 +893,9 @@ def _params_plot(build):
   if max_date: params["max_date"] = "--max-date {}".format(max_date)
   else: params["max_date"] = ""
 
-  singletons = config["builds"][build]["plot"]["singletons"]
-  if singletons: params["singletons"] = "--singletons"
-  else: params["singletons"] = ""
+  min_cluster_size = config["builds"][build]["plot"]["min_cluster_size"]
+  if min_cluster_size: params["min_cluster_size"] = "--min-cluster-size {}".format(min_cluster_size)
+  else: params["min_cluster_size"] = ""
 
   lag = config["builds"][build]["plot"]["lag"]
   if lag: params["lag"] = "--lag {}".format(lag)
@@ -918,7 +925,7 @@ rule plot:
     min_date   = lambda wildcards: _params_plot(wildcards.build)["min_date"],
     max_date   = lambda wildcards: _params_plot(wildcards.build)["max_date"],
     lag        = lambda wildcards: _params_plot(wildcards.build)["lag"],
-    singletons = lambda wildcards: _params_plot(wildcards.build)["singletons"],
+    min_cluster_size = lambda wildcards: _params_plot(wildcards.build)["min_cluster_size"],
   threads: 1
   resources:
     cpus = 1,
@@ -936,7 +943,7 @@ rule plot:
       {params.weeks} \
       {params.min_date} \
       {params.max_date} \
-      {params.singletons} \
+      {params.min_cluster_size} \
       > {log} 2>&1;
 
     # Extract the cluster IDs to be plotted
@@ -969,6 +976,35 @@ rule plot:
 
 # ------------------------------------------------------------------------------
 rule_name = "plot_historical"
+
+# Parameters Function
+def _params_plot_historical(build):
+  """Parse parameters from wildcards for rule plot_historical."""
+
+  params = {}
+
+  weeks = config["builds"][build]["plot_historical"]["weeks"]
+  if weeks: params["weeks"] = "--weeks {}".format(weeks)
+  else: params["weeks"] = ""
+
+  min_date = config["builds"][build]["plot_historical"]["min_date"]
+  if min_date: params["min_date"] = "--min-date {}".format(min_date)
+  else: params["min_date"] = ""
+
+  max_date = config["builds"][build]["plot_historical"]["max_date"]
+  if max_date: params["max_date"] = "--max-date {}".format(max_date)
+  else: params["max_date"] = ""
+
+  min_cluster_size = config["builds"][build]["plot_historical"]["min_cluster_size"]
+  if min_cluster_size: params["min_cluster_size"] = "--min-cluster-size {}".format(min_cluster_size)
+  else: params["min_cluster_size"] = ""
+
+  lag = config["builds"][build]["plot_historical"]["lag"]
+  if lag: params["lag"] = "--lag {}".format(lag)
+  else: params["lag"] = ""
+
+  return params
+
 rule plot_historical:
   """Plot results as a historical timeline."""
 
@@ -987,7 +1023,7 @@ rule plot_historical:
     outdir     = "results/{build}/plots_historical",
     geo        = lambda wildcards: _params_linelist(wildcards.build)["geo"],
     lag        = lambda wildcards: _params_plot(wildcards.build)["lag"],
-    singletons = lambda wildcards: _params_plot(wildcards.build)["singletons"],
+    min_cluster_size = lambda wildcards: _params_plot(wildcards.build)["min_cluster_size"],
   threads: 1
   resources:
     cpus = 1,
@@ -1002,7 +1038,7 @@ rule plot_historical:
       --outdir {params.outdir} \
       {params.lag} \
       {params.geo} \
-      {params.singletons} \
+      {params.min_cluster_size} \
       > {log} 2>&1;
 
     # Plot breakpoints by clade
@@ -1080,7 +1116,7 @@ rule report:
   params:
     geo       = lambda wildcards: _params_report(wildcards.build)["geo"],
     template  = lambda wildcards: _params_report(wildcards.build)["template"],
-    singletons = lambda wildcards: _params_plot(wildcards.build)["singletons"],
+    min_cluster_size = lambda wildcards: _params_plot(wildcards.build)["min_cluster_size"],
 
   threads: 1
   resources:
@@ -1095,7 +1131,7 @@ rule report:
     csvtk csv2xlsx -t -o {output.xlsx} {input.tables} > {log} 2>&1;
 
     # Create the powerpoint slides
-    python3 scripts/report.py --linelist {input.linelist} --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.template} {params.singletons} >> {log} 2>&1;
+    python3 scripts/report.py --linelist {input.linelist} --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.template} {params.min_cluster_size} >> {log} 2>&1;
     """
 
 rule report_historical:
@@ -1115,7 +1151,7 @@ rule report_historical:
   params:
     geo       = lambda wildcards: _params_report(wildcards.build)["geo"],
     template  = lambda wildcards: _params_report(wildcards.build)["template"],
-    singletons = lambda wildcards: _params_plot(wildcards.build)["singletons"],
+    min_cluster_size = lambda wildcards: _params_plot(wildcards.build)["min_cluster_size"],
 
   threads: 1
   resources:
@@ -1127,7 +1163,7 @@ rule report_historical:
   shell:
     """
     # Create the powerpoint slides
-    python3 scripts/report.py --linelist {input.linelist} --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.template} {params.singletons} > {log} 2>&1;
+    python3 scripts/report.py --linelist {input.linelist} --plot-dir {input.plots} --output {output.pptx} {params.geo} {params.template} {params.min_cluster_size} > {log} 2>&1;
     """
 
 # ------------------------------------------------------------------------------
