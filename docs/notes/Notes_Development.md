@@ -1,6 +1,6 @@
 # Development
 
-This is a minor bugfix release aimed towards...
+This is a minor release aimed towards...
 
 ## Dataset
 
@@ -22,16 +22,22 @@ This is a minor bugfix release aimed towards...
 ## Plot
 
 - [Issue #209](https://github.com/ktmeaton/ncov-recombinant/issues/209): Restrict the palette for `rbd_level` to the range of `0:12`.
+- [Issue #218](https://github.com/ktmeaton/ncov-recombinant/issues/218): Fix bug concerning data fragmentation with large numbers of sequences.
+- [Issue #221](https://github.com/ktmeaton/ncov-recombinant/issues/221): Remove parameter `--singletons` in favor of `--min-cluster-size` to control cluster size in plots.
 
 ## Validate
 
 ### Designated Lineages
 
+- `XBB.1.5`
 - [Issue #196](https://github.com/ktmeaton/ncov-recombinant/issues/196): `XBF`
 - [Issue #206](https://github.com/ktmeaton/ncov-recombinant/issues/206): `XBG`
 - [Issue #196](https://github.com/ktmeaton/ncov-recombinant/issues/198): `XBH`
 - [Issue #199](https://github.com/ktmeaton/ncov-recombinant/issues/199): `XBJ`
 - [Issue #213](https://github.com/ktmeaton/ncov-recombinant/issues/213): `XBK`
+- [Issue #197](https://github.com/ktmeaton/ncov-recombinant/issues/197): `XBL`
+- `XBM`
+- `XBN`
 
 ### Proposed Lineages
 

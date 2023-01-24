@@ -87,9 +87,9 @@ plt.rcParams["svg.fonttype"] = "none"
     "--lag", help="Reporting lag weeks to draw a grey box", required=False, default=4
 )
 @click.option(
-    "--singletons",
-    help="Flag to indicate singleton clusters (N=1) should be reported.",
-    is_flag=True,
+    "--min-cluster-size",
+    help="Only plot clusters/lineages with at least this many sequences.",
+    default=1,
 )
 def main(
     input,
@@ -99,7 +99,7 @@ def main(
     lag,
     min_date,
     max_date,
-    singletons,
+    min_cluster_size,
 ):
     """Plot recombinant lineages"""
 
@@ -168,8 +168,8 @@ def main(
     largest_lineage = NO_DATA_CHAR
     largest_lineage_size = 0
 
-    # All record cluster sizes to decided if singletons should be dropped
-    drop_singleton_ids = []
+    # All record cluster sizes to decided which should be dropped
+    drop_small_clusters_ids = []
 
     for lineage in set(df["recombinant_lineage_curated"]):
         match_df = df[df["recombinant_lineage_curated"] == lineage]
@@ -178,13 +178,11 @@ def main(
             largest_lineage = match_df["recombinant_lineage_curated"].values[0]
             largest_lineage_size = lineage_size
 
-        if lineage_size == 1:
+        if lineage_size < min_cluster_size:
             for i in match_df.index:
-                drop_singleton_ids.append(i)
+                drop_small_clusters_ids.append(i)
 
-    # now decided if we should drop singletons
-    if not singletons:
-        df.drop(labels=drop_singleton_ids, axis="rows", inplace=True)
+    df.drop(labels=drop_small_clusters_ids, axis="rows", inplace=True)
 
     df["parents_clade"] = df["parents_clade"].fillna("Unknown")
     df["parents_lineage"] = df["parents_lineage"].fillna("Unknown")
