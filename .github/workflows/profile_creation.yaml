@@ -112,7 +112,8 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          mamba-version: "*"
+          #mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge
 
       # install conda environment
@@ -172,7 +173,8 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          mamba-version: "*"
+          #mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge
 
       # install conda environment
@@ -232,7 +234,8 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          mamba-version: "*"
+          #mamba-version: "*"
+          miniforge-variant: Mambaforge
           channels: conda-forge
 
       # install conda environment
