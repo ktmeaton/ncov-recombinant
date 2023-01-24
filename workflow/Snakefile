@@ -881,10 +881,10 @@ def _params_plot(build, plot_type):
 
   params = {}
 
-  if plot_type == "plots":
+  if plot_type == "plots" or plot_type == "report":
     plot_rule = "plot"
     params["autoscale"] = ""
-  elif plot_type == "plots_historical":
+  elif plot_type == "plots_historical" or plot_type == "report_historical":
     plot_rule = "plot_historical"
     params["autoscale"] = "--autoscale"
 
@@ -1021,7 +1021,7 @@ rule report:
   wildcard_constraints:
     report_type = "report|report_historical",
   input:
-    plots           = rules.plot.output.plots,
+    plots           = lambda wildcards: "results/{build}/plots" if wildcards.report_type == "report" else "results/{build}/plots_historical",
     linelist        = rules.linelist.output.linelist,
     tables          = [
                       rules.linelist.output.lineages,
@@ -1037,9 +1037,9 @@ rule report:
     pptx            = "results/{build}/{report_type}/report.pptx",
     xlsx            = "results/{build}/{report_type}/report.xlsx",
   params:
-    geo       = lambda wildcards: _params_report(wildcards.build)["geo"],
-    template  = lambda wildcards: _params_report(wildcards.build)["template"],
-    min_cluster_size = lambda wildcards: _params_plot(wildcards.build)["min_cluster_size"],
+    geo              = lambda wildcards: _params_report(wildcards.build)["geo"],
+    template         = lambda wildcards: _params_report(wildcards.build)["template"],
+    min_cluster_size = lambda wildcards: _params_plot(wildcards.build, wildcards.report_type)["min_cluster_size"],
 
   threads: 1
   resources:

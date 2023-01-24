@@ -24,6 +24,11 @@ This is a minor release aimed towards...
 - [Issue #209](https://github.com/ktmeaton/ncov-recombinant/issues/209): Restrict the palette for `rbd_level` to the range of `0:12`.
 - [Issue #218](https://github.com/ktmeaton/ncov-recombinant/issues/218): Fix bug concerning data fragmentation with large numbers of sequences.
 - [Issue #221](https://github.com/ktmeaton/ncov-recombinant/issues/221): Remove parameter `--singletons` in favor of `--min-cluster-size` to control cluster size in plots.
+- Combine `plot` and `plot_historical` into one snakemake rule.
+
+## Report
+
+- Combine `report` and `report_historical` into one snakemake rule.
 
 ## Validate
 

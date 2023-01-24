@@ -1,4 +1,5 @@
 # ncov-recombinant
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
@@ -683,7 +684,13 @@ After completing a development trigger, proceed with the **Validation** section.
     csvtk cut -t -f "strain" data/controls-gisaid/metadata.tsv | tail -n+2 > data/controls-gisaid/strains.txt
     ```
 
-1. Update the controls validation values.
+1. Run the `controls-gisaid` profile (recommend HPC with slurm).
+
+    ```bash
+    scripts/slurm.sh --profile profiles/controls-gisaid-hpc --conda-env ncov-recombinant-dev
+    ```
+
+1. Update the controls validation values if the `controls-gisaid` profile ran successfully.
 
     The file `defaults/validation.tsv` contains the expected values for all controlled datasets including: `tutorial`, `controls`, and `controls-gisaid`.
 
@@ -713,12 +720,23 @@ After completing a development trigger, proceed with the **Validation** section.
 
 Run the `controls-gisaid` profile to test the new changes:
 
-```bash
-scripts/slurm.sh \
-    --profile profiles/controls-gisaid-hpc \
-    --conda-env ncov-recombinant-dev \
-    --target "results/controls-gisaid/validate/validation.tsv"
-```
+1. Tutorial
+
+    ```bash
+    scripts/slurm.sh --profile profiles/tutorial --conda-env ncov-recombinant-dev
+    ```
+
+2. Genbank Controls
+
+    ```bash
+    scripts/slurm.sh --profile profiles/controls-hpc --conda-env ncov-recombinant-dev
+    ```
+
+3. GISAID Controls
+
+    ```bash
+    scripts/slurm.sh --profile profiles/controls-gisaid-hpc --conda-env ncov-recombinant-dev
+    ```
 
 If the pipeline failed validation, check the end of the log for details on which samples failed and why.
 
