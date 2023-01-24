@@ -34,3 +34,6 @@ data/misc
 
 # all-contributors and yarn
 yarn.lock
+
+# sphinx readthedocs
+docs/sphinx/build
