@@ -4,7 +4,7 @@ import pandas as pd
 import os
 
 NO_DATA_CHAR = "NA"
-VALIDATE_COLS = ["lineage", "parents_clade", "breakpoints"]
+VALIDATE_COLS = ["status", "lineage", "parents_clade", "breakpoints"]
 
 
 @click.command()

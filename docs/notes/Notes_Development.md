@@ -20,6 +20,7 @@ This is a minor release aimed towards...
 - [Issue #204](https://github.com/ktmeaton/ncov-recombinant/issues/204): Add special handling for XBB sequenced with ARTIC v4.1 and dropout regions.
 - [Issue #205](https://github.com/ktmeaton/ncov-recombinant/issues/205): Add new column `parents_conflict` to indicate whether the reported lineages from covSPECTRUM conflict with the reported parental clades from `sc2rf.
 - [Issue #213](https://github.com/ktmeaton/ncov-recombinant/issues/213): Add `XBK` to auto-pass lineages.
+- [Issue #222](https://github.com/ktmeaton/ncov-recombinant/issues/222): Add new parameter `--gisaid-access-key` to `sc2rf` and `sc2rf_recombinants`.
 - The order of the `postprocessing.py` was rearranged to have more comprehensive details for auto-pass lineages.
 - Add `XAN` to auto-pass lineages.
 
@@ -36,6 +37,8 @@ This is a minor release aimed towards...
 - Combine `report` and `report_historical` into one snakemake rule.
 
 ## Validate
+
+- [Issue #225](https://github.com/ktmeaton/ncov-recombinant/issues/225): Fix bug where false negatives passed validation because the status column wasn't checked.
 
 ### Designated Lineages
 
