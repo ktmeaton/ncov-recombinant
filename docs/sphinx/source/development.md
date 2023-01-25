@@ -7,13 +7,13 @@ There are three main triggers to initate new development:
 1. A new recombinant lineage has been proposed: https://github.com/cov-lineages/pango-designation/issues?q=recombinant
 1. A new recombinant lineage has been designated: https://github.com/cov-lineages/pango-designation/milestones. New designations _should_ be labelled as milestones.
 
-Beging by creating a personal dev conda environment.
+Beging by creating a dev conda environment.
 
 ```bash
 mamba env create -f workflow/envs/environment.yaml -n ncov-recombinant-dev
 ```
 
-After completing a development trigger, proceed with the **Validation** section.
+> **Note**: After completing a development trigger, proceed with the **Validation** section.
 
 ### Trigger 1 | New Lineage Dataset
 
@@ -42,7 +42,7 @@ After completing a development trigger, proceed with the **Validation** section.
     - bioconda::nextclade=2.8.0
     ```
 
-1. Update the personal dev conda environment.
+1. Update the dev conda environment.
 
     ```bash
     mamba env update -f workflow/envs/environment.yaml -n ncov-recombinant-dev
@@ -58,7 +58,9 @@ After completing a development trigger, proceed with the **Validation** section.
 
 1. Check the correponsing [pango-designation issue](https://github.com/cov-lineages/pango-designation/issues?q=recombinant) for a list of GISAID accessions.
 
-1. Download 10-20 of these GISAID accessions from <https://gisaid.org/>. Please review the [GISAID Download](https://github.com/ktmeaton/ncov-recombinant#gisaid) section of the README to ensure the sequences and metadata are correctly formatted.
+1. Download 10 of these GISAID accessions from <https://gisaid.org/>. Please review the **GISAID** section in the **Controls** page the README to ensure the sequences and metadata are correctly formatted.
+
+TEST: <a href="controls.html#gisaid">GISAID</a>
 
 1. Create a new pipeline profile for this lineage.
 
@@ -130,71 +132,25 @@ After completing a development trigger, proceed with the **Validation** section.
     - Include no more than 10 representative sequences.
     - Make the data directory `data/X*` instead of `data/proposed*`.
 
-1. Add the new designated lineage to the `gisaid-positive` dataset.
-
-    This step expects all positive controls to be stored in individual directories starting with `data/X*`. Their metadata and sequences will be collated into `data/gisaid-positive`.
+1. Add the new designated lineage to the `controls-gisaid` dataset.
 
     ```bash
-    # Remove authors and originating lab for non-ascii char
-    cols=$(csvtk headers -t data/XA/metadata.tsv | grep -v -E "originating_lab|authors" | tr "\n" "," | sed 's/,$/\n/g')
+    data_dir="data/XBM"
 
-    # Construct the metadata header
-    csvtk cut -t -f "$cols" data/XA/metadata.tsv | head -n 1 > data/gisaid-positive/metadata.tsv
+    # Add in new control strains
+    csvtk cut -t -f "strain" ${data_dir}/metadata.tsv | tail -n+2 >> data/controls-gisaid/strains.txt
 
-    # Extract metadata cols and concat for all X* lineages.
-    for data_dir in $(ls -d data/X*); do
-        csvtk cut -t -f "$cols" ${data_dir}/metadata.tsv | tail -n+2 >> data/gisaid-positive/metadata.tsv
-    done
+    # Add in new control metadata (ex. XBM), first identify columns to keep
+    cols=$(csvtk headers -t data/controls-gisaid/metadata.tsv | tr "\n" "," | sed 's/,$/\n/g')
+    csvtk cut -t -f "$cols" ${data_dir}/metadata.tsv | tail -n+2 >> data/controls-gisaid/metadata.tsv  
 
-    # Combine all X* lineage sequences
-    cat data/X*/sequences.fasta > data/gisaid-positive/sequences.fasta
-    ```
-
-1. Combine the `gisaid-positive` and `gisaid-negative` datasets into the `controls-gisaid` dataset.
-
-    ```bash
-    csvtk concat -t data/gisaid-positive/metadata.tsv data/gisaid-negative/metadata.tsv > data/controls-gisaid/metadata.tsv
-
-    cat data/gisaid-positive/sequences.fasta data/gisaid-negative/sequences.fasta > data/controls-gisaid/sequences.fasta
-
-    csvtk cut -t -f "strain" data/controls-gisaid/metadata.tsv | tail -n+2 > data/controls-gisaid/strains.txt
-    ```
-
-1. Run the `controls-gisaid` profile (recommend HPC with slurm).
-
-    ```bash
-    scripts/slurm.sh --profile profiles/controls-gisaid-hpc --conda-env ncov-recombinant-dev
-    ```
-
-1. Update the controls validation values if the `controls-gisaid` profile ran successfully.
-
-    The file `defaults/validation.tsv` contains the expected values for all controlled datasets including: `tutorial`, `controls`, and `controls-gisaid`.
-
-    ```bash
-    # Construct headers
-    echo -e "strain\tlineage\tbreakpoints\tparents_clade\tdataset" > defaults/validation.tsv
-
-    # Tutorial
-    csvtk cut -t -f "strain,lineage,breakpoints,parents_clade"  results/tutorial/linelists/linelist.tsv \
-      | tail -n+2 \
-      >> defaults/validation.tsv
-
-    # Controls Genbank
-    csvtk cut -t -f "strain,lineage,breakpoints,parents_clade"  results/controls/linelists/linelist.tsv \
-      | csvtk mutate2 -t -n "dataset" -e '"controls"' \
-      | tail -n+2 \
-      >> defaults/validation.tsv
-
-    # Controls GISAID
-    csvtk cut -t -f "strain,lineage,breakpoints,parents_clade"  results/controls-gisaid/linelists/linelist.tsv \
-      | csvtk mutate2 -t -n "dataset" -e '"controls-gisaid"' \
-      | tail -n+2 \
-      >> defaults/validation.tsv
+    # Add in new control sequences
+    cat ${date_dir}/sequences.fasta >> data/controls-gisaid/sequences.fasta
     ```
 
 ### Validation
 
-Run the `controls-gisaid` profile to test the new changes:
+Run the following profiles to validate the new changes. These profiles all contain strains with expected pipeline output in `defaults/validation.tsv`.
 
 1. Tutorial
 
@@ -217,9 +173,33 @@ Run the `controls-gisaid` profile to test the new changes:
 If the pipeline failed validation, check the end of the log for details on which samples failed and why.
 
 ```bash
-less -S logs/ncov-recombinant/canada_$(date +'%Y-%m-%d').log
+less -S logs/ncov-recombinant/tutorial_$(date +'%Y-%m-%d').log
 ```
 
-If the column that failed is only `lineage`, because lineage assignments have changed with the new dataset, simply update the values in `defaults/validation.tsv`. This is expected when upgrading nextclade-cli or the nextclade dataset.
+If the column that failed is only `lineage`, because lineage assignments have changed with the new nextclade dataset, simply update the values in `defaults/validation.tsv`. This is expected when upgrading nextclade-cli or the nextclade dataset.
 
 If the column that failed is `breakpoints` or `parents_clade`, this indicates a more complicated issue with breakpoint detection. The most common reason is because `sc2rf` modes has been changed to capture a new lineage (see development trigger 3, new lineage, for more information). This presents an optimization challenge, and is solved by working through steps 5 and 6 of **Development: Trigger 3 | New Proposed Lineage** until sensitivity and specificity are restore for all lineages.
+
+Once validation is completed successfully for all profiles, update `defaults/validation.tsv` as follows:
+
+```bash
+# Construct headers
+echo -e "strain\tlineage\tbreakpoints\tparents_clade\tdataset" > defaults/validation.tsv
+
+# Tutorial
+csvtk cut -t -f "strain,lineage,breakpoints,parents_clade"  results/tutorial/linelists/linelist.tsv \
+    | tail -n+2 \
+    >> defaults/validation.tsv
+
+# Controls Genbank
+csvtk cut -t -f "strain,lineage,breakpoints,parents_clade"  results/controls/linelists/linelist.tsv \
+    | csvtk mutate2 -t -n "dataset" -e '"controls"' \
+    | tail -n+2 \
+    >> defaults/validation.tsv
+
+# Controls GISAID
+csvtk cut -t -f "strain,lineage,breakpoints,parents_clade"  results/controls-gisaid/linelists/linelist.tsv \
+    | csvtk mutate2 -t -n "dataset" -e '"controls-gisaid"' \
+    | tail -n+2 \
+    >> defaults/validation.tsv
+```
