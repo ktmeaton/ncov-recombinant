@@ -8,16 +8,18 @@ SARS-CoV-2 has an estimated _substitution rate_ of 2 substitutions/month or 24 s
 
 ![breakpoints_XD_v0.7.0](../../../images/breakpoints_XD_v0.7.0.png)
 
-Figure 1. Genomic composition of the Delta-Omicron recombinant `XD` including breakpoints and substitutions.
+Figure 1. Genomic composition of the Delta-Omicron recombinant `XD`.
 
 ### Pipeline Definition
 
-A recombinant SARS-CoV-2 lineage is defined as a group of sequences with a unique combination of:
+A recombinant SARS-CoV-2 lineage is defined as sequences with unique combinations of:
 
 1. Lineage assignment (ex. `XD`)
-1. Parental clades (ex. `Delta`, `Omicron`)
-1. Parental lineages (ex. `AY.4`, `BA.1`)
+1. Parental clades (ex. `Delta`/`Omicron`/`Delta`)
+1. Parental lineages (ex. `AY.4`/`BA.1`/`AY.4`)
 1. Breakpoint intervals (ex. Breakpoint 1: `21988-22672`, Breakpoint 2: `25470-25583`)
+
+If two sequences share the same lineage assignment (`XD`) and parental clades (ex. `Delta`/`Omicron`) but differ in their parental lineages (`AY.4`/`BA.1`/`AY.4` vs. `AY.44`/`BA.1`/`AY.44`), they will be classified as distinct recombinant lineages. The sequence with parental lineages `AY.44`/`BA.1`/`AY.444` will be renamed `XD-like`. This indicates that its closest known lineage is `XD` but that it differs from the expected genomic composition of true `XD`.
 
 ### Designated Recombinants
 
