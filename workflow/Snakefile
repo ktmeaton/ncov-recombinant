@@ -13,6 +13,7 @@ import datetime
 import subprocess
 import pandas as pd
 import json
+import re
 
 # Enforce minimum version
 from snakemake.utils import min_version
@@ -107,6 +108,17 @@ def _inputs(build):
 #  Default Target
 # ------------------------------------------------------------------------------
 
+report_targets = []
+
+for build in BUILDS:
+
+  # Identify the types of reports and plots
+  for rule_params in config["builds"][build]:
+    if rule_params.startswith("plot"):
+      report_dir = rule_params.replace("plot", "report")
+      report_path = os.path.join("results", build, report_dir, "report.pptx")
+      report_targets.append(report_path)
+
 rule all:
   """
   Default workflow targets.
@@ -125,12 +137,7 @@ rule all:
       build_name=BUILDS,
       ),
     # Stage 3: Reports
-    expand("results/{build_name}/report/report.xlsx",
-      build_name=BUILDS,
-      ),
-    expand("results/{build_name}/report_historical/report.pptx",
-              build_name=BUILDS,
-              ),
+    report_targets,
     # Stage 4: Validation
     expand("results/{build_name}/validate/validation.tsv",
       build_name=BUILDS,
@@ -881,12 +888,21 @@ def _params_plot(build, plot_type):
 
   params = {}
 
-  if plot_type == "plots" or plot_type == "report":
+  custom_cluster_size = re.search(".*N([0-9]*$)", plot_type)
+  is_historical = "historical" in plot_type
+  is_report     = "report" in plot_type
+
+  if not is_historical:
     plot_rule = "plot"
     params["autoscale"] = ""
-  elif plot_type == "plots_historical" or plot_type == "report_historical":
+  else:
     plot_rule = "plot_historical"
     params["autoscale"] = "--autoscale"
+
+  if not is_report:
+    params["plot_dir"] = os.path.join("results", build, plot_type)
+  else:
+    params["plot_dir"] = os.path.join("results", build, plot_type.replace("report", "plots"))
 
   weeks = config["builds"][build][plot_rule]["weeks"]
   if weeks: params["weeks"] = "--weeks {}".format(weeks)
@@ -900,9 +916,14 @@ def _params_plot(build, plot_type):
   if max_date: params["max_date"] = "--max-date {}".format(max_date)
   else: params["max_date"] = ""
 
-  min_cluster_size = config["builds"][build][plot_rule]["min_cluster_size"]
+  if not custom_cluster_size:
+    min_cluster_size = config["builds"][build][plot_rule]["min_cluster_size"]
+  else:
+    min_cluster_size = re.findall("N([0-9]*)$", plot_type)[0]
+
   if min_cluster_size: params["min_cluster_size"] = "--min-cluster-size {}".format(min_cluster_size)
   else: params["min_cluster_size"] = ""
+
 
   lag = config["builds"][build][plot_rule]["lag"]
   if lag: params["lag"] = "--lag {}".format(lag)
@@ -921,7 +942,7 @@ rule plot:
   """
 
   wildcard_constraints:
-    plot_type  = "plots|plots_historical",
+    plot_type  = "plots|plots_historical|plots_N[0-9]*|plots_historical_N[0-9]*",
   input:
     positives        = rules.linelist.output.positives,
     lineages         = rules.linelist.output.lineages,
@@ -1019,9 +1040,9 @@ rule report:
   """
 
   wildcard_constraints:
-    report_type = "report|report_historical",
+    report_type = "report|report_historical|report_N[0-9]*|report_historical_N[0-9]*",
   input:
-    plots           = lambda wildcards: "results/{build}/plots" if wildcards.report_type == "report" else "results/{build}/plots_historical",
+    plots           = lambda wildcards: _params_plot(wildcards.build, wildcards.report_type)["plot_dir"],
     linelist        = rules.linelist.output.linelist,
     tables          = [
                       rules.linelist.output.lineages,

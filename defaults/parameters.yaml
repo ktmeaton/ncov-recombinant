@@ -160,6 +160,11 @@ rule_params:
     max_date:
     min_cluster_size: 1
 
+  # If you append NX, it will create the equivalent (plot, plot_historical) but with the cluster size set to X
+  # So plot_N10 will use the plot parameters, but with min_cluster_size >= 10
+  - name: plot_N10
+  - name: plot_historical_N10
+
   # ---------------------------------------------------------------------------
   # template    : (Optional) path to a powerpoint template
   # Note: the rule `report` is also going to use the `geo` param of rule `linelist`, to summarize recombinants by geographic location
