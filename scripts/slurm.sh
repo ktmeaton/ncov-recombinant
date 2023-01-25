@@ -89,12 +89,15 @@ fi
 
 mkdir -p $log_dir
 
+# Just in case the conda_env is an absolute path
+job_name=$(basename $conda_env)
+
 cmd="
 sbatch
   --parsable
   -c ${cpus}
   --mem=${mem}
-  -J ${conda_env}
+  -J ${job_name}
   -o ${log_dir}/%x_${today}_%j.log
   --wrap=\"source activate $conda_env && snakemake --profile $profile $target\"
 "
