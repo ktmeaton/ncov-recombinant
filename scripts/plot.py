@@ -521,12 +521,13 @@ def main(
                 max_char_len = len(str(col))
 
         legend_ncol = math.floor(LEGEND_CHAR_WIDTH / max_char_len)
+
         # we don't want too many columns
         if legend_ncol > LEGEND_MAX_COL:
             legend_ncol = LEGEND_MAX_COL
         elif legend_ncol > num_cat:
             legend_ncol = num_cat
-        else:
+        elif legend_ncol == 0:
             legend_ncol = 1
 
         legend = ax.legend(
@@ -543,7 +544,11 @@ def main(
         # Truncate long labels in the legend
         # But only if this plots does not involve plotting parents!
         # Because we need to see the 2+ parent listed at the end
-        if "parents" not in label:
+        if (
+            "parents" not in label
+            and "geography" not in label
+            and "largest" not in label
+        ):
             for i in range(0, len(legend.get_texts())):
 
                 l_label = legend.get_texts()[i].get_text()

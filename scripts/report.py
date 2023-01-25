@@ -122,7 +122,9 @@ def main(
     title.text_frame.paragraphs[0].font.bold = True
 
     chart_placeholder = slide.placeholders[1]
-    chart_placeholder.insert_picture(plot_path)
+    # Plotting may have failed to create an individual figure
+    if os.path.exists(plot_path):
+        chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
 
     # Stats
@@ -159,11 +161,9 @@ def main(
     # Construct the summary text
     summary = "\n"
 
-    summary += "There are {total_lineages} recombinant lineages".format(
+    summary += "There are {total_lineages} recombinant lineages*.\n".format(
         total_lineages=total_lineages
     )
-    # Add a footnote to indicate cluster size
-    summary += "*.\n"
 
     for status in RECOMBINANT_STATUS:
         if status in status_counts:
@@ -175,12 +175,9 @@ def main(
         )
 
     summary += "\n"
-    summary += "There are {total_sequences} recombinant sequences".format(
+    summary += "There are {total_sequences} recombinant sequences*.\n".format(
         total_sequences=total_sequences
     )
-
-    # Add a footnote to indicate cluster size
-    summary += "*.\n"
 
     for status in RECOMBINANT_STATUS:
         if status in status_counts:
@@ -191,6 +188,7 @@ def main(
             sequences=count, status=status
         )
 
+    # Add a footnote to indicate cluster size
     summary += "*Excluding small lineages (N<{})".format(min_cluster_size)
 
     body.text_frame.text = summary
@@ -220,7 +218,9 @@ def main(
         title.text_frame.paragraphs[0].font.bold = True
 
         chart_placeholder = slide.placeholders[1]
-        chart_placeholder.insert_picture(plot_path)
+        # Plotting may have failed to create an individual figure
+        if os.path.exists(plot_path):
+            chart_placeholder.insert_picture(plot_path)
         body = slide.placeholders[2]
 
         # Stats
@@ -236,7 +236,7 @@ def main(
         num_status_lineages = len(status_lineages)
 
         summary = "\n"
-        summary += "There are {num_status_lineages} {status} lineages.\n".format(
+        summary += "There are {num_status_lineages} {status} lineages*.\n".format(
             status=status, num_status_lineages=num_status_lineages
         )
 
@@ -246,6 +246,7 @@ def main(
                 lineage=lineage, seq_count=seq_count
             )
 
+        summary += "\n*Excluding small lineages (N<{})".format(min_cluster_size)
         body.text_frame.text = summary
 
         # Adjust font size of body
@@ -274,11 +275,13 @@ def main(
     title.text_frame.paragraphs[0].font.bold = True
 
     chart_placeholder = slide.placeholders[1]
-    chart_placeholder.insert_picture(plot_path)
+    # Plotting may have failed to create an individual figure
+    if os.path.exists(plot_path):
+        chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
 
     summary = "\n"
-    summary += "Recombinants are observed in {num_geos} {geo}.\n".format(
+    summary += "Recombinants are observed in {num_geos} {geo}*.\n".format(
         num_geos=num_geos, geo=geo
     )
 
@@ -287,6 +290,8 @@ def main(
         summary += "  - {region} ({seq_count})\n".format(
             region=region, seq_count=seq_count
         )
+
+    summary += "\n*Excluding small lineages (N<{})".format(min_cluster_size)
 
     body.text_frame.text = summary
 
@@ -330,11 +335,13 @@ def main(
     title.text_frame.paragraphs[0].font.bold = True
 
     chart_placeholder = slide.placeholders[1]
-    chart_placeholder.insert_picture(plot_path)
+    # Plotting may have failed to create an individual figure
+    if os.path.exists(plot_path):
+        chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
 
     summary = "\n"
-    summary += "The largest lineage is {lineage} (N={size}).\n".format(
+    summary += "The largest lineage is {lineage} (N={size})*.\n".format(
         lineage=largest_lineage,
         size=largest_lineage_size,
     )
@@ -348,6 +355,8 @@ def main(
         summary += "  - {region} ({seq_count})\n".format(
             region=region, seq_count=seq_count
         )
+
+    summary += "\n*Excluding small lineages (N<{})".format(min_cluster_size)
 
     body.text_frame.text = summary
 
@@ -364,7 +373,11 @@ def main(
     rbd_levels = list(rbd_df.columns)
     rbd_levels.remove("epiweek")
     # Order columns
-    rbd_counts = {level: int(sum(rbd_df[level])) for level in rbd_levels}
+    rbd_counts = {
+        level: int(sum(rbd_df[level]))
+        for level in rbd_levels
+        if int(sum(rbd_df[level])) > 0
+    }
     rbd_levels = dict(sorted(rbd_counts.items()))
 
     num_rbd_levels = len(rbd_levels)
@@ -377,11 +390,13 @@ def main(
     title.text_frame.paragraphs[0].font.bold = True
 
     chart_placeholder = slide.placeholders[1]
-    chart_placeholder.insert_picture(plot_path)
+    # Plotting may have failed to create an individual figure
+    if os.path.exists(plot_path):
+        chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
 
     summary = "\n"
-    summary += "{num_rbd_levels} RBD levels are observed.\n".format(
+    summary += "{num_rbd_levels} RBD levels are observed*.\n".format(
         num_rbd_levels=num_rbd_levels,
     )
 
@@ -391,6 +406,7 @@ def main(
             level=level, seq_count=seq_count
         )
 
+    summary += "\n*Excluding small lineages (N<{})".format(min_cluster_size)
     body.text_frame.text = summary
 
     # Adjust font size of body
@@ -420,11 +436,13 @@ def main(
     title.text_frame.paragraphs[0].font.bold = True
 
     chart_placeholder = slide.placeholders[1]
-    chart_placeholder.insert_picture(plot_path)
+    # Plotting may have failed to create an individual figure
+    if os.path.exists(plot_path):
+        chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
 
     summary = "\n"
-    summary += "There are {num_parents} clade combinations.\n".format(
+    summary += "There are {num_parents} clade combinations*.\n".format(
         num_parents=num_parents
     )
 
@@ -434,6 +452,7 @@ def main(
             parent=parent, seq_count=seq_count
         )
 
+    summary += "\n*Excluding small lineages (N<{})".format(min_cluster_size)
     body.text_frame.text = summary
 
     # Adjust font size of body
@@ -463,11 +482,13 @@ def main(
     title.text_frame.paragraphs[0].font.bold = True
 
     chart_placeholder = slide.placeholders[1]
-    chart_placeholder.insert_picture(plot_path)
+    # Plotting may have failed to create an individual figure
+    if os.path.exists(plot_path):
+        chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
 
     summary = "\n"
-    summary += "There are {num_parents} lineage combinations.\n".format(
+    summary += "There are {num_parents} lineage combinations*.\n".format(
         num_parents=num_parents
     )
 
@@ -477,6 +498,7 @@ def main(
             parent=parent, seq_count=seq_count
         )
 
+    summary += "\n*Excluding small lineages (N<{})".format(min_cluster_size)
     body.text_frame.text = summary
 
     # Adjust font size of body
@@ -497,7 +519,9 @@ def main(
     title.text_frame.paragraphs[0].font.bold = True
 
     chart_placeholder = slide.placeholders[1]
-    chart_placeholder.insert_picture(plot_path)
+    # Plotting may have failed to create an individual figure
+    if os.path.exists(plot_path):
+        chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
 
     # ---------------------------------------------------------------------
@@ -513,7 +537,9 @@ def main(
     title.text_frame.paragraphs[0].font.bold = True
 
     chart_placeholder = slide.placeholders[1]
-    chart_placeholder.insert_picture(plot_path)
+    # Plotting may have failed to create an individual figure
+    if os.path.exists(plot_path):
+        chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
 
     # ---------------------------------------------------------------------
