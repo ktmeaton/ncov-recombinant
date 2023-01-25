@@ -24,7 +24,7 @@ dependencies:
   - conda-forge::seaborn=0.12.0
   - bioconda::snipit=1.0.7
   - plotly::plotly=5.10.0
-  - conda-forge::python-kaleido
+  - conda-forge::python-kaleido=0.2.1
   # Report Generation
   - conda-forge:python-pptx=0.6.21
   - bioconda::epiweeks=2.1.4
@@ -32,12 +32,12 @@ dependencies:
   # For dev users
   - conda-forge::pre_commit=2.17.0
   - conda-forge::git=2.35.0
-  # Documentation
-  - conda-forge::yarn
-  - conda-forge::sphinx
-  - conda-forge::m2r
-  - conda-forge::myst-parser
-  - conda-forge::sphinx_rtd_theme
+  # Documentation=
+  - conda-forge::yarn=1.22.19
+  - conda-forge::sphinx=5.3.0
+  - conda-forge::m2r=0.3.1
+  - conda-forge::myst-parser=0.18.1
+  - conda-forge::sphinx_rtd_theme=1.1.1
   - pip:
     # sc2rf dependencies
     - termcolor==1.1.0
