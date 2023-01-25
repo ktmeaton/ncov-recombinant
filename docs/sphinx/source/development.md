@@ -183,21 +183,21 @@ Once validation is completed successfully for all profiles, update `defaults/val
 
 ```bash
 # Construct headers
-echo -e "strain\tlineage\tbreakpoints\tparents_clade\tdataset" > defaults/validation.tsv
+echo -e "strain\tstatus\tlineage\tbreakpoints\tparents_clade\tdataset" > defaults/validation.tsv
 
 # Tutorial
-csvtk cut -t -f "strain,lineage,breakpoints,parents_clade"  results/tutorial/linelists/linelist.tsv \
+csvtk cut -t -f "strain,status,lineage,breakpoints,parents_clade"  results/tutorial/linelists/linelist.tsv \
     | tail -n+2 \
     >> defaults/validation.tsv
 
 # Controls Genbank
-csvtk cut -t -f "strain,lineage,breakpoints,parents_clade"  results/controls/linelists/linelist.tsv \
+csvtk cut -t -f "strain,status,lineage,breakpoints,parents_clade"  results/controls/linelists/linelist.tsv \
     | csvtk mutate2 -t -n "dataset" -e '"controls"' \
     | tail -n+2 \
     >> defaults/validation.tsv
 
 # Controls GISAID
-csvtk cut -t -f "strain,lineage,breakpoints,parents_clade"  results/controls-gisaid/linelists/linelist.tsv \
+csvtk cut -t -f "strain,status,lineage,breakpoints,parents_clade"  results/controls-gisaid/linelists/linelist.tsv \
     | csvtk mutate2 -t -n "dataset" -e '"controls-gisaid"' \
     | tail -n+2 \
     >> defaults/validation.tsv
