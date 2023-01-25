@@ -9,19 +9,13 @@ version: 2
 sphinx:
    configuration: docs/sphinx/source/conf.py
 
-# # Optionally declare the Python requirements required to build your docs
-# conda:
-#   environment: workflow/envs/environment.yaml
-
 build:
    image: latest
 
-# This part is necessary otherwise the project is not built
+# Optionally declare the Python requirements required to build your docs
 python:
-   version: 3.8
    install:
-      - method: pip
-        path: .
+   - requirements: docs/sphinx/requirements.txt
 
 # If using Sphinx, optionally build your docs in additional formats such as PDF
 # formats:

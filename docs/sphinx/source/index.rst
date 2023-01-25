@@ -14,6 +14,9 @@ ncov-recombinant
 
    01_what_is_a_recombinant.md
    02_install.md
+   03_update.md
+   04_tutorial.md
+   05_output.md
 
 
 **Indices and Tables**
