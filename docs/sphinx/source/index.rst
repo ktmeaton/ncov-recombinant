@@ -6,7 +6,7 @@
 ncov-recombinant
 ============================================
 
-.. include::  01_description.rst
+.. include::  00_description.rst
 
 .. toctree::
    :maxdepth: 2
