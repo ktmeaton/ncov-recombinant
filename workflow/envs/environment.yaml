@@ -24,6 +24,7 @@ dependencies:
   - conda-forge::seaborn=0.12.0
   - bioconda::snipit=1.0.7
   - plotly::plotly=5.10.0
+  - conda-forge::python-kaleido
   # Report Generation
   - conda-forge:python-pptx=0.6.21
   - bioconda::epiweeks=2.1.4
