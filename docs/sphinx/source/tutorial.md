@@ -14,7 +14,7 @@
     snakemake --profile profiles/tutorial
     ```
 
-1. Explore the [output](https://github.com/ktmeaton/ncov-recombinant#output).
+1. Explore the <a href="output.html">Output</a>.
 
     - Slides | `results/tutorial/report/report.pptx`
     - Tables<sup>*</sup> | `results/tutorial/report/report.xlsx`

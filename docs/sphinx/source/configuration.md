@@ -44,7 +44,7 @@
 
 1. Edit `my_profiles/custom/config.yaml`, so that the `jobs` and `default-resources` match your system.
 
-    > **Note**: For HPC environments, see the [High Performance Computing](https://github.com/ktmeaton/ncov-recombinant#high-performance-computing) section.
+    > **Note**: For HPC environments, see the <a href="high-performance-computing.html">High Performance Computing</a> section.
 
     ```yaml
     #------------------------------------------------------------------------------#

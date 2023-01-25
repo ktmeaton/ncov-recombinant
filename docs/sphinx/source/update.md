@@ -1,6 +1,6 @@
 ## Update
 
-> **Tip**: It is recommended to do a [fresh install](https://github.com/ktmeaton/ncov-recombinant#install) in a separate directory to test a newer version.
+> **Tip**: It is recommended to do a <a href="install.html">fresh install</a> in a separate directory to test a newer version.
 
 After pulling a fresh copy of the git repository, don't forget to update your conda environment!
 
