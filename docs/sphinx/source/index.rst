@@ -6,17 +6,23 @@
 ncov-recombinant
 ============================================
 
-.. include::  00_description.rst
+.. include::  description.rst
 
 .. toctree::
    :maxdepth: 2
    :caption: Table of Contents
 
-   01_what_is_a_recombinant.md
-   02_install.md
-   03_update.md
-   04_tutorial.md
-   05_output.md
+   what_is_a_recombinant.md
+   install.md
+   update.md
+   tutorial.md
+   output.md
+   controls.md
+   configuration.md
+   high-performance-computing.md
+   development.md
+   faq.md
+   credits.md
 
 
 **Indices and Tables**

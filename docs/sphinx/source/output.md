@@ -13,14 +13,13 @@ Linelists are collated into a spreadsheet for excel/google sheets:
 1. `negatives`: Results from sequences classifed as a <u>non-recombinant</u> by nextclade.
 1. `issues`: Metadata of issues related to recombinant lineages posted in the [pango-designation](https://github.com/cov-lineages/pango-designation/issues) repository.
 
-[![excel_output](../../../images/excel_output.png)](
-https://docs.google.com/spreadsheets/d/1kVqQScrJneeJ4t7RmSeJTeWVGHecir1CEgq6hl8qirI)
+![excel_output](../../../images/excel_output.png)
 
 ### Slides
 
 Powerpoint/google slides with plots embedded for presenting.
 
-[![powerpoint_output](../../../images/powerpoint_output.png)](https://docs.google.com/presentation/d/1Jo4BYBa2K8kvRnKxo9ZpnqhS86ZLh3D1HTF3E8hfD0Q)
+![powerpoint_output](../../../images/powerpoint_output.png)
 
 ### Breakpoints
 
@@ -28,7 +27,7 @@ Visualization of breakpoints by parental clade and parental lineage.
 
 |                                         Clade                                          |                                         Lineage                                          |
 |:--------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------:|
-| ![breakpoints_clade_v0.4.0](https://raw.githubusercontent.com/ktmeaton/ncov-recombinant/4fbde4b90/images/breakpoints_clade_v0.4.0.png) | ![breakpoints_lineage_v0.4.0](https://raw.githubusercontent.com/ktmeaton/ncov-recombinant/432b6b7/images/breakpoints_lineage_v0.4.0.png) |
+| ![breakpoints_clade_v0.7.0](../../../images/breakpoints_clade_v0.7.0.png) | ![breakpoints_lineage_v0.7.0](../../../images/breakpoints_lineage_v0.7.0.png) |
 
 Visualization of parental alleles and mutations from [sc2rf](https://github.com/lenaschimmel/sc2rf).
 
