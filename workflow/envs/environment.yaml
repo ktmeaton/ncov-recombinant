@@ -36,6 +36,7 @@ dependencies:
   - conda-forge::sphinx
   - conda-forge::m2r
   - conda-forge::myst-parser
+  - conda-forge::sphinx_rtd_theme
   - pip:
     # sc2rf dependencies
     - termcolor==1.1.0
