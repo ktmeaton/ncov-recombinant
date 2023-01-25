@@ -247,9 +247,13 @@ def main():
         help="Path to write results in CSV format.",
     )
     parser.add_argument(
-        "--ignore-shared-subs",
+        "--ignore-shared",
         action="store_true",
         help="Ignore substitutions that are shared between all parents.",
+    )
+    parser.add_argument(
+        "--gisaid-access-key",
+        help="covSPECTRUM accessKey for GISAID data.",
     )
 
     sc2rf_dir = os.path.dirname(os.path.realpath(__file__))
@@ -462,8 +466,12 @@ def rebuild_examples():
                 continue
 
             print(f"Fetching data for {query}")
-            url = f"https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations{query}&minProportion=0.05"
+            if args.gisaid_access_key == None:
+                url = f"https://lapis.cov-spectrum.org/open/v1/sample/nuc-mutations{query}&minProportion=0.05"
+            else:
+                url = f"https://lapis.cov-spectrum.org/gisaid/v1/sample/nuc-mutations{query}&minProportion=0.05&accessKey={args.gisaid_access_key}"
             print(f"Url is {url}")
+
             r = requests.get(url)
             result = r.json()
             if len(result["errors"]):
@@ -843,7 +851,7 @@ def show_matches(examples, samples, writer):
         # Add in the private mutations
         coords = coords.union(private_coords)
 
-    if args.ignore_shared_subs:
+    if args.ignore_shared:
         filter_coords = set()
         for coord in coords:
             parents_matches = 0
@@ -861,7 +869,7 @@ def show_matches(examples, samples, writer):
             elif parents_matches <= 1:
                 filter_coords.add(coord)
             # Check if we're showing substitutions found in multiple parents
-            elif parents_matches > 1 and not args.ignore_shared_subs:
+            elif parents_matches > 1 and not args.ignore_shared:
                 filter_coords.add(coord)
 
         coords = filter_coords
@@ -1088,7 +1096,7 @@ def show_matches(examples, samples, writer):
 
                     # all examples match
                     else:
-                        if args.ignore_shared_subs:
+                        if args.ignore_shared:
                             continue
                         else:
                             alleles.append(

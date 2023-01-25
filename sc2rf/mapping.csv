@@ -52,6 +52,7 @@ NextstrainClade,PangoLineage,Letter,WhoLabel,Other,WhoClass,Query
 ,BA.2.10.1,ο,Omicron,,VOC,
 ,BA.2.12.1,ο,Omicron,,VOC,
 ,BA.2.75.3,ο,Omicron,,VOC,
+,BA.2.76,ο,Omicron,,VOC,
 ,BA.3,ο,Omicron,,VOC,
 ,BA.5.1,ο,Omicron,,VOC,
 ,BA.5.2,ο,Omicron,,VOC,
@@ -63,5 +64,4 @@ NextstrainClade,PangoLineage,Letter,WhoLabel,Other,WhoClass,Query
 ,BJ.1,ο,Omicron,,VOC,
 ,BM.1,ο,Omicron,,VOC,
 ,BM.1.1,ο,Omicron,,VOC,
-,BA.2.76,ο,Omicron,,VOC,
 ,CJ.1,ο,Omicron,,VOC,
