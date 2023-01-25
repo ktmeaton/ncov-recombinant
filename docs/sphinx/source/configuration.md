@@ -72,3 +72,12 @@
     ```bash
     snakemake --profile my_profiles/custom
     ```
+
+---
+
+> **Important**: If you are doing routine production analyses, it is recommend to first delete all previous output before running your profile. This will force `ncov-recombinant` to download fresh copies of the pango-designation issues (`resources/issues.tsv`) and the lineage phylogeny (`resources/tree.nwk`).
+
+```bash
+snakemake --profile my_profiles/custom --delete-all-output
+snakemake --profile my_profiles/custom
+```
