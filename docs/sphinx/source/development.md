@@ -2,22 +2,23 @@
 
 There are three main triggers to initate new development:
 
-1. A new lineage dataset has been released: https://github.com/nextstrain/nextclade_data/releases
-1. A new nextclade-cli has been released: https://github.com/nextstrain/nextclade/releases
-1. A new recombinant lineage has been proposed: https://github.com/cov-lineages/pango-designation/issues?q=recombinant
-1. A new recombinant lineage has been designated: https://github.com/cov-lineages/pango-designation/milestones. New designations _should_ be labelled as milestones.
+1. A new [lineage dataset](https://github.com/nextstrain/nextclade_data/releases) has been released.
+1. A new [nextclade-cli](https://github.com/nextstrain/nextclade/releases) has been released.
+1. A new [recombinant lineage has been proposed](https://github.com/cov-lineages/pango-designation/issues?q=recombinant).
+1. A new [recombinant lineage has been designated](https://github.com/cov-lineages/pango-designation/milestones).
+    - New designations _should_ be labelled as milestones.
 
-Beging by creating a dev conda environment.
+Beging by creating a development conda environment.
 
 ```bash
 mamba env create -f workflow/envs/environment.yaml -n ncov-recombinant-dev
 ```
 
-> **Note**: After completing a development trigger, proceed with the **Validation** section.
+> **Note**: After completing a development trigger, proceed with the <a href="development.html#validation">Validation</a> section.
 
 ### Trigger 1 | New Lineage Dataset
 
-1. Obtain the new dataset tag from: https://github.com/nextstrain/nextclade_data/releases.
+1. Obtain the new dataset tag from <https://github.com/nextstrain/nextclade_data/releases>.
 
 1. Update all 3 dataset tags in `defaults/parameters.yaml`.
 
@@ -35,14 +36,14 @@ mamba env create -f workflow/envs/environment.yaml -n ncov-recombinant-dev
 
 ### Trigger 2 | New Nextclade CLI
 
-1. Check that the new nextclade-cli has been made available on conda: https://anaconda.org
+1. Check that the new nextclade-cli has been made available on conda: <https://anaconda.org>
 1. Update the following line in `workflow/envs/environment.yaml` to the newest version:
 
     ```yaml
     - bioconda::nextclade=2.8.0
     ```
 
-1. Update the dev conda environment.
+1. Update the development conda environment.
 
     ```bash
     mamba env update -f workflow/envs/environment.yaml -n ncov-recombinant-dev
@@ -56,11 +57,9 @@ mamba env create -f workflow/envs/environment.yaml -n ncov-recombinant-dev
     mkdir -p data/proposedXXX
     ```
 
-1. Check the correponsing [pango-designation issue](https://github.com/cov-lineages/pango-designation/issues?q=recombinant) for a list of GISAID accessions.
+1. Check the corresponding [pango-designation issue](https://github.com/cov-lineages/pango-designation/issues?q=recombinant) for a list of GISAID accessions.
 
-1. Download 10 of these GISAID accessions from <https://gisaid.org/>. Please review the **GISAID** section in the **Controls** page the README to ensure the sequences and metadata are correctly formatted.
-
-TEST: <a href="controls.html#gisaid">GISAID</a>
+1. Download 10 of these GISAID accessions from <https://gisaid.org/>. Please review the <a href="controls.html#gisaid">GISAID Download</a> section to ensure the sequences and metadata are correctly formatted.
 
 1. Create a new pipeline profile for this lineage.
 
@@ -74,7 +73,7 @@ TEST: <a href="controls.html#gisaid">GISAID</a>
     snakemake --profile my_profiles/proposedXXX results/proposedXXX/sc2rf/stats.tsv
     ```
 
-    When finished, check the stats file and confirm whether `sc2rf_status` is `positive`, `sc2rf_parents` match the pango-designation issue information. If so, skip to the validation section.
+    When finished, check the stats file and confirm whether `sc2rf_status` is `positive`, `sc2rf_parents` match the pango-designation issue information. If so, skip to the <a href="development.html#validation">Validation</a> section.
 
     ```bash
     csvtk pretty -t results/proposedXXX/sc2rf/stats.tsv | less -S
@@ -127,7 +126,7 @@ TEST: <a href="controls.html#gisaid">GISAID</a>
 
 ### Trigger 4 | New Designated Lineage
 
-1. Complete all steps for Trigger 3 | New Proposed Lineage, except:
+1. Complete all steps for <a href="development.html#trigger-3-new-proposed-lineage">Trigger 3 | New Proposed Lineage</a> except:
 
     - Include no more than 10 representative sequences.
     - Make the data directory `data/X*` instead of `data/proposed*`.
@@ -170,7 +169,7 @@ Run the following profiles to validate the new changes. These profiles all conta
     scripts/slurm.sh --profile profiles/controls-gisaid-hpc --conda-env ncov-recombinant-dev
     ```
 
-If the pipeline failed validation, check the end of the log for details on which samples failed and why.
+If the pipeline failed validation, check the end of the log for details.
 
 ```bash
 less -S logs/ncov-recombinant/tutorial_$(date +'%Y-%m-%d').log
@@ -178,7 +177,7 @@ less -S logs/ncov-recombinant/tutorial_$(date +'%Y-%m-%d').log
 
 If the column that failed is only `lineage`, because lineage assignments have changed with the new nextclade dataset, simply update the values in `defaults/validation.tsv`. This is expected when upgrading nextclade-cli or the nextclade dataset.
 
-If the column that failed is `breakpoints` or `parents_clade`, this indicates a more complicated issue with breakpoint detection. The most common reason is because `sc2rf` modes has been changed to capture a new lineage (see development trigger 3, new lineage, for more information). This presents an optimization challenge, and is solved by working through steps 5 and 6 of **Development: Trigger 3 | New Proposed Lineage** until sensitivity and specificity are restore for all lineages.
+If the column that failed is `breakpoints` or `parents_clade`, this indicates a more complicated issue with breakpoint detection. The most common reason is because `sc2rf` modes has been changed to capture a new lineage (see <a href="development.html#trigger-3-new-proposed-lineage">Trigger 3</a> for more information). This presents an optimization challenge, and is solved by working through steps 5 and 6 of <a href="development.html#trigger-3-new-proposed-lineage">Trigger 3 | New Proposed Lineage</a> until sensitivity and specificity are restore for all lineages.
 
 Once validation is completed successfully for all profiles, update `defaults/validation.tsv` as follows:
 
