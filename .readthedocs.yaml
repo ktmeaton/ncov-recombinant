@@ -9,9 +9,9 @@ version: 2
 sphinx:
    configuration: docs/sphinx/source/conf.py
 
-# Optionally declare the Python requirements required to build your docs
-conda:
-  environment: workflow/envs/environment.yaml
+# # Optionally declare the Python requirements required to build your docs
+# conda:
+#   environment: workflow/envs/environment.yaml
 
 build:
    image: latest
