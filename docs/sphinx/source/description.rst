@@ -20,7 +20,7 @@
    :alt: Pipeline CI
 
 
-SARS-CoV-2 recombinant sequence detection inspired by `nextstrain/ncov <https://github.com/nextstrain/ncov>`_.
+Reproducible workflow for SARS-CoV-2 recombinant sequence detection.
 
 
 #. Align sequences and perform clade/lineage assignments with `Nextclade <https://github.com/nextstrain/nextclade>`_.
