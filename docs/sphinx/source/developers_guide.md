@@ -139,12 +139,12 @@ mamba env create -f workflow/envs/environment.yaml -n ncov-recombinant-dev
     # Add in new control strains
     csvtk cut -t -f "strain" ${data_dir}/metadata.tsv | tail -n+2 >> data/controls-gisaid/strains.txt
 
-    # Add in new control metadata (ex. XBM), first identify columns to keep
+    # Add in new control metadata
     cols=$(csvtk headers -t data/controls-gisaid/metadata.tsv | tr "\n" "," | sed 's/,$/\n/g')
     csvtk cut -t -f "$cols" ${data_dir}/metadata.tsv | tail -n+2 >> data/controls-gisaid/metadata.tsv  
 
     # Add in new control sequences
-    cat ${date_dir}/sequences.fasta >> data/controls-gisaid/sequences.fasta
+    cat ${data_dir}/sequences.fasta >> data/controls-gisaid/sequences.fasta
     ```
 
 ### Validation

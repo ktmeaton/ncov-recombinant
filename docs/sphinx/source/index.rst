@@ -20,7 +20,7 @@ ncov-recombinant
    controls.md
    configuration.md
    high-performance-computing.md
-   development.md
+   developers_guide.md
    faq.md
    credits.md
 
