@@ -800,3 +800,7 @@ hCoV-19/Philippines/PH-PGC-05775/2021	negative	P.3	NA	NA	controls-gisaid
 hCoV-19/Australia/QLD1947/2021	negative	P.3	NA	NA	controls-gisaid
 hCoV-19/Philippines/PH-PGC-06627/2021	negative	P.3	NA	NA	controls-gisaid
 hCoV-19/Japan/PG-54489/2021	negative	R.1	NA	NA	controls-gisaid
+hCoV-19/USA/VA-CDC-LC0919593/2022	designated	XBN	5184:12443	Omicron/BA.2.75/22D,Omicron/XBB/22F	controls-gisaid
+hCoV-19/USA/CA-CDPH-FS48099347/2022	designated	XBN	5184:12443	Omicron/BA.2.75/22D,Omicron/XBB/22F	controls-gisaid
+hCoV-19/USA/WV-CDC-STM-4SUEG55PB/2022	designated	XBN	5184:12443	Omicron/BA.2.75/22D,Omicron/XBB/22F	controls-gisaid
+hCoV-19/USA/NY-PRL-221017_00E19/2022	designated	XBN	5184:12443	Omicron/BA.2.75/22D,Omicron/XBB/22F	controls-gisaid
