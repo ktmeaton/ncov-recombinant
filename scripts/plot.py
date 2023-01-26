@@ -312,6 +312,9 @@ def main(
                 if level not in plot_df.columns:
                     plot_df[level] = 0
 
+        # Defragment dataframe for Issue #218
+        plot_df = copy.copy(plot_df)
+        
         # Add epiweeks column
         plot_df.insert(0, "epiweek", plot_df.index)
 
