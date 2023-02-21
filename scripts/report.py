@@ -70,9 +70,7 @@ def main(
     plot_suffix = ".png"
     df_suffix = ".tsv"
     labels = [
-        f.replace(plot_suffix, "")
-        for f in os.listdir(plot_dir)
-        if f.endswith(plot_suffix)
+        f.replace(df_suffix, "") for f in os.listdir(plot_dir) if f.endswith(df_suffix)
     ]
 
     plot_dict = {}
@@ -114,7 +112,6 @@ def main(
     # General Summary
 
     # Slide setup
-    plot_path = plot_dict["lineage"]["plot_path"]
     graph_slide_layout = presentation.slide_layouts[8]
     slide = presentation.slides.add_slide(graph_slide_layout)
     title = slide.shapes.title
@@ -123,6 +120,7 @@ def main(
 
     chart_placeholder = slide.placeholders[1]
     # Plotting may have failed to create an individual figure
+    plot_path = plot_dict["lineage"]["plot_path"]
     if os.path.exists(plot_path):
         chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
@@ -207,8 +205,6 @@ def main(
         if status not in plot_dict:
             continue
 
-        plot_path = plot_dict[status]["plot_path"]
-
         # Slide setup
         graph_slide_layout = presentation.slide_layouts[8]
         slide = presentation.slides.add_slide(graph_slide_layout)
@@ -219,8 +215,10 @@ def main(
 
         chart_placeholder = slide.placeholders[1]
         # Plotting may have failed to create an individual figure
+        plot_path = plot_dict[status]["plot_path"]
         if os.path.exists(plot_path):
             chart_placeholder.insert_picture(plot_path)
+
         body = slide.placeholders[2]
 
         # Stats
@@ -257,7 +255,6 @@ def main(
     # ---------------------------------------------------------------------
     # Geographic Summary
 
-    plot_path = plot_dict["geography"]["plot_path"]
     geo_df = plot_dict["geography"]["df"]
     geos = list(geo_df.columns)
     geos.remove("epiweek")
@@ -276,8 +273,10 @@ def main(
 
     chart_placeholder = slide.placeholders[1]
     # Plotting may have failed to create an individual figure
+    plot_path = plot_dict["geography"]["plot_path"]
     if os.path.exists(plot_path):
         chart_placeholder.insert_picture(plot_path)
+
     body = slide.placeholders[2]
 
     summary = "\n"
@@ -303,7 +302,6 @@ def main(
     # ---------------------------------------------------------------------
     # Largest Summary
 
-    plot_path = plot_dict["largest"]["plot_path"]
     largest_df = plot_dict["largest"]["df"]
 
     largest_geos = list(largest_df.columns)
@@ -336,6 +334,7 @@ def main(
 
     chart_placeholder = slide.placeholders[1]
     # Plotting may have failed to create an individual figure
+    plot_path = plot_dict["largest"]["plot_path"]
     if os.path.exists(plot_path):
         chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
@@ -368,7 +367,6 @@ def main(
     # ---------------------------------------------------------------------
     # RBD Levels
 
-    plot_path = plot_dict["rbd_level"]["plot_path"]
     rbd_df = plot_dict["rbd_level"]["df"]
     rbd_levels = list(rbd_df.columns)
     rbd_levels.remove("epiweek")
@@ -391,6 +389,7 @@ def main(
 
     chart_placeholder = slide.placeholders[1]
     # Plotting may have failed to create an individual figure
+    plot_path = plot_dict["rbd_level"]["plot_path"]
     if os.path.exists(plot_path):
         chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
@@ -417,7 +416,6 @@ def main(
     # ---------------------------------------------------------------------
     # Parents Summary (Clade)
 
-    plot_path = plot_dict["parents_clade"]["plot_path"]
     parents_df = plot_dict["parents_clade"]["df"]
 
     parents = list(parents_df.columns)
@@ -437,6 +435,7 @@ def main(
 
     chart_placeholder = slide.placeholders[1]
     # Plotting may have failed to create an individual figure
+    plot_path = plot_dict["parents_clade"]["plot_path"]
     if os.path.exists(plot_path):
         chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
@@ -463,7 +462,6 @@ def main(
     # ---------------------------------------------------------------------
     # Parents Summary (Lineage)
 
-    plot_path = plot_dict["parents_lineage"]["plot_path"]
     parents_df = plot_dict["parents_lineage"]["df"]
 
     parents = list(parents_df.columns)
@@ -483,6 +481,7 @@ def main(
 
     chart_placeholder = slide.placeholders[1]
     # Plotting may have failed to create an individual figure
+    plot_path = plot_dict["parents_lineage"]["plot_path"]
     if os.path.exists(plot_path):
         chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
@@ -509,8 +508,6 @@ def main(
     # ---------------------------------------------------------------------
     # Breakpoints Clade Summary
 
-    plot_path = plot_dict["breakpoints_clade"]["plot_path"]
-
     graph_slide_layout = presentation.slide_layouts[8]
     slide = presentation.slides.add_slide(graph_slide_layout)
     title = slide.shapes.title
@@ -520,14 +517,13 @@ def main(
 
     chart_placeholder = slide.placeholders[1]
     # Plotting may have failed to create an individual figure
+    plot_path = plot_dict["breakpoints_clade"]["plot_path"]
     if os.path.exists(plot_path):
         chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
 
     # ---------------------------------------------------------------------
     # Breakpoints Lineage Summary
-
-    plot_path = plot_dict["breakpoints_lineage"]["plot_path"]
 
     graph_slide_layout = presentation.slide_layouts[8]
     slide = presentation.slides.add_slide(graph_slide_layout)
@@ -538,6 +534,7 @@ def main(
 
     chart_placeholder = slide.placeholders[1]
     # Plotting may have failed to create an individual figure
+    plot_path = plot_dict["breakpoints_lineage"]["plot_path"]
     if os.path.exists(plot_path):
         chart_placeholder.insert_picture(plot_path)
     body = slide.placeholders[2]
