@@ -1,0 +1,43 @@
+#------------------------------------------------------------------------------#
+# Build Config
+#------------------------------------------------------------------------------#
+configfile:
+  - defaults/parameters.yaml
+  - profiles/virusseq-hpc/builds.yaml
+
+#------------------------------------------------------------------------------#
+# Snakemake config
+#------------------------------------------------------------------------------#
+restart-times: 1
+max-jobs-per-second: 1
+latency-wait: 60
+keep-going: True
+show-failed-logs: True
+rerun-incomplete: True
+printshellcmds: False
+
+#------------------------------------------------------------------------------#
+# System config
+#------------------------------------------------------------------------------#
+
+# Maximum number of jobs to run
+jobs : 20
+
+# Default resources for a SINGLE JOB
+# Divide your total resources by the maximum number of jobs
+default-resources:
+  - cpus=16
+  - mem_mb=16000
+  - time_min=720
+
+# What commands should be run to DISPATCH a job?
+cluster:
+  mkdir -p logs/slurm/{rule} &&
+  sbatch
+    --cpus-per-task={resources.cpus}
+    --mem={resources.mem_mb}
+    --job-name=ncov-recombinant:{rule}:{wildcards}
+    --output=logs/slurm/{rule}/{wildcards}-%j.out
+
+# What commands should be run to CANCEL a job?
+cluster-cancel: scancel
