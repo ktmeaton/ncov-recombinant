@@ -1,0 +1,28 @@
+# -----------------------------------------------------------------------------
+# Builds
+# -----------------------------------------------------------------------------
+
+builds:
+
+  # ---------------------------------------------------------------------------
+  # `virusseq` scans the all public SARS-CoV-2 genomes from Canada
+
+  - name: virusseq
+    metadata: data/virusseq/metadata.tsv
+    sequences: data/virusseq/sequences.fasta
+
+    sc2rf:
+      exclude_negatives: true
+
+    summary:
+      extra_cols:
+        - division
+
+    linelist:
+      geo: "division"
+
+    plot:
+      min_cluster_size: 2
+
+    plot_historical:
+      min_cluster_size: 2
