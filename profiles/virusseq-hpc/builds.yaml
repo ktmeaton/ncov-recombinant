@@ -5,7 +5,17 @@
 builds:
 
   # ---------------------------------------------------------------------------
-  # `virusseq` scans the all public SARS-CoV-2 genomes from Canada
+  # `controls-gisaid` uses a mixture of positive and negative recombinants from GISAID
+
+  - name: controls-gisaid
+    metadata: data/controls-gisaid/metadata.tsv
+    sequences: data/controls-gisaid/sequences.fasta
+
+    linelist:
+      min_private_muts: 999
+
+  # ---------------------------------------------------------------------------
+  # `virusseq` scans all public SARS-CoV-2 genomes from Canada
 
   - name: virusseq
     metadata: data/virusseq/metadata.tsv
