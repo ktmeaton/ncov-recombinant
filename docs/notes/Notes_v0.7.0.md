@@ -58,8 +58,7 @@ This is a minor release aimed towards a `nextclade` dataset upgrade from `2022-1
 
 - [Issue #203](https://github.com/ktmeaton/ncov-recombinant/issues/203): `proposed1305`
 - [Issue #208](https://github.com/ktmeaton/ncov-recombinant/issues/208): `proposed1340`
-- [Issue #211](https://github.com/ktmeaton/ncov-recombinant/issues/211): `proposed1393`
 - [Issue #212](https://github.com/ktmeaton/ncov-recombinant/issues/212): `proposed1425`
 - [Issue #214](https://github.com/ktmeaton/ncov-recombinant/issues/214): `proposed1440`
 - [Issue #216](https://github.com/ktmeaton/ncov-recombinant/issues/216): `proposed1444`
-- proposed1576
+- [Issue #220](https://github.com/ktmeaton/ncov-recombinant/issues/220): `proposed1576`
