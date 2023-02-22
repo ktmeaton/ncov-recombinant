@@ -1206,7 +1206,11 @@ def main(
 
                     # Don't want to report recombinants as parents
                     # UNLESS, the parental clade is a recombinant (ex. XBB)
-                    while max_lineage.startswith("X") or max_lineage == "Unassigned":
+                    while (
+                        max_lineage is None
+                        or max_lineage.startswith("X")
+                        or max_lineage == "Unassigned"
+                    ):
 
                         # Allow the max_lineage to be recombinant if clade is also
                         if max_lineage.startswith("X") and parent_clade_is_recombinant:
