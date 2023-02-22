@@ -995,7 +995,7 @@ def main(
                     max_lineage = lineage_dict[max_count]
 
                     # Don't want to report recombinants as parents yet
-                    while max_lineage.startswith("X") or max_lineage == "Unassigned":
+                    while max_lineage is None or max_lineage.startswith("X") or max_lineage == "Unassigned":
                         lineage_dict = {
                             count: lineage
                             for count, lineage in lineage_dict.items()
