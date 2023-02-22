@@ -30,6 +30,25 @@ LAPIS_SLEEP_TIME = 0
 # Consider a breakpoint match if within 50 base pairs
 BREAKPOINT_APPROX_BP = 50
 
+DATAFRAME_COLS = [
+    "sc2rf_status",
+    "sc2rf_details",
+    "sc2rf_lineage",
+    "sc2rf_clades_filter",
+    "sc2rf_regions_filter",
+    "sc2rf_regions_length",
+    "sc2rf_breakpoints_filter",
+    "sc2rf_num_breakpoints_filter",
+    "sc2rf_breakpoints_motif",
+    "sc2rf_unique_subs_filter",
+    "sc2rf_alleles_filter",
+    "sc2rf_intermission_allele_ratio",
+    "cov-spectrum_parents",
+    "cov-spectrum_parents_confidence",
+    "cov-spectrum_parents_subs",
+    "sc2rf_parents_conflict",
+]
+
 
 def create_logger(logfile=None):
     # create logger
@@ -310,6 +329,9 @@ def main(
     # -----------------------------------------------------------------------------
     # Import Dataframes of Potential Positive Recombinants
 
+    # note: Add the end of this section, only positives and false positives will
+    #       be in the dataframe.
+
     # sc2rf csv output (required)
     df = pd.DataFrame()
     csv_split = csv.split(",")
@@ -367,23 +389,14 @@ def main(
 
     df.fillna("", inplace=True)
 
-    # Initialize dataframe columns to NA
-    df["sc2rf_status"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_details"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_lineage"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_clades_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_regions_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_regions_length"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_breakpoints_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_num_breakpoints_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_breakpoints_motif"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_unique_subs_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_alleles_filter"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_intermission_allele_ratio"] = [NO_DATA_CHAR] * len(df)
-    df["cov-spectrum_parents"] = [NO_DATA_CHAR] * len(df)
-    df["cov-spectrum_parents_confidence"] = [NO_DATA_CHAR] * len(df)
-    df["cov-spectrum_parents_subs"] = [NO_DATA_CHAR] * len(df)
-    df["sc2rf_parents_conflict"] = [NO_DATA_CHAR] * len(df)
+    # -------------------------------------------------------------------------
+    # Initialize new stat columns to NA
+
+    # note: Add the end of this section, only positives and false positives will
+    #       be in the sc2rf_details_dict
+
+    for col in DATAFRAME_COLS:
+        df[col] = [NO_DATA_CHAR] * len(df)
 
     # Initialize a dictionary of sc2rf details and false positives
     # key: strain, value: list of reasons
@@ -391,7 +404,7 @@ def main(
     sc2rf_details_dict = {strain: [] for strain in df.index}
 
     # -------------------------------------------------------------------------
-    # Add in the Negatives (if alignment was specified)
+    # Add in the Negatives (if metadata was specified)
     # Avoiding the Bio module, I just need names not sequences
 
     if metadata:
@@ -417,22 +430,32 @@ def main(
         )
 
         for rec in auto_pass_df.iterrows():
+
+            # Note the strain is the true strain, not _dup suffix
             strain = rec[0]
 
-            # If already in the df, set the status to positive, update details
+            lineage = auto_pass_df.loc[strain]["Nextclade_pango"]
+            details = "nextclade-auto-pass {}".format(lineage)
+
+            # Case 1 : In df with NO DUPS, set the status to positive, update details
             if strain in list(df.index):
 
-                strain_orig = df.loc[strain]["strain"]
-                lineage = auto_pass_df.loc[strain_orig]["Nextclade_pango"]
-                details = "nextclade-auto-pass {}".format(lineage)
                 sc2rf_details_dict[strain].append(details)
-
                 df.at[strain, "sc2rf_status"] = "positive"
                 df.at[strain, "sc2rf_details"] = ";".join(sc2rf_details_dict[strain])
-            # If it's not in the dataframe add it
+
+            # Case 2: In df WITH DUPS, set the dups status to positive, update details
+            elif strain in list(df["strain"]):
+
+                dup_strains = list(df[df["strain"] == strain].index)
+                for dup in dup_strains:
+
+                    sc2rf_details_dict[dup].append(details)
+                    df.at[dup, "sc2rf_status"] = "positive"
+                    df.at[dup, "sc2rf_details"] = ";".join(sc2rf_details_dict[dup])
+
+            # Case 3: If it's not in the dataframe add it
             else:
-                lineage = rec[1]["Nextclade_pango"]
-                details = "nextclade-auto-pass {}".format(lineage)
                 sc2rf_details_dict[strain] = [details]
 
                 # new row
@@ -492,6 +515,7 @@ def main(
         # If the region is NA, this is an auto-passed recombinant
         # and sc2rf couldn't find any breakpoints, skip the rest of processing
         # and continue on to next strain
+
         if regions_split == [NO_DATA_CHAR]:
             continue
 
@@ -1024,9 +1048,12 @@ def main(
         # Drop the rejected duplicates
         df.drop(labels=remove_dups, inplace=True)
 
+    # ---------------------------------------------------------------------
     # Fix up duplicate strain names in false_positives
+
     false_positives_filter = {}
     for strain in false_positives_dict:
+
         strain_orig = strain.split("_dup")[0]
         status = df["sc2rf_status"][strain_orig]
         # If the original strain isn't positive
