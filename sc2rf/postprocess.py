@@ -408,7 +408,7 @@ def main(
             sc2rf_details_dict[strain] = []
 
     # ---------------------------------------------------------------------
-    # Auto-pass lineages from nextclade assignment
+    # Auto-pass lineages from nextclade assignment, that were also detected by sc2rf
 
     if nextclade and nextclade_auto_pass:
 
@@ -416,15 +416,33 @@ def main(
             "Auto-passing lineages: {}".format(",".join(nextclade_auto_pass_lineages))
         )
 
-        # If already in the df, set the status to positive, update details
-        for rec in df[df["strain"].isin(auto_pass_df.index)].iterrows():
+        for rec in auto_pass_df.iterrows():
             strain = rec[0]
-            strain_orig = rec[1]["strain"]
-            lineage = auto_pass_df.loc[strain_orig]["Nextclade_pango"]
-            details = "nextclade-auto-pass {}".format(lineage)
-            sc2rf_details_dict[strain].append(details)
-            df.at[strain, "sc2rf_status"] = "positive"
-            df.at[strain, "sc2rf_details"] = ";".join(sc2rf_details_dict[strain])
+
+            # If already in the df, set the status to positive, update details
+            if strain in list(df.index):
+
+                strain_orig = df.loc[strain]["strain"]
+                lineage = auto_pass_df.loc[strain_orig]["Nextclade_pango"]
+                details = "nextclade-auto-pass {}".format(lineage)
+                sc2rf_details_dict[strain].append(details)
+
+                df.at[strain, "sc2rf_status"] = "positive"
+                df.at[strain, "sc2rf_details"] = ";".join(sc2rf_details_dict[strain])
+            # If it's not in the dataframe add it
+            else:
+                lineage = rec[1]["Nextclade_pango"]
+                details = "nextclade-auto-pass {}".format(lineage)
+                sc2rf_details_dict[strain] = [details]
+
+                # new row
+                row_dict = {col: [NO_DATA_CHAR] for col in df.columns}
+                row_dict["strain"] = strain
+                row_dict["sc2rf_status"] = "positive"
+                row_dict["sc2rf_details"] = ";".join(sc2rf_details_dict[strain])
+
+                row_df = pd.DataFrame(row_dict).set_index("strain")
+                df = pd.concat([df, row_df], ignore_index=False)
 
     # -------------------------------------------------------------------------
     # Begin Post-Processing
