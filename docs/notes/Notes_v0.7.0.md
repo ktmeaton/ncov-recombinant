@@ -1,6 +1,6 @@
 # Development
 
-This is a minor release aimed towards a `nextclade` dataset upgrade from `2022-10-27` to `2023-01-09` which adds nomenclature for newly designated recombinants `XBH` - `XBM`. This release also adds initial support for the detection of "recursive recombination" including `XBL` and `XBN` which are recombinants of `XBB`.
+This is a minor release aimed towards a `nextclade` dataset upgrade from `2022-10-27` to `2023-01-09` which adds nomenclature for newly designated recombinants `XBH` - `XBP`. This release also adds initial support for the detection of "recursive recombination" including `XBL` and `XBN` which are recombinants of `XBB`.
 
 ## Documentation
 
@@ -21,6 +21,8 @@ This is a minor release aimed towards a `nextclade` dataset upgrade from `2022-1
 - [Issue #205](https://github.com/ktmeaton/ncov-recombinant/issues/205): Add new column `parents_conflict` to indicate whether the reported lineages from covSPECTRUM conflict with the reported parental clades from `sc2rf.
 - [Issue #213](https://github.com/ktmeaton/ncov-recombinant/issues/213): Add `XBK` to auto-pass lineages.
 - [Issue #222](https://github.com/ktmeaton/ncov-recombinant/issues/222): Add new parameter `--gisaid-access-key` to `sc2rf` and `sc2rf_recombinants`.
+- [Issue #229](https://github.com/ktmeaton/ncov-recombinant/issues/229): Fix bug where auto-pass lineages are missing when exclude_negatives is set to true.
+- [Issue #231](https://github.com/ktmeaton/ncov-recombinant/issues/231): Fix bug where 'null' lineages in covSPECTRUM caused error in `sc2rf` postprocess.
 - The order of the `postprocessing.py` was rearranged to have more comprehensive details for auto-pass lineages.
 - Add `XAN` to auto-pass lineages.
 
