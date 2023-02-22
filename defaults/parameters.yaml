@@ -19,11 +19,11 @@ rule_params:
   # tag_immune-escape: datestamp of the dataset for immune escape calculations
   - name: nextclade_dataset
     dataset: sars-cov-2
-    tag: "2023-01-09T12:00:00Z"
+    tag: "2023-02-01T12:00:00Z"
     dataset_no-recomb: sars-cov-2-no-recomb
-    tag_no-recomb: "2023-01-09T12:00:00Z"
+    tag_no-recomb: "2023-02-01T12:00:00Z"
     dataset_immune-escape: sars-cov-2-21L
-    tag_immune-escape: "2023-01-09T12:00:00Z"
+    tag_immune-escape: "2023-02-01T12:00:00Z"
 
   # ---------------------------------------------------------------------------
   # exclude_clades    : (optional) Exclude strains that are recombinants of these clades
