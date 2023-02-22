@@ -314,7 +314,7 @@ def main(
 
         # Defragment dataframe for Issue #218
         plot_df = copy.copy(plot_df)
-        
+
         # Add epiweeks column
         plot_df.insert(0, "epiweek", plot_df.index)
 
