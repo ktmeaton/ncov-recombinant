@@ -1325,13 +1325,26 @@ def main(
                     continue
 
                 # Check if parents_lineage is descendant of parents_clade
-                c_node = [c for c in tree.find_clades(c)][0]
+                c_nodes = [c for c in tree.find_clades(c)]
+
+                # If the clade is not in the tree, without further evidence
+                # don't report a conflict. Candidate for more testing
+                if len(c_nodes) == 0:
+                    continue
+                else:
+                    c_node = c_nodes[0]
                 l_node = [c for c in c_node.find_clades(l)]
                 if len(l_node) != 1:
                     lineage_is_descendant = True
 
                 # Check if parents_lineage is ancestor of parents_clade
-                l_node = [c for c in tree.find_clades(l)][0]
+                l_nodes = [c for c in tree.find_clades(l)]
+                # If the lineage is not in the tree, without further evidence
+                # don't report a conflict. Candidate for more testing
+                if len(l_nodes) == 0:
+                    continue
+                else:
+                    l_node = l_nodes[0]
                 c_node = [c for c in l_node.find_clades(c)]
                 if len(c_node) != 1:
                     lineage_is_ancestor = True
