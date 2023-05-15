@@ -1,5 +1,9 @@
 # ncov-recombinant
 
+> ❗❗❗<br>
+> **Note**: ncov-recombinant will be deprecated soon as SARS-CoV-2 recombination has evolved beyond the scope of this pipeline's design. The new tool will be [rebar](https://github.com/phac-nml/rebar), which is under active development.<br>
+> ❗❗❗  
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
